@@ -116,7 +116,15 @@ public class PartitioningGenerator {
     }
 
     /**
-     * For a 'solution' (a list of sub-partitions) 
+     * For a 'solution' (a list of sub-partitions) produce all graphs that
+     * are consistent with these sub-partitions. It does this by:
+     * 
+     *  1) For each sub-part (half-bond) on one atom do
+     *  2) Try to find all matching sub-parts (with solution.indexOf)
+     *  3) Add these two half-bonds as an arc in the graph
+     *  4) Remove the half-bonds from a copy of the solution, and backtrack
+     *  
+     * in this way, all graphs are produced, but they will be redundant.
      * 
      * @param solution
      * @param graph

@@ -22,6 +22,16 @@ public class Partition {
         this.parts = parts;
     }
     
+    public void reverse() {
+        int[] tmp = new int[this.parts.length];
+        int j = 0;
+        for (int i = this.parts.length - 1; i > -1; i--) {
+            tmp[j] = this.parts[i];
+            j++;
+        }
+        this.parts = tmp;
+    }
+    
     public int getPart(int i) {
         return this.parts[i];
     }
