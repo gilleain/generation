@@ -2,8 +2,11 @@ package signature;
 
 import java.util.ArrayList;
 
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
 
 public class Graph {
     
@@ -60,8 +63,14 @@ public class Graph {
     }
     
     public boolean isSaturated(int atomNumber) {
-        // TODO Auto-generated method stub
-        return false;
+        IAtom atom = this.atomContainer.getAtom(atomNumber);
+        try {
+            return 
+                Util.getInstance().getChecker().isSaturated(
+                        atom, atomContainer);
+        } catch (CDKException c) {
+            return false;
+        }
     }
     
     public boolean isConnected() {
@@ -69,12 +78,11 @@ public class Graph {
     }
     
     public ArrayList<Integer> unsaturatedAtoms() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.targets;
     }
 
     public void bond(int x, int y) {
-        // TODO Auto-generated method stub
+        this.atomContainer.addBond(x, y, IBond.Order.SINGLE);
     }
 
     public boolean noSaturatedSubgraphs() {

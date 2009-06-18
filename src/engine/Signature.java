@@ -9,6 +9,15 @@ import java.util.Map;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IMolecule;
 
+/**
+ * This is an attempt at implementing the full canonizable signature of the 
+ * fourth paper in Faulon's signature series.
+ * 
+ * At the moment, canonization does not fully work.
+ * 
+ * @author maclean
+ *
+ */
 public class Signature {
     
     private class Edge {

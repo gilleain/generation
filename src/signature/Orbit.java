@@ -1,19 +1,30 @@
 package signature;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class Orbit {
     
+    private List<Integer> atomIndices;
+    
+    private Graph graph;
+    
+    public Orbit(Graph graph) {
+        this.graph = graph;
+        this.atomIndices = new ArrayList<Integer>();
+    }
+    
     public boolean isEmpty() {
-        // TODO
-        return true;
+        return this.atomIndices.isEmpty();
     }
 
     public int getFirstAtom() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.atomIndices.get(0);
     }
     
     public void remove(int i) {
-        
+        this.atomIndices.remove(i);
     }
 
 }

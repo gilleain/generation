@@ -44,22 +44,27 @@ public class TargetMolecularSignature {
         this.signatures.add(new TargetAtomicSignature(signatureString, name));
         this.counts.add(count);
     }
-    
+
     /**
-     * Get the atom numbers of all the atoms in the target
+     * Get the signatures strings of height <code>height</code> 
+     * of the atoms bonded to atom <code>x</code>.
+     * 
      * @param g
+     *            the underlying graph
      * @param x
-     * @return
+     *            the atom to use
+     * @param height
+     *            the height of the signatures to return
+     * @return a list of signatures of attached atoms
      */
-    public ArrayList<Integer> getBonded(Graph g, int x) {
-        // TODO Auto-generated method stub
-        return null;
+    public ArrayList<String> getBondedSignatures(int x, int height) {
+        return this.signatures.get(x).getSignatureStrings(height);
     }
 
     public int getHeight() {
         return this.height;
     }
-
+   
     public TargetAtomicSignature getTargetAtomicSignature(int i) {
         return this.signatures.get(i);
     }
