@@ -137,8 +137,8 @@ public class SignatureEnumerator {
         // count the number of (h - 1) target signatures of atoms bonded to x 
         // compatible with the (h - 1) signature of y 
         int n12 = 0;
-        for (String sig : hTau.getBondedSignatures(x, h - 1)) {
-            if (hMinusOneTauY.equals(sig)) {
+        for (String subSignature : hTau.getBondedSignatures(x, h - 1)) {
+            if (hMinusOneTauY.equals(subSignature)) {
                 n12++;
             }
         }
@@ -146,8 +146,7 @@ public class SignatureEnumerator {
         
         // count the number of bonds already used between x and y
         int m12 = 0;
-        for (int y1 : g.getBonded(x)) {
-            AtomicSignature hMinusOneTauY1 = new AtomicSignature(y1, g, h - 1);
+        for (String hMinusOneTauY1 : g.getSignaturesOfBondedAtoms(x, h - 1)) {
             if (hMinusOneTauY.equals(hMinusOneTauY1)) {
                 m12++;
             }
