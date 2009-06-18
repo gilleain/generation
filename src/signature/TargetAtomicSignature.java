@@ -22,22 +22,13 @@ public class TargetAtomicSignature {
         
         public ArrayList<Node> children;
         
+        public boolean visited;
+        
         public Node(char label, Node parent) {
             this.label = label;
             this.parent = parent;
             this.children = new ArrayList<Node>();
-        }
-        
-        public void toString(StringBuffer buffer, int h, boolean useParent) {
-            buffer.append(this.label);
-            if (this.children.size() == 0 || h == 1) return;
-            for (Node child : this.children) {
-                child.toString(buffer, h - 1, false);
-            }
-            if (useParent && this.parent != null) {
-                buffer.append(this.parent.label);
-            }
-            buffer.append(")");
+            this.visited = false;
         }
         
         public void toString(StringBuffer buffer) {
@@ -72,11 +63,62 @@ public class TargetAtomicSignature {
         return sigStrings;
     }
     
-    public String getSignatureString(Node start, int h) {
+    /**
+     * Starting from the root of this signature, return a sub-signature of
+     * height h.
+     * 
+     * @param h the height to go out to
+     * @return a string representation of the sub-signature
+     */
+    public String getSubSignature(int h) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(start.label);
-        buffer.append("(");
+        traverse(root, 0, h, buffer);
+        clearVisited(root);
         return buffer.toString();
+    }
+    
+    /**
+     * Get a signature string starting at a child of the root - in other words
+     * the signature string in the subgraph made from the neighbours of the
+     * root. This will include the root for signatures of height greater than
+     * zero.
+     * 
+     * @param startNodeIndex the index of the child of the root
+     * @param h the height to go out to
+     * @return
+     */
+    public String getSignatureString(int startNodeIndex, int h) {
+        return getSignatureString(this.root.children.get(startNodeIndex), h);
+    }
+    
+    private String getSignatureString(Node start, int h) {
+        StringBuffer buffer = new StringBuffer();
+        traverse(start, 0, h, buffer);
+        clearVisited(root);
+        return buffer.toString();
+    }
+    
+    private void traverse(Node current, int h, int maxH, StringBuffer buffer) {
+        if (current.visited) return;
+        buffer.append(current.label);
+        current.visited = true;
+        if (h < maxH) {
+            buffer.append("(");
+            for (Node child : current.children) {
+                traverse(child, h + 1, maxH, buffer);
+            }
+            if (current.parent != null) {
+                traverse(current.parent, h + 1, maxH, buffer);
+            }
+            buffer.append(")");
+        }
+    }
+    
+    private void clearVisited(Node n) {
+        n.visited = false;
+        for (Node child : n.children) {
+            clearVisited(child);
+        }
     }
     
     public String toString() {

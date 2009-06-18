@@ -1,6 +1,7 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
@@ -14,9 +15,12 @@ public class Graph {
     
     private ArrayList<Integer> targets;
     
+    private ArrayList<Orbit> orbits;
+    
     public Graph(IAtomContainer atomContainer) {
         this.atomContainer = atomContainer;
         this.targets = new ArrayList<Integer>();
+        this.orbits = new ArrayList<Orbit>();
     }
     
     public Graph(Graph g) {
@@ -53,15 +57,6 @@ public class Graph {
     }
 
 
-    public void partition() {
-        // TODO
-    }
-    
-    public Orbit getUnsaturatedOrbit() {
-        // TODO
-        return null;
-    }
-    
     public boolean isSaturated(int atomNumber) {
         IAtom atom = this.atomContainer.getAtom(atomNumber);
         try {
@@ -85,6 +80,24 @@ public class Graph {
         this.atomContainer.addBond(x, y, IBond.Order.SINGLE);
     }
 
+    public List<Integer> getBonded(int x) {
+        IAtom atom = atomContainer.getAtom(x);
+        ArrayList<Integer> atomNumbers = new ArrayList<Integer>();
+        for (IAtom connected : atomContainer.getConnectedAtomsList(atom)) {
+            atomNumbers.add(atomContainer.getAtomNumber(connected));
+        }
+        return atomNumbers;   
+    }
+
+    public void partition() {
+        // TODO
+    }
+
+    public Orbit getUnsaturatedOrbit() {
+        // TODO
+        return null;
+    }
+
     public boolean noSaturatedSubgraphs() {
         // TODO Auto-generated method stub
         return false;
@@ -98,11 +111,6 @@ public class Graph {
     public boolean signatureMatches(TargetMolecularSignature tau) {
         // TODO Auto-generated method stub
         return false;
-    }
-
-    public ArrayList<Integer> getBonded(int x) {
-        // TODO Auto-generated method stub
-        return null;
     }
     
 }

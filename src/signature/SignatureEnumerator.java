@@ -89,7 +89,7 @@ public class SignatureEnumerator {
             int x = o.getFirstAtom();
             ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
             saturateAtomSignature(x, g, atomSolutions);
-            o.remove(x);
+            o.remove(x);    // TODO : should this happen before saturation?!
             for (Graph h : atomSolutions) {
                 saturateOrbitSignature(o, h, s);
             }
@@ -132,13 +132,13 @@ public class SignatureEnumerator {
      */
     public boolean compatibleBondSignature(int x, int y, Graph g) {
         int h = this.hTau.getHeight();
-        AtomicSignature hMinusOneTauY = new AtomicSignature(y, g, h - 1);
+        String hMinusOneTauY = this.hTau.getTargetAtomicSubSignature(y, h - 1);
         
         // count the number of (h - 1) target signatures of atoms bonded to x 
         // compatible with the (h - 1) signature of y 
         int n12 = 0;
         for (String sig : hTau.getBondedSignatures(x, h - 1)) {
-            if (hMinusOneTauY.equalsString(sig)) {
+            if (hMinusOneTauY.equals(sig)) {
                 n12++;
             }
         }

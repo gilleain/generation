@@ -91,4 +91,8 @@ public class TargetMolecularSignature {
         }
         return buffer.toString();
     }
+
+    public String getTargetAtomicSubSignature(int x, int h) {
+        return this.signatures.get(x).getSignatureString(0, h);
+    }
 }

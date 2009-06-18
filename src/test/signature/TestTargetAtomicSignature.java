@@ -21,10 +21,29 @@ public class TestTargetAtomicSignature {
         }
     }
     
-    public static void main(String[] args) {
-        TestTargetAtomicSignature test = new TestTargetAtomicSignature();
-        test.roundtrip();
-        test.signatureStrings();
+    public void subSignatureFromRootChild() {
+        String sigString = "A(B(C(D))E(F(G)H))";
+        TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
+        int child = 0;
+        int height = 2;
+        String expected = "B(C(D)A(E))";
+        String actual = sig.getSignatureString(child, height);
+        
+        System.out.println("signature\t" + sig);
+        System.out.println("sub " + child + " / " + height + "\t" + actual);
+        System.out.println("expected\t" + expected);
+    }
+    
+    public void subSignature() {
+        String sigString = "A(B(C(D))E(F(G)H))";
+        TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
+        int height = 2;
+        String expected = "A(B(C)E(FH))";
+        String actual = sig.getSubSignature(height);
+        
+        System.out.println("signature\t" + sig);
+        System.out.println("sub h = " + height + "\t" + actual);
+        System.out.println("expected\t" + expected);
     }
 
 }
