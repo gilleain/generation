@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
+import org.openscience.cdk.graph.PathTools;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -55,6 +56,44 @@ public class Graph {
     }
     
     /**
+     * Check two atoms to see if a bond can be formed between them, according
+     * to the target signatures.
+     * 
+     * @param x the index of an atom
+     * @param y the index of another atom
+     * @param hTau the target molecular signature to use
+     * @return true if a bond can be formed
+     */
+    public boolean compatibleBondSignature(
+            int x, int y, TargetMolecularSignature hTau) {
+        int h = hTau.getHeight();
+        String hMinusOneTauY = hTau.getTargetAtomicSubSignature(y, h - 1);
+        
+        // count the number of (h - 1) target signatures of atoms bonded to x 
+        // compatible with the (h - 1) signature of y 
+        int n12 = 0;
+        for (String subSignature : hTau.getBondedSignatures(x, h - 1)) {
+            if (hMinusOneTauY.equals(subSignature)) {
+                n12++;
+            }
+        }
+        if (n12 == 0) return false;
+        
+        // count the number of bonds already used between x and y
+        int m12 = 0;
+        for (String hMinusOneTauY1 : getSignaturesOfBondedAtoms(x, h - 1)) {
+            if (hMinusOneTauY.equals(hMinusOneTauY1)) {
+                m12++;
+            }
+        }
+        return n12 - m12 >= 0;
+    }
+    
+    public IAtomContainer getAtomContainer() {
+        return this.atomContainer;
+    }
+    
+    /**
      * Given a target molecular signature composed of target atomic signatures,
      * assign an atomic signature to each atom of the atom container.
      * 
@@ -87,7 +126,12 @@ public class Graph {
     }
     
     public boolean isConnected() {
-        return ConnectivityChecker.isConnected(atomContainer);
+        int numberOfAtoms = atomContainer.getAtomCount();
+        int numberOfBonds = atomContainer.getBondCount();
+        
+        // n atoms connected into a simple chain have (n - 1) bonds
+        return numberOfBonds >= (numberOfAtoms - 1) 
+                && ConnectivityChecker.isConnected(atomContainer);
     }
     
     public ArrayList<Integer> unsaturatedAtoms() {
@@ -111,6 +155,10 @@ public class Graph {
     
     public List<Orbit> getOrbits() {
         return this.orbits;
+    }
+    
+    public int getDiameter() {
+        return PathTools.getMolecularGraphDiameter(atomContainer);
     }
 
     /**

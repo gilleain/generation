@@ -60,6 +60,17 @@ public class AtomicSignature {
             this.color = 0;
         }
         
+        public void toString(StringBuffer buffer) {
+            buffer.append(atomContainer.getAtom(atomNumber).getSymbol());
+            if (this.children.size() != 0) {
+                buffer.append("(");
+                for (TreeNode child : this.children) {
+                    child.toString(buffer);
+                }
+                buffer.append(")");
+            }
+        }
+        
         public String toString() {
             return "" + this.atomNumber;
         }
@@ -79,6 +90,8 @@ public class AtomicSignature {
     
     public AtomicSignature(int i, Graph g, int height) {
         this.height = height;
+        this.atomContainer = g.getAtomContainer();
+        
         this.layers = new ArrayList<ArrayList<TreeNode>>();
         this.root = new TreeNode(i);
         
@@ -152,6 +165,12 @@ public class AtomicSignature {
             }
         }
         return null;
+    }
+    
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        this.root.toString(buffer);
+        return buffer.toString();
     }
     
     public boolean equals(AtomicSignature other) {

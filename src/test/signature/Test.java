@@ -1,19 +1,22 @@
 package test.signature;
 
-import signature.TargetMolecularSignature;
-
 public class Test {
     
     public static void main(String[] args) {
-        TargetMolecularSignature sig = 
-            TestTargetMolecularSignature.makeMolecularSignature();
-        System.out.println(sig);
+//        TestTargetMolecularSignature test = new TestTargetMolecularSignature();
+//        test.roundtrip();
         
-        TestTargetAtomicSignature test = new TestTargetAtomicSignature();
-        test.roundtrip();
-        test.signatureStrings();
-        test.subSignature();
-        test.subSignatureFromRootChild();
+//        TestTargetAtomicSignature test = new TestTargetAtomicSignature();
+//        test.roundtrip();
+//        test.signatureStrings();
+//        test.subSignature();
+//        test.subSignatureFromRootChild();
+        
+        TestGraph test = new TestGraph();
+        test.connectivity();
+//        test.bondedAtomSignatures();
+//        test.getDiameter();
+        
     }
 
 }

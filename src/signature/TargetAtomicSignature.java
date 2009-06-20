@@ -71,10 +71,7 @@ public class TargetAtomicSignature {
      * @return a string representation of the sub-signature
      */
     public String getSubSignature(int h) {
-        StringBuffer buffer = new StringBuffer();
-        traverse(root, 0, h, buffer);
-        clearVisited(root);
-        return buffer.toString();
+        return getSignatureString(root, h);
     }
     
     /**
@@ -97,7 +94,18 @@ public class TargetAtomicSignature {
         clearVisited(root);
         return buffer.toString();
     }
-    
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        if (this.name != null) {
+            buffer.append(" ");
+            buffer.append(this.name);
+            buffer.append(" ");
+        }
+        this.root.toString(buffer);
+        return buffer.toString();
+    }
+
     private void traverse(Node current, int h, int maxH, StringBuffer buffer) {
         if (current.visited) return;
         buffer.append(current.label);
@@ -119,17 +127,6 @@ public class TargetAtomicSignature {
         for (Node child : n.children) {
             clearVisited(child);
         }
-    }
-    
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        if (this.name != null) {
-            buffer.append(" ");
-            buffer.append(this.name);
-            buffer.append(" ");
-        }
-        this.root.toString(buffer);
-        return buffer.toString();
     }
     
     private Node parse(String s) {

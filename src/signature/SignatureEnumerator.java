@@ -87,9 +87,12 @@ public class SignatureEnumerator {
             s.add(g);
         } else {
             int x = o.getFirstAtom();
+            
+            // TODO : should this happen before saturation, or after?!
+            o.remove(x);    
+            
             ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
             saturateAtomSignature(x, g, atomSolutions);
-            o.remove(x);    // TODO : should this happen before saturation?!
             for (Graph h : atomSolutions) {
                 saturateOrbitSignature(o, h, s);
             }
@@ -111,47 +114,16 @@ public class SignatureEnumerator {
             for (int y : g.unsaturatedAtoms()) {
                 Graph copy = new Graph(g);
                 copy.bond(x, y);
-                if (compatibleBondSignature(x, y, g) &&
-                    compatibleBondSignature(y, x, g) &&
-                    g.isCanonical() &&
-                    g.noSaturatedSubgraphs()) {
+                if (g.compatibleBondSignature(x, y, hTau)
+                    && g.compatibleBondSignature(y, x, hTau)
+                    && g.isCanonical()
+                    && g.noSaturatedSubgraphs()) {
                     saturateAtomSignature(x, g, s);
                 }
             }
         }
     }
 
-    /**
-     * Check two atoms to see if a bond can be formed between them, according
-     * to the target signatures.
-     * 
-     * @param x the index of an atom
-     * @param y the index of another atom
-     * @param g the molecule fragment graph to use
-     * @return true if a bond can be formed
-     */
-    public boolean compatibleBondSignature(int x, int y, Graph g) {
-        int h = this.hTau.getHeight();
-        String hMinusOneTauY = this.hTau.getTargetAtomicSubSignature(y, h - 1);
-        
-        // count the number of (h - 1) target signatures of atoms bonded to x 
-        // compatible with the (h - 1) signature of y 
-        int n12 = 0;
-        for (String subSignature : hTau.getBondedSignatures(x, h - 1)) {
-            if (hMinusOneTauY.equals(subSignature)) {
-                n12++;
-            }
-        }
-        if (n12 == 0) return false;
-        
-        // count the number of bonds already used between x and y
-        int m12 = 0;
-        for (String hMinusOneTauY1 : g.getSignaturesOfBondedAtoms(x, h - 1)) {
-            if (hMinusOneTauY.equals(hMinusOneTauY1)) {
-                m12++;
-            }
-        }
-        return n12 - m12 >= 0;
-    }
+
     
 }

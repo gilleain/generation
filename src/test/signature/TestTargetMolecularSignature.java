@@ -22,4 +22,9 @@ public class TestTargetMolecularSignature {
         return sig;
     }
     
+    public void roundtrip() {
+        TargetMolecularSignature tms = makeMolecularSignature();
+        System.out.println(tms);
+    }
+    
 }
