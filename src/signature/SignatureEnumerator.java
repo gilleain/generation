@@ -1,6 +1,7 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
@@ -51,6 +52,25 @@ public class SignatureEnumerator {
         }
         this.hTau = hTau;
         this.solutions = new ArrayList<Graph>();
+    }
+    
+    public IAtomContainer getInitialContainer() {
+        return this.atomContainer;
+    }
+    
+    /**
+     * Generate all the solutions compatible with the molecular signature.
+     * 
+     * @return a list of IAtomContainers 
+     */
+    public List<IAtomContainer> generateSolutions() {
+        Graph initialGraph = new Graph(this.atomContainer);
+        this.enumerateMoleculeSignature(initialGraph);
+        List<IAtomContainer> atomContainers = new ArrayList<IAtomContainer>();
+        for (Graph solution : this.solutions) {
+            atomContainers.add(solution.getAtomContainer());
+        }
+        return atomContainers;
     }
     
     /**
@@ -123,7 +143,4 @@ public class SignatureEnumerator {
             }
         }
     }
-
-
-    
 }

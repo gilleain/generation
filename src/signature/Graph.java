@@ -37,12 +37,22 @@ public class Graph {
      */
     private ArrayList<Orbit> orbits;
     
+    /**
+     * Wrap an atom container in a graph, to manage the fragments
+     * 
+     * @param atomContainer the underlying atom container
+     */
     public Graph(IAtomContainer atomContainer) {
         this.atomContainer = atomContainer;
         this.targets = new ArrayList<Integer>();
         this.orbits = new ArrayList<Orbit>();
     }
     
+    /**
+     * Copy constructor
+     * 
+     * @param g the graph to copy
+     */
     public Graph(Graph g) {
         // For now, clone the whole atom container, to make sure.
         // In theory, it might be possible to just copy over atom references
@@ -67,18 +77,51 @@ public class Graph {
     public boolean compatibleBondSignature(
             int x, int y, TargetMolecularSignature hTau) {
         int h = hTau.getHeight();
-        String hMinusOneTauY = hTau.getTargetAtomicSubSignature(y, h - 1);
+        int targetX = targets.get(x);
+        int targetY = targets.get(y);
+        String hMinusOneTauY = hTau.getTargetAtomicSubSignature(targetY, h - 1);
+        
+        int n12 = countCompatibleTargetBonds(targetX, h, hMinusOneTauY, hTau);
+        if (n12 == 0) return false;
+        int m12 = countExistingBondsOfType(x, h, hMinusOneTauY);
+       
+        return n12 - m12 >= 0;
+    }
+    
+    /**
+     * Count of the number of compatible bonds between target atomic signatures. 
+     * 
+     * @param targetX the target atomic signature index of atom x
+     * @param h the height of the signature
+     * @param hMinusOneTauY the h-1 signature to match against
+     * @param hTau the target molecular signature
+     * @return
+     */
+    public int countCompatibleTargetBonds(int targetX, 
+                                          int h, 
+                                          String hMinusOneTauY, 
+                                          TargetMolecularSignature hTau) {
         
         // count the number of (h - 1) target signatures of atoms bonded to x 
         // compatible with the (h - 1) signature of y 
         int n12 = 0;
-        for (String subSignature : hTau.getBondedSignatures(x, h - 1)) {
+        for (String subSignature : hTau.getBondedSignatures(targetX, h - 1)) {
             if (hMinusOneTauY.equals(subSignature)) {
                 n12++;
             }
         }
-        if (n12 == 0) return false;
-        
+        return n12;
+    }
+    
+    /**
+     * Count of the existing bonds of a particular type.
+     * 
+     * @param x the index of an atom
+     * @param h the height of the signature
+     * @param hMinusOneTauY the h-1 signature to match against
+     * @return
+     */
+    public int countExistingBondsOfType(int x, int h, String hMinusOneTauY) {
         // count the number of bonds already used between x and y
         int m12 = 0;
         for (String hMinusOneTauY1 : getSignaturesOfBondedAtoms(x, h - 1)) {
@@ -86,7 +129,7 @@ public class Graph {
                 m12++;
             }
         }
-        return n12 - m12 >= 0;
+        return m12;
     }
     
     public IAtomContainer getAtomContainer() {
@@ -113,18 +156,32 @@ public class Graph {
             }
         }
     }
+    
+    public List<Integer> getAtomTargetMap() {
+        return this.targets;
+    }
 
+    /**
+     * Check this atom for saturation.
+     * 
+     * @param atomNumber the atom to check
+     * @return true if this atom is saturated
+     */
     public boolean isSaturated(int atomNumber) {
         IAtom atom = this.atomContainer.getAtom(atomNumber);
         try {
-            return 
-                Util.getInstance().getChecker().isSaturated(
+            return Util.getInstance().getChecker().isSaturated(
                         atom, atomContainer);
         } catch (CDKException c) {
             return false;
         }
     }
     
+    /**
+     * Check that the graph is connected.
+     * 
+     * @return true if there is a path from any atom to any other atom
+     */
     public boolean isConnected() {
         int numberOfAtoms = atomContainer.getAtomCount();
         int numberOfBonds = atomContainer.getBondCount();
@@ -134,14 +191,33 @@ public class Graph {
                 && ConnectivityChecker.isConnected(atomContainer);
     }
     
+    /**
+     * Get the list of atoms to be saturated.
+     * 
+     * @return a list of atom indices
+     */
     public ArrayList<Integer> unsaturatedAtoms() {
         return this.targets;
     }
 
+    /**
+     * Add a bond between these two atoms.
+     * 
+     * @param x the first atom to be bonded
+     * @param y the second atom to be bonded
+     */
     public void bond(int x, int y) {
         this.atomContainer.addBond(x, y, IBond.Order.SINGLE);
     }
 
+    /**
+     * The signatures of the atoms in the graph bonded to the atom at <code>x
+     * </code> up to height <code>h</code>.
+     * 
+     * @param x the atom to get the neighbour-signatures of
+     * @param h the height of those signatures
+     * @return a list of signature strings
+     */
     public List<String> getSignaturesOfBondedAtoms(int x, int h) {
         IAtom atom = atomContainer.getAtom(x);
         List<String> signatures = new ArrayList<String>();
@@ -153,10 +229,21 @@ public class Graph {
         return signatures;
     }
     
+    /**
+     * Get the list of orbits (the equivalence classes of atoms).
+     * 
+     * @return the list of orbits
+     */
     public List<Orbit> getOrbits() {
         return this.orbits;
     }
     
+    /**
+     * Calculate the diameter of the graph, which is the longest path between
+     * any two of the atoms.
+     *   
+     * @return the maximum vertex distance
+     */
     public int getDiameter() {
         return PathTools.getMolecularGraphDiameter(atomContainer);
     }
@@ -184,7 +271,7 @@ public class Graph {
                 return orbit;
             }
         }
-        return null;
+        return new Orbit(signature.toString());
     }
 
     /**
@@ -198,17 +285,17 @@ public class Graph {
 
     public boolean noSaturatedSubgraphs() {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     public boolean isCanonical() {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     public boolean signatureMatches(TargetMolecularSignature tau) {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
     
 }

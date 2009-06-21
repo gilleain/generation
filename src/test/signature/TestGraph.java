@@ -1,11 +1,14 @@
 package test.signature;
 
+import java.util.List;
+
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 import signature.Graph;
+import signature.TargetMolecularSignature;
 
 public class TestGraph {
     
@@ -14,6 +17,7 @@ public class TestGraph {
     
     public static Graph makeDisconnectedAtomGraph() {
         IAtomContainer ac = builder.newAtomContainer();
+        ac.addAtom(builder.newAtom("C"));
         ac.addAtom(builder.newAtom("C"));
         ac.addAtom(builder.newAtom("C"));
         ac.addAtom(builder.newAtom("C"));
@@ -57,6 +61,38 @@ public class TestGraph {
         Graph disconnected = makeDisconnectedAtomGraph();
         System.out.println("connected " + connected.isConnected());
         System.out.println("disconnected " + disconnected.isConnected());
+    }
+    
+    public void compatibleBondsInDisconnected() {
+        Graph disconnected = makeDisconnectedAtomGraph();
+        TargetMolecularSignature hTau = 
+            TestTargetMolecularSignature.makeSimpleMolecularSignature();
+        disconnected.assignAtomsToTarget(hTau);
+        int l = disconnected.getAtomContainer().getAtomCount();
+        List<Integer> targets = disconnected.getAtomTargetMap(); 
+        int h = hTau.getHeight();
+        for (int i = 0; i < l - 1; i++) {
+            for (int j = i + 1; j < l; j++) {
+                boolean compatible = 
+                    disconnected.compatibleBondSignature(i, j, hTau);
+                int targetX = targets.get(i);
+                int targetY = targets.get(j);
+                String hMinusOneTauY = 
+                    hTau.getTargetAtomicSubSignature(targetY, h - 1);
+                int n12 = disconnected.countCompatibleTargetBonds(
+                        targetX, h, hMinusOneTauY, hTau);
+                int m12 = disconnected.countExistingBondsOfType(
+                        i, h, hMinusOneTauY);
+                System.out.println("n12 " + n12 + " m12 " + m12);
+                System.out.println(i + " " + j + " " + compatible);
+                System.out.println(j + " " + i + " " + compatible);
+            }
+        }
+        int x = 0;
+        for (int i : disconnected.getAtomTargetMap()) {
+            System.out.println(x + " -> " + i);
+            x++;
+        }
     }
 
 }

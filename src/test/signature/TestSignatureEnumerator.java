@@ -2,6 +2,8 @@ package test.signature;
 
 import java.util.ArrayList;
 
+import org.openscience.cdk.interfaces.IAtomContainer;
+
 import signature.SignatureEnumerator;
 import signature.TargetMolecularSignature;
 
@@ -25,6 +27,8 @@ public class TestSignatureEnumerator {
         ArrayList<String> e = new ArrayList<String>();
         ArrayList<Integer> c = new ArrayList<Integer>();
         SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
+        IAtomContainer initialContainer = enumerator.getInitialContainer();
+        System.out.println(initialContainer);
     }
 
 

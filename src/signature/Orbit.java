@@ -26,7 +26,7 @@ public class Orbit {
     }
     
     public boolean hasSignature(AtomicSignature signature) {
-        return true;    // TODO
+        return this.signatureString.equals(signature.toString());
     }
     
     public boolean hasSignatureString(String otherSignatureString) {

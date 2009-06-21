@@ -4,7 +4,26 @@ import signature.TargetMolecularSignature;
 
 public class TestTargetMolecularSignature {
     
-    public static TargetMolecularSignature makeMolecularSignature() {
+    /**
+     * Make a simple signature compatible with hexane.
+     * 
+     * @return a sample molecular signature
+     */
+    public static TargetMolecularSignature makeSimpleMolecularSignature() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(2);
+        sig.add("C(C(C(C(C(C)))))", 2);
+        sig.add("C(CC(C(C(C))))", 2);
+        sig.add("C(C(C(C))C(C))", 2);
+        return sig;
+    }
+    
+    /**
+     * Make the example molecular signature given in the signature enumeration
+     * paper.
+     * 
+     * @return a sample molecular signature
+     */
+    public static TargetMolecularSignature makePaperExampleMolecularSignature() {
         TargetMolecularSignature sig = new TargetMolecularSignature(2);
         sig.add("H(C(HHC))", 9, "h3");
         sig.add("H(C(HCC))", 12, "h2");
@@ -23,7 +42,7 @@ public class TestTargetMolecularSignature {
     }
     
     public void roundtrip() {
-        TargetMolecularSignature tms = makeMolecularSignature();
+        TargetMolecularSignature tms = makePaperExampleMolecularSignature();
         System.out.println(tms);
     }
     

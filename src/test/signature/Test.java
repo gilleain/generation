@@ -13,10 +13,10 @@ public class Test {
 //        test.subSignatureFromRootChild();
         
         TestGraph test = new TestGraph();
-        test.connectivity();
+//        test.connectivity();
 //        test.bondedAtomSignatures();
 //        test.getDiameter();
-        
+        test.compatibleBondsInDisconnected();
     }
 
 }
