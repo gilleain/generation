@@ -37,6 +37,8 @@ public class Graph {
      */
     private ArrayList<Orbit> orbits;
     
+    private ArrayList<Integer> unsaturatedAtoms;
+    
     /**
      * Wrap an atom container in a graph, to manage the fragments
      * 
@@ -46,6 +48,7 @@ public class Graph {
         this.atomContainer = atomContainer;
         this.targets = new ArrayList<Integer>();
         this.orbits = new ArrayList<Orbit>();
+        this.unsaturatedAtoms = new ArrayList<Integer>();
     }
     
     /**
@@ -60,6 +63,8 @@ public class Graph {
         try {
             this.atomContainer = (IAtomContainer) g.atomContainer.clone();
             this.targets = (ArrayList<Integer>) g.targets.clone();
+            this.orbits = (ArrayList<Orbit>) g.orbits.clone();
+            this.unsaturatedAtoms = (ArrayList<Integer>) g.unsaturatedAtoms.clone(); 
         } catch (CloneNotSupportedException c) {
             
         }
@@ -157,6 +162,64 @@ public class Graph {
         }
     }
     
+    /**
+     * Divide the atoms into partitions using both the calculated signatures
+     * based on connectivity, and the target signatures. So, two atoms are in
+     * the same partition (orbit) if and only if they have both signatures
+     * equal. 
+     */
+    public void partition() {
+        for (int i = 0; i < atomContainer.getAtomCount(); i++) {
+            Orbit o = getOrbitForAtom(i);
+            o.addAtom(i);
+        }
+    }
+
+    /**
+     * Search the existing orbits for matches
+     * 
+     * @param atomNumber
+     * @return
+     */
+    public Orbit getOrbitForAtom(int atomNumber) {
+        AtomicSignature signature = new AtomicSignature(atomNumber, this);
+        for (Orbit orbit : orbits) {
+            if (orbit.hasSignature(signature)) {
+                int orbitRep = orbit.getFirstAtom();
+                if (targets.get(orbitRep) == targets.get(atomNumber)) {
+                    return orbit;
+                }
+            }
+        }
+        Orbit orbit = new Orbit(signature.toString());
+        this.orbits.add(orbit);
+        return orbit;
+    }
+
+    /**
+     * Remove the atom index <code>i</code> from the list 
+     * of atoms to be saturated.
+     * 
+     * @param i the atom index (not the index of the atom index!) to remove
+     */
+    public void removeFromUnsaturatedList(int i) {
+        this.unsaturatedAtoms.remove(new Integer(i));
+    }
+    
+    public void determineUnsaturated() {
+        for (IAtom atom : atomContainer.atoms()) {
+            try {
+                if (Util.isSaturated(atom, atomContainer)) {
+                    continue;
+                } else {
+                    unsaturatedAtoms.add(atomContainer.getAtomNumber(atom));
+                }
+            } catch (CDKException c) {
+                c.printStackTrace();
+            }
+        }
+    }
+    
     public List<Integer> getAtomTargetMap() {
         return this.targets;
     }
@@ -170,9 +233,11 @@ public class Graph {
     public boolean isSaturated(int atomNumber) {
         IAtom atom = this.atomContainer.getAtom(atomNumber);
         try {
-            return Util.getInstance().getChecker().isSaturated(
-                        atom, atomContainer);
+//            return Util.getInstance().getChecker().isSaturated(
+//                        atom, atomContainer);
+            return Util.isSaturated(atom, atomContainer);
         } catch (CDKException c) {
+            c.printStackTrace();
             return false;
         }
     }
@@ -197,7 +262,7 @@ public class Graph {
      * @return a list of atom indices
      */
     public ArrayList<Integer> unsaturatedAtoms() {
-        return this.targets;
+        return this.unsaturatedAtoms;
     }
 
     /**
@@ -249,32 +314,6 @@ public class Graph {
     }
 
     /**
-     * Divide the atoms into partitions using signatures.
-     */
-    public void partition() {
-        for (int i = 0; i < atomContainer.getAtomCount(); i++) {
-            Orbit o = getOrbitForAtom(i);
-            o.addAtom(i);
-        }
-    }
-    
-    /**
-     * Search the existing orbits for matches
-     * 
-     * @param atomNumber
-     * @return
-     */
-    public Orbit getOrbitForAtom(int atomNumber) {
-        AtomicSignature signature = new AtomicSignature(atomNumber, this);
-        for (Orbit orbit : orbits) {
-            if (orbit.hasSignature(signature)) {
-                return orbit;
-            }
-        }
-        return new Orbit(signature.toString());
-    }
-
-    /**
      * Get the first unsaturated orbit
      * 
      * @return the orbit (list of atoms) to try and saturate
@@ -296,6 +335,26 @@ public class Graph {
     public boolean signatureMatches(TargetMolecularSignature tau) {
         // TODO Auto-generated method stub
         return true;
+    }
+    
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        for (IAtom atom : this.atomContainer.atoms()) {
+            sb.append(atom.getSymbol()).append(i);
+            i++;
+        }
+        sb.append(" [ ");
+        for (IBond bond : this.atomContainer.bonds()) {
+            int l = this.atomContainer.getAtomNumber(bond.getAtom(0));
+            int r = this.atomContainer.getAtomNumber(bond.getAtom(1));
+            sb.append(l).append("-").append(r).append(" ");
+        }
+        sb.append("] ");
+        for (Orbit o : orbits) {
+            sb.append(o.toString());
+        }
+        return sb.toString();
     }
     
 }

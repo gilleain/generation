@@ -65,6 +65,7 @@ public class SignatureEnumerator {
      */
     public List<IAtomContainer> generateSolutions() {
         Graph initialGraph = new Graph(this.atomContainer);
+        initialGraph.assignAtomsToTarget(hTau);
         this.enumerateMoleculeSignature(initialGraph);
         List<IAtomContainer> atomContainers = new ArrayList<IAtomContainer>();
         for (Graph solution : this.solutions) {
@@ -102,17 +103,19 @@ public class SignatureEnumerator {
      * @param g the graph to saturate in
      * @param s the list of resulting graphs
      */
-    public void saturateOrbitSignature(Orbit o, Graph g, ArrayList<Graph> s) {
+    public void saturateOrbitSignature(Orbit o, Graph g, List<Graph> s) {
         if (o.isEmpty()) {
             s.add(g);
         } else {
             int x = o.getFirstAtom();
             
             // TODO : should this happen before saturation, or after?!
-            o.remove(x);    
+            o.remove(x); 
+            g.removeFromUnsaturatedList(x);
             
             ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
             saturateAtomSignature(x, g, atomSolutions);
+            
             for (Graph h : atomSolutions) {
                 saturateOrbitSignature(o, h, s);
             }
@@ -127,18 +130,23 @@ public class SignatureEnumerator {
      * @param g the graph to use
      * @param s the list of resulting graphs
      */
-    public void saturateAtomSignature(int x, Graph g, ArrayList<Graph> s) {
+    public void saturateAtomSignature(int x, Graph g, List<Graph> s) {
         if (g.isSaturated(x)) {
             return;
         } else {
             for (int y : g.unsaturatedAtoms()) {
                 Graph copy = new Graph(g);
                 copy.bond(x, y);
-                if (g.compatibleBondSignature(x, y, hTau)
-                    && g.compatibleBondSignature(y, x, hTau)
-                    && g.isCanonical()
-                    && g.noSaturatedSubgraphs()) {
-                    saturateAtomSignature(x, g, s);
+                boolean xy = copy.compatibleBondSignature(x, y, hTau);
+                boolean yx = copy.compatibleBondSignature(y, x, hTau);
+                boolean canon = copy.isCanonical();
+                boolean noSubgraphs = copy.noSaturatedSubgraphs();
+                
+                if (xy && yx && canon && noSubgraphs) {
+                    if (copy.isSaturated(y)) {
+                        copy.removeFromUnsaturatedList(y);
+                    }
+                    saturateAtomSignature(x, copy, s);
                 }
             }
         }

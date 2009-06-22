@@ -1,6 +1,7 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -43,6 +44,10 @@ public class Orbit {
     
     public void remove(int i) {
         this.atomIndices.remove(i);
+    }
+    
+    public String toString() {
+        return Arrays.deepToString(atomIndices.toArray());
     }
 
 }
