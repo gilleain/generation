@@ -101,6 +101,9 @@ public class TestSignatureEnumerator {
         IAtomContainer ac = makePaperExampleContainer();
         makeStep1Bonds(ac);
         Graph expectedGraph = new Graph(ac);
+        if (resultsOfStep1.size() != 1) {
+            return false;
+        }
         Graph observedGraph = resultsOfStep1.get(0);
         return graphsMatch(expectedGraph, observedGraph);
     }

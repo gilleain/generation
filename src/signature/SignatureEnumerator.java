@@ -140,7 +140,7 @@ public class SignatureEnumerator {
                 boolean xy = copy.compatibleBondSignature(x, y, hTau);
                 boolean yx = copy.compatibleBondSignature(y, x, hTau);
                 boolean canon = copy.isCanonical();
-                boolean noSubgraphs = copy.noSaturatedSubgraphs();
+                boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
                 
                 if (xy && yx && canon && noSubgraphs) {
                     if (copy.isSaturated(y)) {
