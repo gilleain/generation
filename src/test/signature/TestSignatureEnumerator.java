@@ -45,6 +45,23 @@ public class TestSignatureEnumerator {
         }
     }
     
+    public void adenineExample() {
+        TargetMolecularSignature sig =
+            TestTargetMolecularSignature.makeAdenineExample();
+        ArrayList<String> e = new ArrayList<String>();
+        ArrayList<Integer> c = new ArrayList<Integer>();
+        e.add("C");
+        e.add("N");
+        c.add(5);
+        c.add(5);
+        SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
+        SmilesGenerator smilesGenerator = new SmilesGenerator();
+        for (IAtomContainer solution : enumerator.generateSolutions()) {
+            String smiles = smilesGenerator.createSMILES((IMolecule)solution);
+            System.out.println("solution " + smiles);
+        }
+    }
+    
     public void paperExample() {
         TargetMolecularSignature sig = 
             TestTargetMolecularSignature.makePaperExampleMolecularSignature();

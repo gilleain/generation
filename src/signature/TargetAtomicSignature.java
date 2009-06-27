@@ -111,15 +111,29 @@ public class TargetAtomicSignature {
         buffer.append(current.label);
         current.visited = true;
         if (h < maxH) {
-            buffer.append("(");
+            boolean visited = visitedChildren(current);
+            if (current.children.size() > 0 && !visited) buffer.append("(");
             for (Node child : current.children) {
                 traverse(child, h + 1, maxH, buffer);
             }
             if (current.parent != null) {
+                if (visited && !current.parent.visited) buffer.append("(");
                 traverse(current.parent, h + 1, maxH, buffer);
+                if (visited && !current.parent.visited) buffer.append(")");
             }
-            buffer.append(")");
+            if (current.children.size() > 0 && !visited) buffer.append(")");
         }
+    }
+    
+    private boolean visitedChildren(Node node) {
+        for (Node child : node.children) {
+            if (child.visited) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
     
     private void clearVisited(Node n) {

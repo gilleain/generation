@@ -12,7 +12,8 @@ public class TestTargetAtomicSignature {
     }
     
     public void signatureStrings() {
-        String sigString = "C(HC(HHH)C(HHC)C(HCC))";
+//        String sigString = "C(HC(HHH)C(HHC)C(HCC))";
+        String sigString = "C(HHHC(HCC))";
         TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
         for (int height = 0; height < 2; height++) {
             for (String s : sig.getSignatureStrings(height)) {

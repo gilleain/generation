@@ -73,19 +73,26 @@ public class TestGraph {
         int h = hTau.getHeight();
         for (int i = 0; i < l - 1; i++) {
             for (int j = i + 1; j < l; j++) {
-                boolean compatible = 
-                    disconnected.compatibleBondSignature(i, j, hTau);
-                int targetX = targets.get(i);
-                int targetY = targets.get(j);
-                String hMinusOneTauY = 
-                    hTau.getTargetAtomicSubSignature(targetY, h - 1);
-                int n12 = disconnected.countCompatibleTargetBonds(
-                        targetX, h, hMinusOneTauY, hTau);
-                int m12 = disconnected.countExistingBondsOfType(
-                        i, h, hMinusOneTauY);
-                System.out.println("n12 " + n12 + " m12 " + m12);
-                System.out.println(i + " " + j + " " + compatible);
-                System.out.println(j + " " + i + " " + compatible);
+                boolean compatibleXY = disconnected.compatibleBond(i, j, hTau);
+                boolean compatibleYX = disconnected.compatibleBond(j, i, hTau);
+//                int targetX = targets.get(i);
+//                int targetY = targets.get(j);
+//                String hMinusOneTauX = 
+//                    hTau.getTargetAtomicSubSignature(targetX, h - 1);
+//                String hMinusOneTauY = 
+//                    hTau.getTargetAtomicSubSignature(targetY, h - 1);
+//                int n12 = hTau.compatibleTargetBonds(targetX, h, hMinusOneTauY);
+//                int n21 = hTau.compatibleTargetBonds(targetY, h, hMinusOneTauX);
+//                int m12 = disconnected.countExistingBondsOfType(
+//                        i, h, hMinusOneTauY);
+//                int m21 = disconnected.countExistingBondsOfType(
+//                        i, h, hMinusOneTauX);
+                boolean compatible = compatibleXY && compatibleYX;
+                System.out.print(i + "\t" + j + "\t" + compatibleXY + "\t");
+//                System.out.print("n12 " + n12 + " m12 " + m12 + "\t");
+//                System.out.print("n21 " + n21 + " m21 " + m21 + "\t");
+                System.out.print(j + "\t" + i + "\t" + compatibleYX);
+                System.out.println("\t" + compatible);
             }
         }
         int x = 0;

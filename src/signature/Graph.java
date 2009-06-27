@@ -82,43 +82,17 @@ public class Graph {
      * @param hTau the target molecular signature to use
      * @return true if a bond can be formed
      */
-    public boolean compatibleBondSignature(
-            int x, int y, TargetMolecularSignature hTau) {
+    public boolean compatibleBond(int x, int y, TargetMolecularSignature hTau) {
         int h = hTau.getHeight();
         int targetX = targets.get(x);
         int targetY = targets.get(y);
-        String hMinusOneTauY = hTau.getTargetAtomicSubSignature(targetY, h - 1);
+        String hMinusOneTauY = hTau.getTargetAtomicSignature(targetY, h - 1);
         
-        int n12 = countCompatibleTargetBonds(targetX, h, hMinusOneTauY, hTau);
+        int n12 = hTau.compatibleTargetBonds(targetX, h, hMinusOneTauY);
         if (n12 == 0) return false;
         int m12 = countExistingBondsOfType(x, h, hMinusOneTauY);
        
         return n12 - m12 >= 0;
-    }
-    
-    /**
-     * Count of the number of compatible bonds between target atomic signatures. 
-     * 
-     * @param targetX the target atomic signature index of atom x
-     * @param h the height of the signature
-     * @param hMinusOneTauY the h-1 signature to match against
-     * @param hTau the target molecular signature
-     * @return
-     */
-    public int countCompatibleTargetBonds(int targetX, 
-                                          int h, 
-                                          String hMinusOneTauY, 
-                                          TargetMolecularSignature hTau) {
-        
-        // count the number of (h - 1) target signatures of atoms bonded to x 
-        // compatible with the (h - 1) signature of y 
-        int n12 = 0;
-        for (String subSignature : hTau.getBondedSignatures(targetX, h - 1)) {
-            if (hMinusOneTauY.equals(subSignature)) {
-                n12++;
-            }
-        }
-        return n12;
     }
     
     /**
@@ -358,9 +332,12 @@ public class Graph {
             }
         }
         int atomCount = subGraph.getAtomCount();
+        
+        // TODO : remove this debugging stuff
         String atoms = "";
         for (IAtom a : subGraph.atoms()) { atoms += a.getSymbol(); }
         System.out.println(atoms + " " + saturationCount + " " + atomCount);
+        // TODO : remove this debugging stuff
         
         return saturationCount < atomCount 
             || atomCount == atomContainer.getAtomCount();

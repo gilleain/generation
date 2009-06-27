@@ -93,15 +93,18 @@ public class SignatureEnumerator {
             }
         }
     }
-    
+
     /**
-     * Saturate all the atoms in a single orbit (a list of atoms, essentially)
-     * <code>o</code> by calling saturateAtomSignature for each atom, storing
-     * the results in the the list <code>s</code>.
+     * Saturate all the atoms in a single orbit <code>o</code> (a list of atoms,
+     * essentially) by calling saturateAtomSignature for each atom, storing the
+     * results in the the list <code>s</code>.
      * 
-     * @param o an orbit (list) of atoms
-     * @param g the graph to saturate in
-     * @param s the list of resulting graphs
+     * @param o
+     *            an orbit (list) of atoms
+     * @param g
+     *            the graph to saturate in
+     * @param s
+     *            the list of resulting graphs
      */
     public void saturateOrbitSignature(Orbit o, Graph g, List<Graph> s) {
         if (o.isEmpty()) {
@@ -137,10 +140,27 @@ public class SignatureEnumerator {
             for (int y : g.unsaturatedAtoms()) {
                 Graph copy = new Graph(g);
                 copy.bond(x, y);
-                boolean xy = copy.compatibleBondSignature(x, y, hTau);
-                boolean yx = copy.compatibleBondSignature(y, x, hTau);
-                boolean canon = copy.isCanonical();
+                
                 boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
+                if (!noSubgraphs) {
+                    System.out.println("saturated subgraphs");
+                    continue;
+                }
+                boolean xy = copy.compatibleBond(x, y, hTau);
+                if (!xy) {
+                    System.out.println("!xy");
+                    continue;
+                }
+                boolean yx = copy.compatibleBond(y, x, hTau);
+                if (!yx) {
+                    System.out.println("!yx");
+                    continue;
+                }
+                boolean canon = copy.isCanonical();
+                if (!canon) {
+                    System.out.println("!canon");
+                    continue;
+                }
                 
                 if (xy && yx && canon && noSubgraphs) {
                     if (copy.isSaturated(y)) {

@@ -12,15 +12,16 @@ public class Test {
 //        test.subSignature();
 //        test.subSignatureFromRootChild();
         
-//        TestGraph test = new TestGraph();
+        TestGraph test = new TestGraph();
 //        test.connectivity();
 //        test.bondedAtomSignatures();
 //        test.getDiameter();
-//        test.compatibleBondsInDisconnected();
+        test.compatibleBondsInDisconnected();
         
-        TestSignatureEnumerator test = new TestSignatureEnumerator();
+//        TestSignatureEnumerator test = new TestSignatureEnumerator();
 //        test.simpleExample();
-        test.paperExample();
+//        test.paperExample();
+//        test.adenineExample();
     }
 
 }

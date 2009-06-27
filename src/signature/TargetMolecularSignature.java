@@ -27,6 +27,30 @@ public class TargetMolecularSignature {
         this.height = height;
     }
     
+    /**
+     * Count of the number of compatible bonds between target atomic signatures. 
+     * 
+     * @param targetX the target atomic signature index of atom x
+     * @param h the height of the signature
+     * @param hMinusOneTauY the h-1 signature to match against
+     * @return the count of the number of bonds that can be made
+     */
+    public int compatibleTargetBonds(int targetX, int h, String hMinusOneTauY) {
+        
+        // count the number of (h - 1) target signatures of atoms bonded to x 
+        // compatible with the (h - 1) signature of y 
+        int n12 = 0;
+        for (String subSignature : this.getBondedSignatures(targetX, h - 1)) {
+            System.out.println(subSignature 
+                    + "\t" + hMinusOneTauY 
+                    + "\t" + subSignature.equals(hMinusOneTauY));
+            if (hMinusOneTauY.equals(subSignature)) {
+                n12++;
+            }
+        }
+        return n12;
+    }
+    
     public int getCount(int i) {
         return this.counts.get(i);
     }
@@ -67,6 +91,10 @@ public class TargetMolecularSignature {
    
     public TargetAtomicSignature getTargetAtomicSignature(int i) {
         return this.signatures.get(i);
+    }
+    
+    public String getTargetAtomicSignature(int i, int h) {
+        return this.signatures.get(i).getSubSignature(h);
     }
 
     public String toString() {

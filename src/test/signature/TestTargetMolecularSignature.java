@@ -10,10 +10,25 @@ public class TestTargetMolecularSignature {
      * @return a sample molecular signature
      */
     public static TargetMolecularSignature makeSimpleMolecularSignature() {
-        TargetMolecularSignature sig = new TargetMolecularSignature(2);
+        TargetMolecularSignature sig = new TargetMolecularSignature(5);
         sig.add("C(C(C(C(C(C)))))", 2);
         sig.add("C(CC(C(C(C))))", 2);
         sig.add("C(C(C(C))C(C))", 2);
+        return sig;
+    }
+    
+    /**
+     * Make a height-2 signature compatible with (at least) adenine.
+     * 
+     * @return a height-2 signature compatible with adenine
+     */
+    public static TargetMolecularSignature makeAdenineExample() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(2);
+        sig.add("C(NN)",  3);
+        sig.add("C(NNC)", 2);
+        sig.add("N(CC)",  3);
+        sig.add("N(CCC)", 1);
+        sig.add("N(C)",   1);
         return sig;
     }
     
