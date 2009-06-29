@@ -246,7 +246,8 @@ public class Signature {
     private void toString(
             TreeNode node, StringBuffer buffer, List<Edge> edges) {
         buffer.append("[");
-        buffer.append(this.molecule.getAtom(node.atomNumber).getSymbol());
+        IAtom atom = this.molecule.getAtom(node.atomNumber); 
+        buffer.append(FaulonAtomTypeMapper.getTypeString(atom));
         if (node.color != 0) buffer.append(",").append(node.color);
         buffer.append("]");
         if (node.children.size() == 0) return;

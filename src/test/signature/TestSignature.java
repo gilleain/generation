@@ -1,17 +1,21 @@
 package test.signature;
 
+import org.junit.*;
+import org.openscience.cdk.Atom;
+import org.openscience.cdk.CDKConstants;
+import org.openscience.cdk.Molecule;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
-import org.openscience.cdk.templates.MoleculeFactory;
 
 import signature.Signature;
 
 public class TestSignature {
+    private static NoNotificationChemObjectBuilder builder =
+        NoNotificationChemObjectBuilder.getInstance();
     
-    public static void main(String[] args) {
-        NoNotificationChemObjectBuilder builder =
-            NoNotificationChemObjectBuilder.getInstance();
+    public static IMolecule makeCage() {
         /*
          * This 'molecule' is the example used to illustrate the
          * algorithm outlined in the 2004 Faulon &ct. paper
@@ -44,12 +48,44 @@ public class TestSignature {
         cage.addBond(12, 15, IBond.Order.SINGLE);
         cage.addBond(13, 14, IBond.Order.SINGLE);
         cage.addBond(14, 15, IBond.Order.SINGLE);
+        return cage;
+    }
+    
+    @Test
+    public void testCage() {
+        IMolecule cage = TestSignature.makeCage();
         
 //        Signature signature = Signature.forMolecule(cage);
-        IMolecule molecule = MoleculeFactory.makeBenzene();
-//        Signature signature = new Signature(cage.getAtom(0), cage);
-        Signature signature = new Signature(0, molecule);
+        Signature signature = new Signature(cage.getAtom(0), cage);
         System.out.println(signature);
     }
-
+    
+    @Test
+    public void testBenzene() {
+        String expected = "[cp]([cp]([cp]([cp,1]))[cp]([cp]([cp,1])))";
+        Molecule mol = new Molecule();
+        mol.addAtom(new Atom("C")); // 0
+        mol.addAtom(new Atom("C")); // 1
+        mol.addAtom(new Atom("C")); // 2
+        mol.addAtom(new Atom("C")); // 3
+        mol.addAtom(new Atom("C")); // 4
+        mol.addAtom(new Atom("C")); // 5
+        for (IAtom atom : mol.atoms()) {
+            atom.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        
+        mol.addBond(0, 1, IBond.Order.SINGLE); // 1
+        mol.addBond(1, 2, IBond.Order.SINGLE); // 2
+        mol.addBond(2, 3, IBond.Order.SINGLE); // 3
+        mol.addBond(3, 4, IBond.Order.SINGLE); // 4
+        mol.addBond(4, 5, IBond.Order.SINGLE); // 5
+        mol.addBond(5, 0, IBond.Order.SINGLE); // 6
+        for (IBond bond : mol.bonds()) {
+            bond.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        Signature signature = new Signature(0, mol);
+        String actual = signature.toString();
+        Assert.assertEquals("benzene signature not correct!", expected, actual);
+    }
+    
 }
