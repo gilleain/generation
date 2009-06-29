@@ -32,6 +32,14 @@ public class TestTargetMolecularSignature {
         return sig;
     }
     
+    public static TargetMolecularSignature makeCuneaneExample() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(4);
+        sig.add("C(C(C(C)C(CC))C(C(C)C(C))C(C(C)C(CC)))", 2, "A");
+        sig.add("C(C(C(C)C(CC))C(CC(CC))C(C(C)C))", 2, "B");
+        sig.add("C(C(C(CC)C)C(C)C(CC)C(C(CC)C(CC)))", 2, "C");
+        return sig;
+    }
+    
     /**
      * Make the example molecular signature given in the signature enumeration
      * paper.

@@ -1,11 +1,13 @@
-package engine;
+package test.signature;
 
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.templates.MoleculeFactory;
 
-public class SignatureTest {
+import signature.Signature;
+
+public class TestSignature {
     
     public static void main(String[] args) {
         NoNotificationChemObjectBuilder builder =

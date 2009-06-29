@@ -41,6 +41,30 @@ public class TestGraph {
         return new Graph(ac);
     }
     
+    public static Graph makeCuneane() {
+        IAtomContainer ac = builder.newAtomContainer();
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addAtom(builder.newAtom("C"));
+        ac.addBond(0, 1, IBond.Order.SINGLE);
+        ac.addBond(0, 3, IBond.Order.SINGLE);
+        ac.addBond(0, 5, IBond.Order.SINGLE);
+        ac.addBond(1, 2, IBond.Order.SINGLE);
+        ac.addBond(1, 5, IBond.Order.SINGLE);
+        ac.addBond(2, 3, IBond.Order.SINGLE);
+        ac.addBond(2, 5, IBond.Order.SINGLE);
+        ac.addBond(3, 4, IBond.Order.SINGLE);
+        ac.addBond(4, 5, IBond.Order.SINGLE);
+        ac.addBond(4, 6, IBond.Order.SINGLE);
+        ac.addBond(5, 6, IBond.Order.SINGLE);
+        ac.addBond(6, 7, IBond.Order.SINGLE);
+        return new Graph(ac);
+    }
+    
     public void bondedAtomSignatures() {
         Graph g = makeConnectedGraph();
         for (int i = 0; i < 5; i++) {
