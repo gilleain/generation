@@ -2,6 +2,8 @@ package signature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,8 @@ import org.openscience.cdk.interfaces.IMolecule;
  *
  */
 public class Signature {
+    
+    private enum Direction { UP, DOWN };
     
     private class Edge {
         public TreeNode a;
@@ -48,17 +52,25 @@ public class Signature {
     }
     
     private class TreeNode {
+        
         public int invariant;
+        
         public int color;
+        
         public int atomNumber;
+        
         public ArrayList<TreeNode> parents;
+        
         public ArrayList<TreeNode> children;
+        
+        public boolean visited;
         
         public TreeNode(int atomNumber) {
             this.atomNumber = atomNumber;
             this.parents = new ArrayList<TreeNode>();
             this.children = new ArrayList<TreeNode>();
             this.color = 0;
+            this.visited = false;
         }
         
         public String toString() {
@@ -71,6 +83,8 @@ public class Signature {
     private ArrayList<ArrayList<TreeNode>> layers;
     
     private IMolecule molecule;
+    
+    private int[] atomInvariants;
     
     public Signature(int atomNumber, IMolecule molecule) {
         this(molecule.getAtom(atomNumber), molecule);
@@ -87,9 +101,15 @@ public class Signature {
         this.layers.add(rootLayer);
         
         this.makeNextLayer(rootLayer, new ArrayList<Edge>());
-        this.calculateInitialInvariants();
+        this.atomInvariants = this.calculateInitialInvariants();
     }
     
+    /**
+     * Recursive method to construct the tree, layer by layer.
+     * 
+     * @param layer the previous layer
+     * @param edges the edges that have already been visited
+     */
     private void makeNextLayer(ArrayList<TreeNode> layer, List<Edge> edges) {
         ArrayList<TreeNode> nextLayer = new ArrayList<TreeNode>();
         
@@ -130,6 +150,13 @@ public class Signature {
         }
     }
     
+    /**
+     * Find existing references to the node in the layer.
+     * 
+     * @param layer
+     * @param atomNumber
+     * @return
+     */
     private TreeNode findNode(ArrayList<TreeNode> layer, int atomNumber) {
         for (TreeNode node : layer) {
             if (node.atomNumber == atomNumber) {
@@ -139,71 +166,226 @@ public class Signature {
         return null;
     }
     
-    private void calculateInitialInvariants() {
+    /**
+     * Calculate initial invariants that are of the form (Symbol,
+     * Number of Parents) like "C,1" or "C,0" - these are then sorted lexico-
+     * graphically (so that, e.g. "C,1" > "H,1" > "H,2") and the position of
+     * the invariant in this sorted list is the final invariant. 
+     * 
+     * @return the initial invariants as a list of numbers
+     */
+    private int[] calculateInitialInvariants() {
         int n = this.molecule.getAtomCount();
-        int[] parentCount = new int[n];
+        int[] parentCounts = new int[n];
+        String[] symbols = new String[n];
+        ArrayList<String> invariantStrings = new ArrayList<String>();
+        
         for (ArrayList<TreeNode> layer : this.layers) {
             for (TreeNode node : layer) {
+                int i = node.atomNumber;
+                parentCounts[i] = 0;
+                for (TreeNode p : node.parents) {
+                    if (!p.visited) {
+                        parentCounts[i] += 1;
+                    }
+                    p.visited = true;
+                }
+                for (TreeNode p : node.parents) {
+                    p.visited = false;
+                }
                 
+                String symbol = molecule.getAtom(node.atomNumber).getSymbol();
+                symbols[i] = symbol;
+                String invariantString = symbol + "," + parentCounts[i];
+                if (!invariantStrings.contains(invariantString)) {
+                    invariantStrings.add(invariantString);
+                }
             }
         }
+        Collections.sort(invariantStrings);
+        int[] initialInvariants = new int[n];
+        for (int i = 0; i < n; i ++) {
+            String invariantString = symbols[i] + "," + parentCounts[i];
+            initialInvariants[i] = invariantStrings.indexOf(invariantString);
+        }
+        return initialInvariants;
     }
     
-    /**
-     * Equivalent to the algorithm "invariant-vertex(T(x), relative)" where
-     * 'relative' is parent
-     */
-    private void updateVertexInvariantsUpward() {
-        Map<TreeNode, Integer> vInv = new HashMap<TreeNode, Integer>();
+    private int max(int[] arr) {
+        int maxValue = Integer.MIN_VALUE;
+        for (int i : arr) {
+            if (i > maxValue) {
+                maxValue = i;
+            }
+        }
+        return maxValue;
+    }
+    
+    private class InvariantVector implements Comparable<InvariantVector> {
         
-        for (int i = this.layers.size() - 1; i >= 0; i--) {
-            ArrayList<TreeNode> layer = this.layers.get(i);
-            for (TreeNode v : layer) {
-                v.invariant = v.color + v.invariant; // + parents
-                vInv.put(v, v.invariant);
-            }
+        public int[] invariants;
+        
+        public InvariantVector(int n) {
+            this.invariants = new int[n];
         }
-    }
-    
-    /**
-     * Equivalent to the algorithm "invariant-vertex(T(x), relative)" where
-     * 'relative' is child
-     */
-    private void updateVertexInvariantsDownward() {
-        Map<TreeNode, Integer> vInv = new HashMap<TreeNode, Integer>();
-        for (ArrayList<TreeNode> layer : this.layers) {
-            for (TreeNode v : layer) {
-                v.invariant = v.color + v.invariant; // + children
-                vInv.put(v, v.invariant);
-            }
+        
+        public void put(int i, int v) {
+            this.invariants[i] = v;
         }
-    }
-    
-    private boolean invariantsConstant() {
-        // TODO
-        return true;
+        
+        public boolean equals(InvariantVector other) {
+           return Arrays.equals(this.invariants, other.invariants);
+        }
+        
+        public int compareTo(InvariantVector other) {
+            for (int i = 0; i < this.invariants.length; i++) {
+                if (this.invariants[i] < other.invariants[i]) {
+                    return -1;
+                } else if (this.invariants[i] > other.invariants[i]) {
+                    return 1;
+                } else {
+                    continue;
+                }
+            }
+            return 0;
+        }
     }
     
     /**
      * Equivalent to the algorithm "invariant-atom(T(x), G)" as described in
      * the paper.
      */
-    private void updateAtomInvariants() {
-        while (!this.invariantsConstant()) {
-            this.updateVertexInvariantsDownward();
-            this.updateVertexInvariantsUpward();
-            for (ArrayList<TreeNode> layer : this.layers) {
+    private void calculateAtomInvariants() {
+        int maxInvariant = max(this.atomInvariants);
+        int previousMaxI = 0;
+        int n = this.molecule.getAtomCount();
+        while (maxInvariant != previousMaxI) {
+            this.updateVertexInvariants(Direction.UP);
+            this.updateVertexInvariants(Direction.DOWN);
+            InvariantVector[] invariantVectors = new InvariantVector[n];
+            for (int i = 0; i < this.layers.size(); i++) {
+                ArrayList<TreeNode> layer = this.layers.get(i);
                 for (TreeNode node : layer) {
-                    
+                    invariantVectors[node.atomNumber].put(i, node.invariant);
                 }
             }
-            List<Integer> atomInvariants = new ArrayList<Integer>();
-            for (IAtom atom : this.molecule.atoms()) {
-                atomInvariants.add(1);  // TODO
+            ArrayList<InvariantVector> vlist = new ArrayList<InvariantVector>();
+            for (InvariantVector vector : invariantVectors) {
+                if (!vlist.contains(vector)) {
+                    vlist.add(vector);
+                }
             }
-            // sort atom invariants in decreasing order
-            for (IAtom atom : this.molecule.atoms()) {
-                
+            Collections.sort(vlist);
+            Collections.reverse(vlist);
+            for (int i = 0; i < n; i++) {
+                this.atomInvariants[i] = vlist.indexOf(invariantVectors[i]);
+            }
+            previousMaxI = maxInvariant;
+            maxInvariant = max(this.atomInvariants);
+        }
+    }
+    
+    private class InvariantPair implements Comparable<InvariantPair> {
+        public int color;
+        public int inv;
+        
+        public InvariantPair(int color, int inv) {
+            this.color = color;
+            this.inv = inv;
+        }
+        
+        public boolean equals(InvariantPair other) {
+            return this.color == other.color && this.inv == other.inv;
+        }
+        
+        public int compareTo(InvariantPair other) {
+            if (this.color < other.color) {
+                return 1;
+            } else if (this.color > other.color) {
+                return -1;
+            } else {
+                if (this.inv < other.inv) {
+                    return 1;
+                } else if (this.inv > other.inv) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    }
+    
+    private class PairVector implements Comparable<PairVector> {
+        public ArrayList<InvariantPair> invariantPairs;
+        
+        public PairVector() {
+            this.invariantPairs = new ArrayList<InvariantPair>();
+        }
+        
+        public void add(int color, int inv) {
+            this.invariantPairs.add(new InvariantPair(color, inv));
+        }
+        
+        public boolean equals(PairVector other) {
+            if (this.invariantPairs.size() != other.invariantPairs.size()) {
+                return false;
+            } else{
+                for (int i = 0; i < this.invariantPairs.size(); i++) {
+                    InvariantPair a = this.invariantPairs.get(i);
+                    InvariantPair b = other.invariantPairs.get(i); 
+                    if (!a.equals(b)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        
+        public int compareTo(PairVector other) {
+            if (this.invariantPairs.size() > other.invariantPairs.size()) {
+                return -1;
+            }
+            for (int i = 0; i < this.invariantPairs.size(); i++) {
+                InvariantPair a = this.invariantPairs.get(i);
+                InvariantPair b = other.invariantPairs.get(i);
+                int c = a.compareTo(b);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+    }
+    
+    /**
+     * Equivalent to the algorithm "invariant-vertex(T(x), relative)" 
+     */
+    private void updateVertexInvariants(Direction direction) {
+        ArrayList<PairVector> pairVectors = new ArrayList<PairVector>();
+        HashMap<TreeNode, PairVector> nodeVectorMap = 
+            new HashMap<TreeNode, PairVector>();
+        
+        for (int i = this.layers.size() - 1; i >= 0; i--) {
+            ArrayList<TreeNode> layer = this.layers.get(i);
+            for (TreeNode node : layer) {
+                PairVector pairVector = new PairVector();
+                pairVector.add(node.color, atomInvariants[node.atomNumber]);
+                if (direction == Direction.UP) {
+                    for (TreeNode parent : node.parents) {
+                        pairVector.add(parent.color, parent.invariant);
+                    }
+                } else if (direction == Direction.DOWN) {
+                    for (TreeNode child : node.children) {
+                        pairVector.add(child.color, child.invariant);
+                    }
+                }
+                pairVectors.add(pairVector);
+                nodeVectorMap.put(node, pairVector);
+            }
+            Collections.sort(pairVectors);
+            Collections.reverse(pairVectors);
+            for (TreeNode node : layer) {
+                node.invariant = pairVectors.indexOf(nodeVectorMap.get(node));
             }
         }
     }
@@ -230,7 +412,7 @@ public class Signature {
     }
     
     private String canonize(int color, String sMax) {
-        updateAtomInvariants();
+        calculateAtomInvariants();
         List<IAtom> maxOrbit = getMaxOrbit();
         if (maxOrbit.size() < 2) {
             
