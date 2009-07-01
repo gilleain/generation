@@ -78,6 +78,118 @@ public class Signature {
         }
     }
     
+    private class InvariantVector implements Comparable<InvariantVector> {
+        
+        public int[] invariants;
+        
+        public InvariantVector(int n) {
+            this.invariants = new int[n];
+        }
+        
+        public void put(int i, int v) {
+            this.invariants[i] = v;
+        }
+        
+        public boolean equals(InvariantVector other) {
+           return Arrays.equals(this.invariants, other.invariants);
+        }
+        
+        public int compareTo(InvariantVector other) {
+            for (int i = 0; i < this.invariants.length; i++) {
+                if (this.invariants[i] < other.invariants[i]) {
+                    return -1;
+                } else if (this.invariants[i] > other.invariants[i]) {
+                    return 1;
+                } else {
+                    continue;
+                }
+            }
+            return 0;
+        }
+    }
+
+    private class InvariantPair implements Comparable<InvariantPair> {
+        public int color;
+        public int inv;
+        
+        public InvariantPair(int color, int inv) {
+            this.color = color;
+            this.inv = inv;
+        }
+        
+        public boolean equals(InvariantPair other) {
+            return this.color == other.color && this.inv == other.inv;
+        }
+        
+        public int compareTo(InvariantPair other) {
+            if (this.color < other.color) {
+                return 1;
+            } else if (this.color > other.color) {
+                return -1;
+            } else {
+                if (this.inv < other.inv) {
+                    return 1;
+                } else if (this.inv > other.inv) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    }
+
+    private class PairVector implements Comparable<PairVector> {
+        public ArrayList<InvariantPair> invariantPairs;
+        
+        public PairVector() {
+            this.invariantPairs = new ArrayList<InvariantPair>();
+        }
+        
+        public void add(int color, int inv) {
+            this.invariantPairs.add(new InvariantPair(color, inv));
+        }
+        
+        public boolean equals(PairVector other) {
+            if (this.invariantPairs.size() != other.invariantPairs.size()) {
+                return false;
+            } else{
+                for (int i = 0; i < this.invariantPairs.size(); i++) {
+                    InvariantPair a = this.invariantPairs.get(i);
+                    InvariantPair b = other.invariantPairs.get(i); 
+                    if (!a.equals(b)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        
+        public int compareTo(PairVector other) {
+            if (this.invariantPairs.size() > other.invariantPairs.size()) {
+                return -1;
+            }
+            for (int i = 0; i < this.invariantPairs.size(); i++) {
+                InvariantPair a = this.invariantPairs.get(i);
+                InvariantPair b = other.invariantPairs.get(i);
+                int c = a.compareTo(b);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+    }
+    
+    private class NodeComparator implements Comparator<TreeNode> {
+
+        public int compare(TreeNode a, TreeNode b) {
+            if (a.invariant < b.invariant) return -1;
+            else if (a.invariant > b.invariant) return 1;
+            else return 0;
+        }
+        
+    }
+    
     private TreeNode root;
     
     private ArrayList<ArrayList<TreeNode>> layers;
@@ -104,6 +216,93 @@ public class Signature {
         this.atomInvariants = this.calculateInitialInvariants();
     }
     
+    public String canonize() {
+        return canonize(1, new String());
+    }
+
+    private String canonize(int color, String sMax) {
+        calculateAtomInvariants();
+        Map<Integer, List<Integer>> orbits = this.partitionIntoOrbits();
+        List<Integer> maxOrbit = getMaxOrbit(orbits);
+        if (maxOrbit.size() < 2) {
+            colorUncoloredAtoms(maxOrbit.get(0), color);
+            String s = this.toString();
+            if (s.compareTo(sMax) == -1) {
+                return s;
+            } else {
+                return sMax;
+            }
+        } else {
+            for (int i : maxOrbit) {
+                colorUncoloredAtoms(i, color);
+                sMax = canonize(color + 1, sMax);
+                colorUncoloredAtoms(i, 0);
+            }
+        }
+        return sMax;
+    }
+    
+    private void colorUncoloredAtoms(int atomNumber, int color) {
+        for (List<TreeNode> layer : this.layers) {
+            for (TreeNode node : layer) {
+                if (node.atomNumber == atomNumber) {
+                    node.color = color;
+                }
+            }
+        }
+    }
+    
+    private Map<Integer, List<Integer>> partitionIntoOrbits() {
+        Map<Integer, List<Integer>> orbits = new HashMap<Integer, List<Integer>>();
+        for (int i = 0; i < this.molecule.getAtomCount(); i++) {
+            int invar = this.atomInvariants[i];
+            if (orbits.containsKey(invar)) {
+                orbits.get(invar).add(i);
+            } else {
+                List<Integer> orbit = new ArrayList<Integer>();
+                orbit.add(i);
+                orbits.put(invar, orbit);
+            }
+        }
+        return orbits;
+    }
+    
+    private int numberOfParents(int atomNumber) {
+        for (List<TreeNode> layer : this.layers) {
+            for (TreeNode node : layer) {
+                if (node.atomNumber == atomNumber) {
+                    return node.parents.size();
+                }
+            }
+        }
+        return 0;
+    }
+    
+    private boolean allTwoParents(List<Integer> orbit) {
+        for (int i : orbit) {
+            if (numberOfParents(i) < 2) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private List<Integer> getMaxOrbit(Map<Integer, List<Integer>> orbits) {
+        List<Integer> bestOrbit = new ArrayList<Integer>();
+        int minInvar = Integer.MAX_VALUE;
+        for (int invar : orbits.keySet()) {
+            List<Integer> orbit = orbits.get(invar);
+           
+            if (allTwoParents(orbit) 
+                    && orbit.size() > bestOrbit.size()
+                        && invar < minInvar) {
+                minInvar = invar;
+                bestOrbit = orbit;
+            }
+        }
+        return bestOrbit;
+    }
+
     /**
      * Recursive method to construct the tree, layer by layer.
      * 
@@ -208,6 +407,12 @@ public class Signature {
             String invariantString = symbols[i] + "," + parentCounts[i];
             initialInvariants[i] = invariantStrings.indexOf(invariantString);
         }
+        
+        for (ArrayList<TreeNode> layer : this.layers) {
+            for (TreeNode node : layer) {
+                node.invariant = initialInvariants[node.atomNumber];
+            }
+        }
         return initialInvariants;
     }
     
@@ -219,36 +424,6 @@ public class Signature {
             }
         }
         return maxValue;
-    }
-    
-    private class InvariantVector implements Comparable<InvariantVector> {
-        
-        public int[] invariants;
-        
-        public InvariantVector(int n) {
-            this.invariants = new int[n];
-        }
-        
-        public void put(int i, int v) {
-            this.invariants[i] = v;
-        }
-        
-        public boolean equals(InvariantVector other) {
-           return Arrays.equals(this.invariants, other.invariants);
-        }
-        
-        public int compareTo(InvariantVector other) {
-            for (int i = 0; i < this.invariants.length; i++) {
-                if (this.invariants[i] < other.invariants[i]) {
-                    return -1;
-                } else if (this.invariants[i] > other.invariants[i]) {
-                    return 1;
-                } else {
-                    continue;
-                }
-            }
-            return 0;
-        }
     }
     
     /**
@@ -285,78 +460,6 @@ public class Signature {
         }
     }
     
-    private class InvariantPair implements Comparable<InvariantPair> {
-        public int color;
-        public int inv;
-        
-        public InvariantPair(int color, int inv) {
-            this.color = color;
-            this.inv = inv;
-        }
-        
-        public boolean equals(InvariantPair other) {
-            return this.color == other.color && this.inv == other.inv;
-        }
-        
-        public int compareTo(InvariantPair other) {
-            if (this.color < other.color) {
-                return 1;
-            } else if (this.color > other.color) {
-                return -1;
-            } else {
-                if (this.inv < other.inv) {
-                    return 1;
-                } else if (this.inv > other.inv) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-    }
-    
-    private class PairVector implements Comparable<PairVector> {
-        public ArrayList<InvariantPair> invariantPairs;
-        
-        public PairVector() {
-            this.invariantPairs = new ArrayList<InvariantPair>();
-        }
-        
-        public void add(int color, int inv) {
-            this.invariantPairs.add(new InvariantPair(color, inv));
-        }
-        
-        public boolean equals(PairVector other) {
-            if (this.invariantPairs.size() != other.invariantPairs.size()) {
-                return false;
-            } else{
-                for (int i = 0; i < this.invariantPairs.size(); i++) {
-                    InvariantPair a = this.invariantPairs.get(i);
-                    InvariantPair b = other.invariantPairs.get(i); 
-                    if (!a.equals(b)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        
-        public int compareTo(PairVector other) {
-            if (this.invariantPairs.size() > other.invariantPairs.size()) {
-                return -1;
-            }
-            for (int i = 0; i < this.invariantPairs.size(); i++) {
-                InvariantPair a = this.invariantPairs.get(i);
-                InvariantPair b = other.invariantPairs.get(i);
-                int c = a.compareTo(b);
-                if (c != 0) {
-                    return c;
-                }
-            }
-            return 0;
-        }
-    }
-    
     /**
      * Equivalent to the algorithm "invariant-vertex(T(x), relative)" 
      */
@@ -390,41 +493,6 @@ public class Signature {
         }
     }
     
-    private List<IAtom> getMaxOrbit() {
-        List<List<IAtom>> orbits = new ArrayList<List<IAtom>>();
-        int bestOrbitSize = 0;
-        List<IAtom> bestOrbit = null;
-        for (List<IAtom> orbit : orbits) {
-            int numberOfAtomsWithAtLeastTwoParents = 0;
-            for (IAtom atom : orbit) {
-                // TODO : count the parents.
-            }
-            if (orbit.size() > bestOrbitSize) {
-                bestOrbitSize = orbit.size();
-                bestOrbit = orbit;
-            }
-        }
-        return bestOrbit;
-    }
-    
-    public String canonize() {
-        return canonize(0, new String());
-    }
-    
-    private String canonize(int color, String sMax) {
-        calculateAtomInvariants();
-        List<IAtom> maxOrbit = getMaxOrbit();
-        if (maxOrbit.size() < 2) {
-            
-        } else {
-            for (IAtom atom : maxOrbit) {
-                // TODO color atom with color
-                sMax = canonize(color + 1, sMax);
-            }
-        }
-        return sMax;
-    }
-    
     private void toString(
             TreeNode node, StringBuffer buffer, List<Edge> edges) {
         buffer.append("[");
@@ -434,7 +502,7 @@ public class Signature {
         buffer.append("]");
         if (node.children.size() == 0) return;
         buffer.append("(");
-        // TODO : sort children by invariants 
+        Collections.sort(node.children, new NodeComparator());
         for (TreeNode child : node.children) {
             Edge edge = new Edge(node, child);
             if (edges.contains(edge)) {
