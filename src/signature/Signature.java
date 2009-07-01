@@ -190,6 +190,8 @@ public class Signature {
         
     }
     
+    private NodeComparator nodeSorter = new NodeComparator();
+    
     private TreeNode root;
     
     private ArrayList<ArrayList<TreeNode>> layers;
@@ -227,11 +229,10 @@ public class Signature {
         if (maxOrbit.size() < 2) {
             colorUncoloredAtoms(maxOrbit.get(0), color);
             String s = this.toString();
-            if (s.compareTo(sMax) == -1) {
-                return s;
-            } else {
-                return sMax;
+            if (sMax.equals("") || s.compareTo(sMax) == 1) {
+                sMax = s;
             }
+            return sMax;
         } else {
             for (int i : maxOrbit) {
                 colorUncoloredAtoms(i, color);
@@ -434,6 +435,7 @@ public class Signature {
         int maxInvariant = max(this.atomInvariants);
         int previousMaxI = 0;
         int n = this.molecule.getAtomCount();
+        int l = this.layers.size();
         while (maxInvariant != previousMaxI) {
             this.updateVertexInvariants(Direction.UP);
             this.updateVertexInvariants(Direction.DOWN);
@@ -441,7 +443,11 @@ public class Signature {
             for (int i = 0; i < this.layers.size(); i++) {
                 ArrayList<TreeNode> layer = this.layers.get(i);
                 for (TreeNode node : layer) {
-                    invariantVectors[node.atomNumber].put(i, node.invariant);
+                    int a = node.atomNumber;
+                    if (invariantVectors[a] == null) {
+                        invariantVectors[a] =  new InvariantVector(l);
+                    }
+                    invariantVectors[a].put(i, node.invariant);
                 }
             }
             ArrayList<InvariantVector> vlist = new ArrayList<InvariantVector>();
@@ -501,18 +507,24 @@ public class Signature {
         if (node.color != 0) buffer.append(",").append(node.color);
         buffer.append("]");
         if (node.children.size() == 0) return;
-        buffer.append("(");
-        Collections.sort(node.children, new NodeComparator());
+        boolean addedChildren = false;
+        Collections.sort(node.children, nodeSorter);
         for (TreeNode child : node.children) {
             Edge edge = new Edge(node, child);
             if (edges.contains(edge)) {
                 continue;
             } else {
+                if (!addedChildren) {
+                    addedChildren = true;
+                    buffer.append("(");
+                }
                 edges.add(edge);
                 toString(child, buffer, edges);
             }
         }
-        buffer.append(")");
+        if (addedChildren) {
+            buffer.append(")");
+        }
     }
     
     public String toString() {

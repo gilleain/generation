@@ -54,10 +54,16 @@ public class TestSignature {
     @Test
     public void testCage() {
         IMolecule cage = TestSignature.makeCage();
+        String expected = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))"
+                        + "[c_]([c_,5][c_,3]([c_,6]([c_,1]))))"
+                        + "[c_]([c_]([c_,7][c_]([c_,1][c_,8]))"
+                        + "[c_,5]([c_,8]([c_,6])))[c_]([c_,2]"
+                        + "[c_,7]([c_,4]([c_,1]))))";
         
 //        Signature signature = Signature.forMolecule(cage);
         Signature signature = new Signature(cage.getAtom(0), cage);
-        System.out.println(signature);
+        String actual = signature.canonize();
+        Assert.assertEquals("cage signature not correct", expected, actual);
     }
     
     @Test
