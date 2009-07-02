@@ -67,10 +67,18 @@ public class TestSignature {
                     (org.openscience.cdk.AtomContainer)container);  // XXX!
         while (permutor.hasNext()) {
             IAtomContainer permutation = (IAtomContainer) permutor.next();
-            Signature signature = new Signature(0, builder.newMolecule(permutation));
+            IMolecule mol = builder.newMolecule(permutation);
+            Signature signature = new Signature(0, mol);
             String actual = signature.canonize();
             Assert.assertEquals("signature not correct!", expected, actual);
         }
+    }
+    
+    public static void testSignatureFromAtom(
+            int atomNumber, IMolecule mol, String expected) {
+        Signature sig = new Signature(atomNumber, mol);
+        String actual = sig.canonize();
+        Assert.assertEquals("signature not canonical", expected, actual);
     }
     
     @Test
@@ -86,6 +94,50 @@ public class TestSignature {
         Signature signature = new Signature(cage.getAtom(0), cage);
         String actual = signature.canonize();
         Assert.assertEquals("cage signature not correct", expected, actual);
+    }
+    
+    @Test
+    public void testNapthalene() {
+        String expectedA = "[cp]([cp]([cp]([cp]([cp]([cp,1]))" +
+        		           "[cp,2]([cp]([cp,1]))))[cp]([cp]([cp,2])))";
+        String expectedB = "[cp]([cp]([cp]([cp,1]))" +
+        		           "[cp]([cp]([cp]([cp,2]))[cp]([cp,1][cp]([cp,2]))))";
+        String expectedC = "[cp]([cp]([cp]([cp,1]))[cp]([cp]([cp,2]))" +
+        		           "[cp]([cp]([cp,2])[cp]([cp,1])))";
+        
+        Molecule mol = new Molecule();
+        mol.addAtom(new Atom("C")); // 0
+        mol.addAtom(new Atom("C")); // 1
+        mol.addAtom(new Atom("C")); // 2
+        mol.addAtom(new Atom("C")); // 3
+        mol.addAtom(new Atom("C")); // 4
+        mol.addAtom(new Atom("C")); // 5
+        mol.addAtom(new Atom("C")); // 6
+        mol.addAtom(new Atom("C")); // 7
+        mol.addAtom(new Atom("C")); // 8
+        mol.addAtom(new Atom("C")); // 9
+        for (IAtom atom : mol.atoms()) {
+            atom.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE);
+        mol.addBond(2, 7, IBond.Order.SINGLE);
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        mol.addBond(4, 5, IBond.Order.SINGLE); 
+        mol.addBond(5, 6, IBond.Order.SINGLE); 
+        mol.addBond(6, 7, IBond.Order.SINGLE);
+        mol.addBond(7, 8, IBond.Order.SINGLE);
+        mol.addBond(8, 9, IBond.Order.SINGLE);
+        mol.addBond(9, 0, IBond.Order.SINGLE);
+        for (IBond bond : mol.bonds()) {
+            bond.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        
+        // XXX if the atom numbers are changed, the atom-to-sig map changes!
+        TestSignature.testSignatureFromAtom(0, mol, expectedA);
+        TestSignature.testSignatureFromAtom(1, mol, expectedB);
+        TestSignature.testSignatureFromAtom(2, mol, expectedC);
     }
     
     @Test
