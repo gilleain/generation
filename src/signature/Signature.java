@@ -106,6 +106,10 @@ public class Signature {
             }
             return 0;
         }
+        
+        public String toString() {
+            return Arrays.toString(this.invariants);
+        }
     }
 
     private class InvariantPair implements Comparable<InvariantPair> {
@@ -135,6 +139,10 @@ public class Signature {
                     return 0;
                 }
             }
+        }
+        
+        public String toString() {
+            return "(" + this.color + "," + this.inv + ")";
         }
     }
 
@@ -177,6 +185,10 @@ public class Signature {
                 }
             }
             return 0;
+        }
+        
+        public String toString() {
+            return this.invariantPairs.toString();
         }
     }
     
@@ -409,6 +421,7 @@ public class Signature {
             initialInvariants[i] = invariantStrings.indexOf(invariantString);
         }
         
+        // store these initial invariants in the tree
         for (ArrayList<TreeNode> layer : this.layers) {
             for (TreeNode node : layer) {
                 node.invariant = initialInvariants[node.atomNumber];
@@ -452,6 +465,7 @@ public class Signature {
             }
             ArrayList<InvariantVector> vlist = new ArrayList<InvariantVector>();
             for (InvariantVector vector : invariantVectors) {
+                if (vector == null) continue;   // XXX
                 if (!vlist.contains(vector)) {
                     vlist.add(vector);
                 }

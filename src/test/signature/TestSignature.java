@@ -66,6 +66,7 @@ public class TestSignature {
             new AtomContainerAtomPermutor(
                     (org.openscience.cdk.AtomContainer)container);  // XXX!
         while (permutor.hasNext()) {
+            System.out.println(".");
             IAtomContainer permutation = (IAtomContainer) permutor.next();
             IMolecule mol = builder.newMolecule(permutation);
             Signature signature = new Signature(0, mol);
@@ -94,6 +95,36 @@ public class TestSignature {
         Signature signature = new Signature(cage.getAtom(0), cage);
         String actual = signature.canonize();
         Assert.assertEquals("cage signature not correct", expected, actual);
+    }
+    
+    @Test
+    public void testCubane() {
+        String expected = "[c_]([c_]([c_](c_,1])[c_]([c_,2])" +
+        		          "[c_]([c_,3]))[c_]([c_,2][c_,2]))";
+        Molecule mol = new Molecule();
+        mol.addAtom(new Atom("C")); // 0
+        mol.addAtom(new Atom("C")); // 1
+        mol.addAtom(new Atom("C")); // 2
+        mol.addAtom(new Atom("C")); // 3
+        mol.addAtom(new Atom("C")); // 4
+        mol.addAtom(new Atom("C")); // 5
+        mol.addAtom(new Atom("C")); // 6
+        mol.addAtom(new Atom("C")); // 7
+        mol.addAtom(new Atom("C")); // 8
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(0, 3, IBond.Order.SINGLE);
+        mol.addBond(0, 7, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(1, 6, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE); 
+        mol.addBond(2, 5, IBond.Order.SINGLE); 
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        mol.addBond(4, 5, IBond.Order.SINGLE);
+        mol.addBond(4, 7, IBond.Order.SINGLE);
+        mol.addBond(5, 6, IBond.Order.SINGLE);
+        mol.addBond(6, 7, IBond.Order.SINGLE);
+        
+        TestSignature.testCanonicalPermutations(mol, expected);
     }
     
     @Test
