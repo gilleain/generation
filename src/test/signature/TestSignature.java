@@ -4,7 +4,9 @@ import org.junit.*;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.Molecule;
+import org.openscience.cdk.graph.AtomContainerAtomPermutor;
 import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
@@ -51,6 +53,26 @@ public class TestSignature {
         return cage;
     }
     
+    /**
+     * CAREFUL : tries all possible permutations of the atoms, and checks that
+     * the canonical strings are the same.
+     * 
+     * @param container
+     * @param expected
+     */
+    public static void testCanonicalPermutations(
+            IAtomContainer container, String expected) {
+        AtomContainerAtomPermutor permutor = 
+            new AtomContainerAtomPermutor(
+                    (org.openscience.cdk.AtomContainer)container);  // XXX!
+        while (permutor.hasNext()) {
+            IAtomContainer permutation = (IAtomContainer) permutor.next();
+            Signature signature = new Signature(0, builder.newMolecule(permutation));
+            String actual = signature.canonize();
+            Assert.assertEquals("signature not correct!", expected, actual);
+        }
+    }
+    
     @Test
     public void testCage() {
         IMolecule cage = TestSignature.makeCage();
@@ -89,9 +111,10 @@ public class TestSignature {
         for (IBond bond : mol.bonds()) {
             bond.setFlag(CDKConstants.ISAROMATIC, true);
         }
-        Signature signature = new Signature(0, mol);
-        String actual = signature.toString();
-        Assert.assertEquals("benzene signature not correct!", expected, actual);
+//        Signature signature = new Signature(0, mol);
+//        String actual = signature.canonize();
+//        Assert.assertEquals("benzene signature not correct!", expected, actual);
+        TestSignature.testCanonicalPermutations(mol, expected); 
     }
     
 }
