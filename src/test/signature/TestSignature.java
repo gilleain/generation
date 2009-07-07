@@ -54,53 +54,12 @@ public class TestSignature {
     }
     
     /**
-     * CAREFUL : tries all possible permutations of the atoms, and checks that
-     * the canonical strings are the same.
+     * Strictly speaking, this is more like a cube than cubane, as it has no
+     * hydrogens.
      * 
-     * @param container
-     * @param expected
+     * @return
      */
-    public static void testCanonicalPermutations(
-            IAtomContainer container, String expected) {
-        AtomContainerAtomPermutor permutor = 
-            new AtomContainerAtomPermutor(
-                    (org.openscience.cdk.AtomContainer)container);  // XXX!
-        while (permutor.hasNext()) {
-            System.out.println(".");
-            IAtomContainer permutation = (IAtomContainer) permutor.next();
-            IMolecule mol = builder.newMolecule(permutation);
-            Signature signature = new Signature(0, mol);
-            String actual = signature.canonize();
-            Assert.assertEquals("signature not correct!", expected, actual);
-        }
-    }
-    
-    public static void testSignatureFromAtom(
-            int atomNumber, IMolecule mol, String expected) {
-        Signature sig = new Signature(atomNumber, mol);
-        String actual = sig.canonize();
-        Assert.assertEquals("signature not canonical", expected, actual);
-    }
-    
-    @Test
-    public void testCage() {
-        IMolecule cage = TestSignature.makeCage();
-        String expected = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))"
-                        + "[c_]([c_,5][c_,3]([c_,6]([c_,1]))))"
-                        + "[c_]([c_]([c_,7][c_]([c_,1][c_,8]))"
-                        + "[c_,5]([c_,8]([c_,6])))[c_]([c_,2]"
-                        + "[c_,7]([c_,4]([c_,1]))))";
-        
-//        Signature signature = Signature.forMolecule(cage);
-        Signature signature = new Signature(cage.getAtom(0), cage);
-        String actual = signature.canonize();
-        Assert.assertEquals("cage signature not correct", expected, actual);
-    }
-    
-    @Test
-    public void testCubane() {
-        String expected = "[c_]([c_]([c_](c_,1])[c_]([c_,2])" +
-        		          "[c_]([c_,3]))[c_]([c_,2][c_,2]))";
+    public static IMolecule makeCubane() {
         Molecule mol = new Molecule();
         mol.addAtom(new Atom("C")); // 0
         mol.addAtom(new Atom("C")); // 1
@@ -123,19 +82,10 @@ public class TestSignature {
         mol.addBond(4, 7, IBond.Order.SINGLE);
         mol.addBond(5, 6, IBond.Order.SINGLE);
         mol.addBond(6, 7, IBond.Order.SINGLE);
-        
-        TestSignature.testCanonicalPermutations(mol, expected);
+        return mol;
     }
     
-    @Test
-    public void testNapthalene() {
-        String expectedA = "[cp]([cp]([cp]([cp]([cp]([cp,1]))" +
-        		           "[cp,2]([cp]([cp,1]))))[cp]([cp]([cp,2])))";
-        String expectedB = "[cp]([cp]([cp]([cp,1]))" +
-        		           "[cp]([cp]([cp]([cp,2]))[cp]([cp,1][cp]([cp,2]))))";
-        String expectedC = "[cp]([cp]([cp]([cp,1]))[cp]([cp]([cp,2]))" +
-        		           "[cp]([cp]([cp,2])[cp]([cp,1])))";
-        
+    public static IMolecule makeNapthalene() {
         Molecule mol = new Molecule();
         mol.addAtom(new Atom("C")); // 0
         mol.addAtom(new Atom("C")); // 1
@@ -164,6 +114,143 @@ public class TestSignature {
         for (IBond bond : mol.bonds()) {
             bond.setFlag(CDKConstants.ISAROMATIC, true);
         }
+        return mol; 
+    }
+    
+    public static IMolecule makeBenzene() {
+        Molecule mol = new Molecule();
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        for (IAtom atom : mol.atoms()) {
+            atom.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE);
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        mol.addBond(4, 5, IBond.Order.SINGLE);
+        mol.addBond(5, 0, IBond.Order.SINGLE);
+        for (IBond bond : mol.bonds()) {
+            bond.setFlag(CDKConstants.ISAROMATIC, true);
+        }
+        return mol;
+    }
+    
+    /**
+     * This may not be a real molecule, but it is a good, simple test. 
+     * It is something like cyclobutane with a single carbon bridge across it,
+     * or propellane without one of its bonds (see makePropellane).
+     *  
+     * @return
+     */
+    public static IMolecule makePseudoPropellane() {
+        Molecule mol = new Molecule();
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(0, 2, IBond.Order.SINGLE);
+        mol.addBond(0, 3, IBond.Order.SINGLE);
+        mol.addBond(1, 4, IBond.Order.SINGLE);
+        mol.addBond(2, 4, IBond.Order.SINGLE);
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        
+        return mol;
+    }
+    
+    public static IMolecule makePropellane() {
+        IMolecule mol = TestSignature.makePseudoPropellane();
+        mol.addBond(0, 4, IBond.Order.SINGLE);
+        return mol;
+    }
+    
+    /**
+     * CAREFUL : tries all possible permutations of the atoms, and checks that
+     * the canonical strings are the same.
+     * 
+     * @param container
+     * @param expected
+     */
+    public static void testCanonicalPermutations(
+            int atomNumber, IAtomContainer container, String expected) {
+        AtomContainerAtomPermutor permutor = 
+            new AtomContainerAtomPermutor(
+                    (org.openscience.cdk.AtomContainer)container);  // XXX!
+        while (permutor.hasNext()) {
+            System.out.println(".");
+            IAtomContainer permutation = (IAtomContainer) permutor.next();
+            IMolecule mol = builder.newMolecule(permutation);
+            Signature signature = new Signature(atomNumber, mol);
+            String actual = signature.canonize();
+            Assert.assertEquals("signature not correct!", expected, actual);
+        }
+    }
+    
+    public static void testSignatureFromAtom(
+            int atomNumber, IMolecule mol, String expected) {
+        Signature sig = new Signature(atomNumber, mol);
+        String actual = sig.canonize();
+        Assert.assertEquals("signature not canonical", expected, actual);
+    }
+    
+    @Test
+    public void testCage() {
+        IMolecule cage = TestSignature.makeCage();
+        String expected = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))"
+                        + "[c_]([c_,5][c_,3]([c_,6]([c_,1]))))"
+                        + "[c_]([c_]([c_,7][c_]([c_,1][c_,8]))"
+                        + "[c_,5]([c_,8]([c_,6])))[c_]([c_,2]"
+                        + "[c_,7]([c_,4]([c_,1]))))";
+
+        TestSignature.testSignatureFromAtom(0, cage, expected);
+    }
+    
+    @Test
+    public void testCubane() {
+        String expected = "[c_]([c_]([c_](c_,1])[c_]([c_,2])" +
+        		          "[c_]([c_,3]))[c_]([c_,2][c_,2]))";
+      
+        IMolecule mol = TestSignature.makeCubane();
+        TestSignature.testCanonicalPermutations(0, mol, expected);
+    }
+    
+    @Test
+    public void testPropellane() {
+        String expectedA = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1])[c_])";
+        String expectedB = "[c_]([c_]([c_,1][c_,2][c_,3])[c_,3]([c_,1][c_,2]))";
+        
+        IMolecule mol = TestSignature.makePropellane();
+        TestSignature.testSignatureFromAtom(0, mol, expectedA);
+        TestSignature.testSignatureFromAtom(1, mol, expectedB);
+    }
+    
+    @Test
+    public void testPseudoPropellane() {
+        String expectedA = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1]))";
+        String expectedB = "[c_]([c_]([c_,1][c_,2])[c_]([c_,1][c_,2]))";
+        IMolecule mol = TestSignature.makePseudoPropellane();
+        TestSignature.testSignatureFromAtom(0, mol, expectedA);
+        TestSignature.testSignatureFromAtom(1, mol, expectedB);
+    }
+    
+    @Test
+    public void testNapthalene() {
+        String expectedA = "[cp]([cp]([cp]([cp]([cp]([cp,1]))" +
+        		           "[cp,2]([cp]([cp,1]))))[cp]([cp]([cp,2])))";
+        String expectedB = "[cp]([cp]([cp]([cp,1]))" +
+        		           "[cp]([cp]([cp]([cp,2]))[cp]([cp,1][cp]([cp,2]))))";
+        String expectedC = "[cp]([cp]([cp]([cp,1]))[cp]([cp]([cp,2]))" +
+        		           "[cp]([cp]([cp,2])[cp]([cp,1])))";
+        
+        IMolecule mol = TestSignature.makeNapthalene();
         
         // XXX if the atom numbers are changed, the atom-to-sig map changes!
         TestSignature.testSignatureFromAtom(0, mol, expectedA);
@@ -174,30 +261,12 @@ public class TestSignature {
     @Test
     public void testBenzene() {
         String expected = "[cp]([cp]([cp]([cp,1]))[cp]([cp]([cp,1])))";
-        Molecule mol = new Molecule();
-        mol.addAtom(new Atom("C")); // 0
-        mol.addAtom(new Atom("C")); // 1
-        mol.addAtom(new Atom("C")); // 2
-        mol.addAtom(new Atom("C")); // 3
-        mol.addAtom(new Atom("C")); // 4
-        mol.addAtom(new Atom("C")); // 5
-        for (IAtom atom : mol.atoms()) {
-            atom.setFlag(CDKConstants.ISAROMATIC, true);
-        }
-        
-        mol.addBond(0, 1, IBond.Order.SINGLE); // 1
-        mol.addBond(1, 2, IBond.Order.SINGLE); // 2
-        mol.addBond(2, 3, IBond.Order.SINGLE); // 3
-        mol.addBond(3, 4, IBond.Order.SINGLE); // 4
-        mol.addBond(4, 5, IBond.Order.SINGLE); // 5
-        mol.addBond(5, 0, IBond.Order.SINGLE); // 6
-        for (IBond bond : mol.bonds()) {
-            bond.setFlag(CDKConstants.ISAROMATIC, true);
-        }
+       
+        IMolecule mol = TestSignature.makeBenzene();
 //        Signature signature = new Signature(0, mol);
 //        String actual = signature.canonize();
 //        Assert.assertEquals("benzene signature not correct!", expected, actual);
-        TestSignature.testCanonicalPermutations(mol, expected); 
+        TestSignature.testCanonicalPermutations(0, mol, expected); 
     }
     
 }

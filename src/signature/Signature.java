@@ -239,7 +239,9 @@ public class Signature {
         Map<Integer, List<Integer>> orbits = this.partitionIntoOrbits();
         List<Integer> maxOrbit = getMaxOrbit(orbits);
         if (maxOrbit.size() < 2) {
-            colorUncoloredAtoms(maxOrbit.get(0), color);
+            // TODO : improve
+            current_color = 1;
+            colorUncoloredAtoms(root);
             String s = this.toString();
             if (sMax.equals("") || s.compareTo(sMax) == 1) {
                 sMax = s;
@@ -247,15 +249,32 @@ public class Signature {
             return sMax;
         } else {
             for (int i : maxOrbit) {
-                colorUncoloredAtoms(i, color);
+                colorAtom(i, color);
                 sMax = canonize(color + 1, sMax);
-                colorUncoloredAtoms(i, 0);
+                colorAtom(i, 0);
             }
         }
         return sMax;
     }
     
-    private void colorUncoloredAtoms(int atomNumber, int color) {
+    // TODO : improve
+    private int current_color;
+    
+    private void colorUncoloredAtoms(TreeNode node) {
+        if (node.color == 0 && node.parents.size() > 1) {
+            node.color = current_color;
+            current_color++;
+            for (TreeNode child : node.children) {
+                colorUncoloredAtoms(child);
+            }
+        } else {
+            for (TreeNode child : node.children) {
+                colorUncoloredAtoms(child);
+            }
+        }
+    }
+    
+    private void colorAtom(int atomNumber, int color) {
         for (List<TreeNode> layer : this.layers) {
             for (TreeNode node : layer) {
                 if (node.atomNumber == atomNumber) {
