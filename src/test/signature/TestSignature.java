@@ -117,6 +117,24 @@ public class TestSignature {
         return mol; 
     }
     
+    public static IMolecule makeHexane() {
+        IMolecule mol = builder.newMolecule();
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        mol.addAtom(new Atom("C"));
+        
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE);
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        mol.addBond(4, 5, IBond.Order.SINGLE);
+        
+        return mol;
+    }
+    
     public static IMolecule makeBenzene() {
         Molecule mol = new Molecule();
         mol.addAtom(new Atom("C"));
@@ -239,6 +257,18 @@ public class TestSignature {
         IMolecule mol = TestSignature.makePseudoPropellane();
         TestSignature.testSignatureFromAtom(0, mol, expectedA);
         TestSignature.testSignatureFromAtom(1, mol, expectedB);
+    }
+    
+    @Test
+    public void testHexane() {
+        String expectedA = "[c_]([c_]([c_]([c_]([c_]([c_])))))";
+        String expectedB = "[c_]([c_][c_]([c_]([c_]([c_]))))";
+        String expectedC = "[c_]([c_]([c_]([c_]))[c_]([c_]))";
+        IMolecule mol = TestSignature.makeHexane();
+        
+//        TestSignature.testSignatureFromAtom(0, mol, expectedA);
+//        TestSignature.testSignatureFromAtom(1, mol, expectedB);
+        TestSignature.testSignatureFromAtom(2, mol, expectedC);
     }
     
     @Test
