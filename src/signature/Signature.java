@@ -123,8 +123,13 @@ public class Signature {
             this.inv = inv;
         }
         
-        public boolean equals(InvariantPair other) {
-            return this.color == other.color && this.inv == other.inv;
+        public boolean equals(Object o) {
+            if (o instanceof InvariantPair) {
+                InvariantPair other = (InvariantPair) o;
+                return this.color == other.color && this.inv == other.inv;
+            } else {
+                return false;
+            }
         }
         
         public int compareTo(InvariantPair other) {
@@ -228,13 +233,17 @@ public class Signature {
     }
     
     public String canonize() {
-        return canonize(1, new String());
+        String s = canonize(1, new String());
+        System.out.println(s);
+        return s;
     }
 
     private String canonize(int color, String sMax) {
         calculateAtomInvariants();
         Map<Integer, List<Integer>> orbits = this.partitionIntoOrbits();
+        System.out.println("orbits " + orbits);
         List<Integer> maxOrbit = getMaxOrbit(orbits);
+        System.out.println("max orbit " + maxOrbit);
         if (maxOrbit.size() < 2) {
             // TODO : improve
             current_color = 1;
@@ -340,7 +349,7 @@ public class Signature {
      */
     private void makeNextLayer(ArrayList<Node> previousLayer, List<Edge> edges) {
         ArrayList<Node> layer = new ArrayList<Node>();
-        System.out.println(edges);
+//        System.out.println(edges);
         
         /*
          *  Bonds can be visited twice in the same layer from different
@@ -362,13 +371,13 @@ public class Signature {
                     isNew = true;
                     
                 }
-                System.out.print(node + " " + (n + 1));
+//                System.out.print(node + " " + (n + 1));
                 Edge edge = new Edge(node, nextNode);
                 if (edges.contains(edge)) {
-                    System.out.println(" edge seen");
+//                    System.out.println(" edge seen");
                     continue;
                 } else {
-                    System.out.println(" adding ");
+//                    System.out.println(" adding ");
                     layerEdges.add(edge);
                     node.children.add(nextNode);
                     nextNode.parents.add(node);
@@ -545,8 +554,13 @@ public class Signature {
             }
             List<PairVector> vectorList = new ArrayList<PairVector>();
             vectorList.addAll(pairVectors);
+            System.out.println(vectorList);
             for (Node node : layer) {
                 node.invariant = vectorList.indexOf(nodeVectorMap.get(node));
+                System.out.println("layer " + i 
+                                   + " node " + node 
+                                   + " invariant " + node.invariant
+                                   + " vector " + nodeVectorMap.get(node));
             }
         }
     }
