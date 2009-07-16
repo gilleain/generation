@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IMolecule;
@@ -25,10 +27,10 @@ public class Signature {
     private enum Direction { UP, DOWN };
     
     private class Edge {
-        public TreeNode a;
-        public TreeNode b;
+        public Node a;
+        public Node b;
         
-        public Edge(TreeNode a, TreeNode b) {
+        public Edge(Node a, Node b) {
             this.a = a;
             this.b = b;
         }
@@ -51,7 +53,7 @@ public class Signature {
         }
     }
     
-    private class TreeNode {
+    private class Node {
         
         public int invariant;
         
@@ -59,22 +61,22 @@ public class Signature {
         
         public int atomNumber;
         
-        public ArrayList<TreeNode> parents;
+        public ArrayList<Node> parents;
         
-        public ArrayList<TreeNode> children;
+        public ArrayList<Node> children;
         
         public boolean visited;
         
-        public TreeNode(int atomNumber) {
+        public Node(int atomNumber) {
             this.atomNumber = atomNumber;
-            this.parents = new ArrayList<TreeNode>();
-            this.children = new ArrayList<TreeNode>();
+            this.parents = new ArrayList<Node>();
+            this.children = new ArrayList<Node>();
             this.color = 0;
             this.visited = false;
         }
         
         public String toString() {
-            return "" + this.atomNumber;
+            return "" + (this.atomNumber + 1);
         }
     }
     
@@ -127,14 +129,14 @@ public class Signature {
         
         public int compareTo(InvariantPair other) {
             if (this.color < other.color) {
-                return 1;
-            } else if (this.color > other.color) {
                 return -1;
+            } else if (this.color > other.color) {
+                return 1;
             } else {
                 if (this.inv < other.inv) {
-                    return 1;
-                } else if (this.inv > other.inv) {
                     return -1;
+                } else if (this.inv > other.inv) {
+                    return 1;
                 } else {
                     return 0;
                 }
@@ -157,18 +159,13 @@ public class Signature {
             this.invariantPairs.add(new InvariantPair(color, inv));
         }
         
-        public boolean equals(PairVector other) {
+        public boolean equals(Object o) {
+            if (!(o instanceof PairVector)) return false;
+            PairVector other = (PairVector) o;
             if (this.invariantPairs.size() != other.invariantPairs.size()) {
                 return false;
-            } else{
-                for (int i = 0; i < this.invariantPairs.size(); i++) {
-                    InvariantPair a = this.invariantPairs.get(i);
-                    InvariantPair b = other.invariantPairs.get(i); 
-                    if (!a.equals(b)) {
-                        return false;
-                    }
-                }
-                return true;
+            } else {
+                return this.invariantPairs.equals(other.invariantPairs);
             }
         }
         
@@ -192,9 +189,9 @@ public class Signature {
         }
     }
     
-    private class NodeComparator implements Comparator<TreeNode> {
+    private class NodeComparator implements Comparator<Node> {
 
-        public int compare(TreeNode a, TreeNode b) {
+        public int compare(Node a, Node b) {
             if (a.invariant < b.invariant) return -1;
             else if (a.invariant > b.invariant) return 1;
             else return 0;
@@ -204,9 +201,9 @@ public class Signature {
     
     private NodeComparator nodeSorter = new NodeComparator();
     
-    private TreeNode root;
+    private Node root;
     
-    private ArrayList<ArrayList<TreeNode>> layers;
+    private ArrayList<ArrayList<Node>> layers;
     
     private IMolecule molecule;
     
@@ -218,11 +215,11 @@ public class Signature {
     
     public Signature(IAtom atom, IMolecule molecule) {
         this.molecule = molecule;
-        this.root = new TreeNode(molecule.getAtomNumber(atom));
+        this.root = new Node(molecule.getAtomNumber(atom));
         
         // create the layers, with a single root layer
-        this.layers = new ArrayList<ArrayList<TreeNode>>();
-        ArrayList<TreeNode> rootLayer = new ArrayList<TreeNode>();
+        this.layers = new ArrayList<ArrayList<Node>>();
+        ArrayList<Node> rootLayer = new ArrayList<Node>();
         rootLayer.add(root);
         this.layers.add(rootLayer);
         
@@ -260,23 +257,23 @@ public class Signature {
     // TODO : improve
     private int current_color;
     
-    private void colorUncoloredAtoms(TreeNode node) {
+    private void colorUncoloredAtoms(Node node) {
         if (node.color == 0 && node.parents.size() > 1) {
             node.color = current_color;
             current_color++;
-            for (TreeNode child : node.children) {
+            for (Node child : node.children) {
                 colorUncoloredAtoms(child);
             }
         } else {
-            for (TreeNode child : node.children) {
+            for (Node child : node.children) {
                 colorUncoloredAtoms(child);
             }
         }
     }
     
     private void colorAtom(int atomNumber, int color) {
-        for (List<TreeNode> layer : this.layers) {
-            for (TreeNode node : layer) {
+        for (List<Node> layer : this.layers) {
+            for (Node node : layer) {
                 if (node.atomNumber == atomNumber) {
                     node.color = color;
                 }
@@ -300,8 +297,8 @@ public class Signature {
     }
     
     private int numberOfParents(int atomNumber) {
-        for (List<TreeNode> layer : this.layers) {
-            for (TreeNode node : layer) {
+        for (List<Node> layer : this.layers) {
+            for (Node node : layer) {
                 if (node.atomNumber == atomNumber) {
                     return node.parents.size();
                 }
@@ -338,11 +335,12 @@ public class Signature {
     /**
      * Recursive method to construct the tree, layer by layer.
      * 
-     * @param layer the previous layer
+     * @param previousLayer the previous layer
      * @param edges the edges that have already been visited
      */
-    private void makeNextLayer(ArrayList<TreeNode> layer, List<Edge> edges) {
-        ArrayList<TreeNode> nextLayer = new ArrayList<TreeNode>();
+    private void makeNextLayer(ArrayList<Node> previousLayer, List<Edge> edges) {
+        ArrayList<Node> layer = new ArrayList<Node>();
+        System.out.println(edges);
         
         /*
          *  Bonds can be visited twice in the same layer from different
@@ -351,33 +349,41 @@ public class Signature {
          */ 
         ArrayList<Edge> layerEdges = new ArrayList<Edge>();
         
-        for (TreeNode node : layer) {
+        for (Node node : previousLayer) {
             IAtom atom = molecule.getAtom(node.atomNumber);
             for (IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
                 int n = molecule.getAtomNumber(neighbour);
                 
                 // use references to existing nodes within a layer
-                TreeNode nextNode = this.findNode(nextLayer, n);
+                boolean isNew = false;
+                Node nextNode = this.findNode(layer, n);
                 if (nextNode == null) {
-                    nextNode = new TreeNode(n);
+                    nextNode = new Node(n);
+                    isNew = true;
+                    
                 }
+                System.out.print(node + " " + (n + 1));
                 Edge edge = new Edge(node, nextNode);
                 if (edges.contains(edge)) {
+                    System.out.println(" edge seen");
                     continue;
                 } else {
+                    System.out.println(" adding ");
                     layerEdges.add(edge);
                     node.children.add(nextNode);
                     nextNode.parents.add(node);
-                    nextLayer.add(nextNode);
+                    if (isNew) {
+                        layer.add(nextNode);
+                    }
                 }
             }
         }
-        if (nextLayer.size() > 0) {
-            this.layers.add(nextLayer);
+        if (layer.size() > 0) {
+            this.layers.add(layer);
         }
         if (edges.size() < molecule.getBondCount()) {
             edges.addAll(layerEdges);
-            makeNextLayer(nextLayer, edges);
+            makeNextLayer(layer, edges);
         }
     }
     
@@ -388,8 +394,8 @@ public class Signature {
      * @param atomNumber
      * @return
      */
-    private TreeNode findNode(ArrayList<TreeNode> layer, int atomNumber) {
-        for (TreeNode node : layer) {
+    private Node findNode(ArrayList<Node> layer, int atomNumber) {
+        for (Node node : layer) {
             if (node.atomNumber == atomNumber) {
                 return node;
             }
@@ -407,25 +413,24 @@ public class Signature {
      */
     private int[] calculateInitialInvariants() {
         int n = this.molecule.getAtomCount();
-        int[] parentCounts = new int[n];
         String[] symbols = new String[n];
+        int[] parentCounts = new int[n];
+    
         ArrayList<String> invariantStrings = new ArrayList<String>();
-        
-        for (ArrayList<TreeNode> layer : this.layers) {
-            for (TreeNode node : layer) {
+        for (ArrayList<Node> layer : this.layers) {
+            for (Node node : layer) {
                 int i = node.atomNumber;
-                parentCounts[i] = 0;
-                for (TreeNode p : node.parents) {
+                for (Node p : node.parents) {
                     if (!p.visited) {
                         parentCounts[i] += 1;
                     }
                     p.visited = true;
                 }
-                for (TreeNode p : node.parents) {
+                for (Node p : node.parents) {
                     p.visited = false;
                 }
                 
-                String symbol = molecule.getAtom(node.atomNumber).getSymbol();
+                String symbol = molecule.getAtom(i).getSymbol();
                 symbols[i] = symbol;
                 String invariantString = symbol + "," + parentCounts[i];
                 if (!invariantStrings.contains(invariantString)) {
@@ -437,16 +442,30 @@ public class Signature {
         int[] initialInvariants = new int[n];
         for (int i = 0; i < n; i ++) {
             String invariantString = symbols[i] + "," + parentCounts[i];
-            initialInvariants[i] = invariantStrings.indexOf(invariantString);
+            initialInvariants[i] = invariantStrings.indexOf(invariantString) + 1;
         }
         
         // store these initial invariants in the tree
-        for (ArrayList<TreeNode> layer : this.layers) {
-            for (TreeNode node : layer) {
+        for (ArrayList<Node> layer : this.layers) {
+            printLayer(layer);
+            for (Node node : layer) {
                 node.invariant = initialInvariants[node.atomNumber];
             }
         }
+        
+        System.out.println("parents " + Arrays.toString(parentCounts));
+        System.out.println("invstri " + invariantStrings);
+        System.out.println(
+                "Initial invariants " + Arrays.toString(initialInvariants));
         return initialInvariants;
+    }
+    
+    private void printLayer(ArrayList<Node> layer) {
+        System.out.print("Layer ");
+        for (Node node : layer) {
+            System.out.print(" " + node);
+        }
+        System.out.print("\n");
     }
     
     private int max(int[] arr) {
@@ -473,8 +492,8 @@ public class Signature {
             this.updateVertexInvariants(Direction.DOWN);
             InvariantVector[] invariantVectors = new InvariantVector[n];
             for (int i = 0; i < this.layers.size(); i++) {
-                ArrayList<TreeNode> layer = this.layers.get(i);
-                for (TreeNode node : layer) {
+                ArrayList<Node> layer = this.layers.get(i);
+                for (Node node : layer) {
                     int a = node.atomNumber;
                     if (invariantVectors[a] == null) {
                         invariantVectors[a] =  new InvariantVector(l);
@@ -503,46 +522,45 @@ public class Signature {
      * Equivalent to the algorithm "invariant-vertex(T(x), relative)" 
      */
     private void updateVertexInvariants(Direction direction) {
-        ArrayList<PairVector> pairVectors = new ArrayList<PairVector>();
-        HashMap<TreeNode, PairVector> nodeVectorMap = 
-            new HashMap<TreeNode, PairVector>();
+        SortedSet<PairVector> pairVectors = new TreeSet<PairVector>();
+        HashMap<Node, PairVector> nodeVectorMap = 
+            new HashMap<Node, PairVector>();
         
         for (int i = this.layers.size() - 1; i >= 0; i--) {
-            ArrayList<TreeNode> layer = this.layers.get(i);
-            for (TreeNode node : layer) {
+            ArrayList<Node> layer = this.layers.get(i);
+            for (Node node : layer) {
                 PairVector pairVector = new PairVector();
                 pairVector.add(node.color, atomInvariants[node.atomNumber]);
                 if (direction == Direction.UP) {
-                    for (TreeNode parent : node.parents) {
+                    for (Node parent : node.parents) {
                         pairVector.add(parent.color, parent.invariant);
                     }
                 } else if (direction == Direction.DOWN) {
-                    for (TreeNode child : node.children) {
+                    for (Node child : node.children) {
                         pairVector.add(child.color, child.invariant);
                     }
                 }
                 pairVectors.add(pairVector);
                 nodeVectorMap.put(node, pairVector);
             }
-            Collections.sort(pairVectors);
-            Collections.reverse(pairVectors);
-            for (TreeNode node : layer) {
-                node.invariant = pairVectors.indexOf(nodeVectorMap.get(node));
+            List<PairVector> vectorList = new ArrayList<PairVector>();
+            vectorList.addAll(pairVectors);
+            for (Node node : layer) {
+                node.invariant = vectorList.indexOf(nodeVectorMap.get(node));
             }
         }
     }
     
     private void toString(
-            TreeNode node, StringBuffer buffer, List<Edge> edges) {
+            Node node, StringBuffer buffer, List<Edge> edges) {
         buffer.append("[");
-        IAtom atom = this.molecule.getAtom(node.atomNumber); 
-        buffer.append(FaulonAtomTypeMapper.getTypeString(atom));
+        buffer.append(getLabelForAtom(node.atomNumber));
         if (node.color != 0) buffer.append(",").append(node.color);
         buffer.append("]");
         if (node.children.size() == 0) return;
         boolean addedChildren = false;
         Collections.sort(node.children, nodeSorter);
-        for (TreeNode child : node.children) {
+        for (Node child : node.children) {
             Edge edge = new Edge(node, child);
             if (edges.contains(edge)) {
                 continue;
@@ -560,10 +578,46 @@ public class Signature {
         }
     }
     
+    public String getLabelForAtom(int atomNumber) {
+        IAtom atom = this.molecule.getAtom(atomNumber);
+        return FaulonAtomTypeMapper.getTypeString(atom);
+    }
+    
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         this.toString(root, buffer, new ArrayList<Edge>());
         return buffer.toString();
+    }
+    
+    /**
+     * Temporary method that can only make canonical strings from
+     * simple labelled trees (not DAGs, and with no multiple parent nodes
+     * 
+     * @return
+     */
+    public String toSimpleCanonicalString() {
+        return this.toSimpleCanonicalString(root);
+    }
+    
+    private String toSimpleCanonicalString(Node node) {
+        String nodeLabel = "[" + getLabelForAtom(node.atomNumber) + "]"; 
+        if (node.children.size() > 0) {
+            String[] childStrings = new String[node.children.size()];
+            int i = 0;
+            for (Node child : node.children) {
+                childStrings[i] = toSimpleCanonicalString(child);
+                i++;
+            }
+            Arrays.sort(childStrings);
+            String children = "";
+            for (String childString : childStrings) {
+                children += childString;
+            }
+            return nodeLabel + "(" + children + ")";
+        } else {
+            return nodeLabel;
+        }
+        
     }
     
     public static Signature forMolecule(IMolecule molecule) {

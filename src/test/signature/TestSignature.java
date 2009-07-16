@@ -216,19 +216,25 @@ public class TestSignature {
             int atomNumber, IMolecule mol, String expected) {
         Signature sig = new Signature(atomNumber, mol);
         String actual = sig.canonize();
+//        String actual = sig.toSimpleCanonicalString();
         Assert.assertEquals("signature not canonical", expected, actual);
     }
     
     @Test
     public void testCage() {
         IMolecule cage = TestSignature.makeCage();
-        String expected = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))"
-                        + "[c_]([c_,5][c_,3]([c_,6]([c_,1]))))"
-                        + "[c_]([c_]([c_,7][c_]([c_,1][c_,8]))"
-                        + "[c_,5]([c_,8]([c_,6])))[c_]([c_,2]"
-                        + "[c_,7]([c_,4]([c_,1]))))";
-
-        TestSignature.testSignatureFromAtom(0, cage, expected);
+        String expectedA = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))[c_]([c_,5]" +
+        		           "[c_,3]([c_,6]([c_,1]))))[c_]([c_]([c_,7][c_]" +
+        		           "([c_,1[c_,8]))[c_,5]([c_,8]([c_,6])))[c_]([c_,2]" +
+        		           "[c_,7]([c_,4]([c_,1]))))";
+        String expectedB = "[c_]([c_]([c_]([c_,2][c_]([c_,1][c_,3]))[c_]" +
+        		           "([c_,1]([c_,4])[c_,5]))[c_]([c_,2]([c_,6]" +
+        		           "([c_,3]))[c_]([c_,7][c_,6]))[c_]([c_,5]([c_,4]" +
+        		           "([c_,8]))[c_,7]([c_,8]([c_,3]))))";
+        TestSignature.testSignatureFromAtom(0, cage, expectedA);
+        
+        // TODO : check which atom(s) has this signature!
+        TestSignature.testSignatureFromAtom(1, cage, expectedB);
     }
     
     @Test
@@ -242,8 +248,8 @@ public class TestSignature {
     
     @Test
     public void testPropellane() {
-        String expectedA = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1])[c_])";
-        String expectedB = "[c_]([c_]([c_,1][c_,2][c_,3])[c_,3]([c_,1][c_,2]))";
+        String expectedA = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1])[c_,1]))";
+        String expectedB = "[c_]([c_]([c_,1][c_,2][c_,3])[c_,2]([c_,1][c_,3]))";
         
         IMolecule mol = TestSignature.makePropellane();
         TestSignature.testSignatureFromAtom(0, mol, expectedA);
@@ -266,8 +272,8 @@ public class TestSignature {
         String expectedC = "[c_]([c_]([c_]([c_]))[c_]([c_]))";
         IMolecule mol = TestSignature.makeHexane();
         
-//        TestSignature.testSignatureFromAtom(0, mol, expectedA);
-//        TestSignature.testSignatureFromAtom(1, mol, expectedB);
+        TestSignature.testSignatureFromAtom(0, mol, expectedA);
+        TestSignature.testSignatureFromAtom(1, mol, expectedB);
         TestSignature.testSignatureFromAtom(2, mol, expectedC);
     }
     

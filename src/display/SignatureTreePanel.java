@@ -3,6 +3,8 @@ package display;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +21,55 @@ public class SignatureTreePanel extends JPanel {
     
     public int depth;
     
+    public String s;
+    
+    public class TreeLayout {
+        
+        public int leafCount = 0;
+        
+        public int xSep;
+        
+        public int ySep;
+        
+        public void layoutTree(Node root) {
+            int leafCount = root.countLeaves();
+            this.xSep = width / (leafCount + 1);
+            this.ySep = height / (depth + 1);
+            layout(root);
+        }
+        
+        public int layout(Node node) {
+            node.y  = node.depth * ySep;
+            if (node.isLeaf()) {
+                leafCount += 1;
+                node.x = leafCount * xSep;
+                return node.x;
+            } else {
+                int min = 0;
+                int max = 0;
+                for (Node child : node.children) {
+                    int childCenter = layout(child);
+                    if (min == 0) {
+                        min = childCenter;
+                    }
+                    max = childCenter;
+                }
+                if (min == max) {
+                    node.x = min;
+                } else {
+                    node.x = min + (max - min) / 2;
+                }
+                return node.x;
+            }
+        }
+        
+    }
+    
     public class Node {
         
-        public int x;
+        public int x = -1;
         
-        public int y;
+        public int y = -1;
         
         public int depth;
         
@@ -56,10 +102,11 @@ public class SignatureTreePanel extends JPanel {
         }
     }
     
-    public SignatureTreePanel(String s) {
+    public SignatureTreePanel(String s, int width, int height) {
         root = parse(s);
-        this.width = 400;
-        this.height = 400;
+        this.s = s;
+        this.width = width;
+        this.height = height;
     }
     
     public Node parse(String s) {
@@ -67,6 +114,7 @@ public class SignatureTreePanel extends JPanel {
         Node parent = null;
         Node current = null;
         int d = 1;
+        int j = 0;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '(') {
@@ -76,75 +124,85 @@ public class SignatureTreePanel extends JPanel {
             } else if (c == ')') {
                 parent = parent.parent;
                 d--;
-            } else {
+            } else if (c == '[') {
+                j = i + 1;
+            } else if (c == ']') {
+                String ss = s.substring(j, i); 
                 if (root == null) {
-                    root = new Node(c + "", null, d);
+                    root = new Node(ss, null, d);
                     parent = root;
                     current = root;
                 } else {
-                    current = new Node(c + "", parent, d);
+                    current = new Node(ss, parent, d);
                     parent.children.add(current);
                     current.parent = parent;
                 }
+            } else if (c == 'p') {
+                // ignore, for now
+            } else {
             }
         }
         return root;
-    }
-    
-    private int offset = 0;
-    
-    public void layout(Node node, int center, int xSep, int ySep) {
-        node.y = node.depth * ySep;
-        if (node.isLeaf()) {
-            node.x = offset + center;
-            if (node.x > offset) offset = center;
-            return;
-        } else {
-            int l = node.countLeaves();
-            int w = l * xSep;
-            node.x = offset + (w / 2);
-            int c = 0;
-            for (Node child : node.children) {
-                if (child.isLeaf()) {
-                    layout(child, c * xSep, xSep, ySep);
-                    c++;
-                } else {
-                    int leafCount = child.countLeaves();
-                    int childWidth = xSep * leafCount;
-                    layout(child, childWidth / 2, xSep, ySep);
-                }
-            }
-        }
     }
     
     public void paint(Graphics g) {
         if (root == null) return;
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
-        int leafCount = root.countLeaves();
-        int xSep = width / (leafCount + 1);
-        int ySep = height / (depth + 1);
-        layout(root, width / 2, xSep, ySep);
+        new TreeLayout().layoutTree(root);
         g.setColor(Color.BLACK);
         paint(g, root);
+        Rectangle2D r = g.getFontMetrics().getStringBounds(s, g);
+        g.drawString(s, width / 2 - (int)(r.getWidth() / 2), 30);
     }
 
     public void paint(Graphics g, Node node) {
-        int x = node.x;
-        int y = node.y;
-        System.out.println("label at " + x + "," + y);
-        g.drawString(node.label, x, y);
         for (Node child : node.children) {
+            g.drawLine(node.x, node.y, child.x, child.y);
             paint(g, child);
         }
+        Rectangle2D r = g.getFontMetrics().getStringBounds(node.label, g);
+        int rw = (int)r.getWidth();
+        int rh = (int)r.getHeight();
+        int textX = node.x - (rw / 2);
+        int textY = node.y + (rh / 2);
+        int border = 3;
+        int boundX = textX - border;
+        int boundY = node.y - (rh / 2) - border;
+        int boundW = rw + (2 * border);
+        int boundH = rh + (2 * border);
+//        System.out.println(rw + " " + rh + " " + textX + " " + textY);
+        g.setColor(Color.WHITE);
+        g.fillRect(boundX, boundY, boundW, boundH);
+        g.setColor(Color.BLACK);
+        g.drawRect(boundX, boundY, boundW, boundH);
+        g.drawString(node.label, textX, textY);
     }
     
     public static void main(String[] args) {
         JFrame f = new JFrame();
-//        String s = "C(CC(C(CH)C(H))C(C(C))";
-        String s = "A(BC(D(EF)H(I))J(K(L))";
-        f.add(new SignatureTreePanel(s));
-        f.setPreferredSize(new Dimension(400,400));
+//        String a = "[C]([C]([C]([C,2][C,3])[C,3]([C,1]))[C]([C,1]([C,4])[C,4]([C,2])))";
+//        String a = "[C]([C]([C][C])[C]([C][C])[C]([C][C]))";
+//        String a = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1])[c_,1])";
+//       
+        String a = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))[c_]([c_,5][c_,3]([c_,6]([c_,1]))))[c_]([c_]([c_,7][c_]([c_,1][c_,8]))[c_,5]([c_,8]([c_,6])))[c_]([c_,2][c_,7]([c_,4]([c_,1]))))";
+        
+        
+//        String b = "[cp](p[cp](p[cp](p[cp,1]([h_])[h_])[h_])p[cp](p[cp](p[cp,1][h_])[h_])[h_])";
+//        String b = "[C]([C]([C][C,1])[C]([C][C,1])[C]([C][C]))";
+//        String b = "[C](p[C](p[C](p[C,1]([H])[O]([H]))[H])p[C](p[C](p[C,1][O]([C](p[C](p[C](p[C,2]([H])[O]([C]([C]([C]([H][O,3][O]([C](p[C](p[C][H])p[C]([C]p[C]))))[H][O]([H]))[C]([C](=[O][O]([H]))[C]([C]([H][H][O]([H]))[H][O,3])[H])[O]([H]))))[H])p[C]([C](=[C]([C](=[O][O]([H]))[H])[H])p[C](p[C,2][H])))))[H])[N]([C]([C](=[O][O]([H]))[C]([C]([H][H][S]([C]([H][H][H])))[H][H])[H])[H]))";
+//        String b = "[c_]([c_]([c_,1][c_,2][c_,3])[c_,2]([c_,1][c_,3]))";
+//        String b = "[c_]([c_]([c_]([c_,2][c_]([c_,1][c_,3]))[c_]([c_,1]([c_,4])[c_,5]))[c_]([c_,2]([c_,6]([c_,3]))[c_]([c_,7][c_,6]))[c_]([c_,5]([c_,4]([c_,8]))[c_,7]([c_,8]([c_,3]))))";
+        String b = "[c_]([c_]([c_]([c_]([c_,4]([c_])[c_,2])[c_])[c_,1]([c_]([c_])))[c_]([c_,1][c_]([c_][c_]([c_,3])))[c_]([c_]([c_]([c_,3][c_]))[c_]([c_]([c_,4]))))";
+        int width = 1400;
+        int height = 400;
+//        int height = 800;
+        f.setLayout(new GridLayout(2, 1));
+//        f.setLayout(new GridLayout(1, 1));
+        f.add(new SignatureTreePanel(a, width, height));
+        f.add(new SignatureTreePanel(b, width, height));
+        f.setPreferredSize(new Dimension(width,2*height));
+//        f.setPreferredSize(new Dimension(width,height));
         f.pack();
         f.setVisible(true);
     }
