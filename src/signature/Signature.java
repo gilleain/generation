@@ -214,6 +214,8 @@ public class Signature {
     
     private int[] atomInvariants;
     
+    private int nodeCount;
+    
     public Signature(int atomNumber, IMolecule molecule) {
         this(molecule.getAtom(atomNumber), molecule);
     }
@@ -228,10 +230,78 @@ public class Signature {
         rootLayer.add(root);
         this.layers.add(rootLayer);
         
+        this.nodeCount = 0;
         this.makeNextLayer(rootLayer, new ArrayList<Edge>());
-        this.atomInvariants = this.calculateInitialInvariants();
+        this.calculateInitialInvariants();
     }
     
+    /**
+     * Recursive method to construct the tree, layer by layer.
+     * 
+     * @param previousLayer the previous layer
+     * @param edges the edges that have already been visited
+     */
+    private void makeNextLayer(ArrayList<Node> previousLayer, List<Edge> edges) {
+        ArrayList<Node> layer = new ArrayList<Node>();
+        
+        /*
+         *  Bonds can be visited twice in the same layer from different
+         *  directions, but not twice in different layers, so record the
+         *  edges in a separate list from the one passed in
+         */ 
+        ArrayList<Edge> layerEdges = new ArrayList<Edge>();
+        
+        for (Node node : previousLayer) {
+            IAtom atom = molecule.getAtom(node.atomNumber);
+            for (IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
+                int n = molecule.getAtomNumber(neighbour);
+                
+                // use references to existing nodes within a layer
+                boolean isNew = false;
+                Node nextNode = this.findNode(layer, n);
+                if (nextNode == null) {
+                    nextNode = new Node(n);
+                    isNew = true;
+                }
+                Edge edge = new Edge(node, nextNode);
+                if (edges.contains(edge)) {
+                    continue;
+                } else {
+                    layerEdges.add(edge);
+                    node.children.add(nextNode);
+                    nextNode.parents.add(node);
+                    if (isNew) {
+                        this.nodeCount++;
+                        layer.add(nextNode);
+                    }
+                }
+            }
+        }
+        if (layer.size() > 0) {
+            this.layers.add(layer);
+        }
+        if (edges.size() < molecule.getBondCount()) {
+            edges.addAll(layerEdges);
+            makeNextLayer(layer, edges);
+        }
+    }
+
+    /**
+     * Find existing references to the node in the layer.
+     * 
+     * @param layer
+     * @param atomNumber
+     * @return
+     */
+    private Node findNode(ArrayList<Node> layer, int atomNumber) {
+        for (Node node : layer) {
+            if (node.atomNumber == atomNumber) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     public String canonize() {
         String s = canonize(1, new String());
         System.out.println(s);
@@ -305,17 +375,6 @@ public class Signature {
         return orbits;
     }
     
-    private int numberOfParents(int atomNumber) {
-        for (List<Node> layer : this.layers) {
-            for (Node node : layer) {
-                if (node.atomNumber == atomNumber) {
-                    return node.parents.size();
-                }
-            }
-        }
-        return 0;
-    }
-    
     private boolean allTwoParents(List<Integer> orbit) {
         for (int i : orbit) {
             if (numberOfParents(i) < 2) {
@@ -342,133 +401,60 @@ public class Signature {
     }
 
     /**
-     * Recursive method to construct the tree, layer by layer.
-     * 
-     * @param previousLayer the previous layer
-     * @param edges the edges that have already been visited
-     */
-    private void makeNextLayer(ArrayList<Node> previousLayer, List<Edge> edges) {
-        ArrayList<Node> layer = new ArrayList<Node>();
-//        System.out.println(edges);
-        
-        /*
-         *  Bonds can be visited twice in the same layer from different
-         *  directions, but not twice in different layers, so record the
-         *  edges in a separate list from the one passed in
-         */ 
-        ArrayList<Edge> layerEdges = new ArrayList<Edge>();
-        
-        for (Node node : previousLayer) {
-            IAtom atom = molecule.getAtom(node.atomNumber);
-            for (IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
-                int n = molecule.getAtomNumber(neighbour);
-                
-                // use references to existing nodes within a layer
-                boolean isNew = false;
-                Node nextNode = this.findNode(layer, n);
-                if (nextNode == null) {
-                    nextNode = new Node(n);
-                    isNew = true;
-                    
-                }
-//                System.out.print(node + " " + (n + 1));
-                Edge edge = new Edge(node, nextNode);
-                if (edges.contains(edge)) {
-//                    System.out.println(" edge seen");
-                    continue;
-                } else {
-//                    System.out.println(" adding ");
-                    layerEdges.add(edge);
-                    node.children.add(nextNode);
-                    nextNode.parents.add(node);
-                    if (isNew) {
-                        layer.add(nextNode);
-                    }
-                }
-            }
-        }
-        if (layer.size() > 0) {
-            this.layers.add(layer);
-        }
-        if (edges.size() < molecule.getBondCount()) {
-            edges.addAll(layerEdges);
-            makeNextLayer(layer, edges);
-        }
-    }
-    
-    /**
-     * Find existing references to the node in the layer.
-     * 
-     * @param layer
-     * @param atomNumber
-     * @return
-     */
-    private Node findNode(ArrayList<Node> layer, int atomNumber) {
-        for (Node node : layer) {
-            if (node.atomNumber == atomNumber) {
-                return node;
-            }
-        }
-        return null;
-    }
-    
-    /**
      * Calculate initial invariants that are of the form (Symbol,
      * Number of Parents) like "C,1" or "C,0" - these are then sorted lexico-
      * graphically (so that, e.g. "C,1" > "H,1" > "H,2") and the position of
      * the invariant in this sorted list is the final invariant. 
      * 
-     * @return the initial invariants as a list of numbers
      */
-    private int[] calculateInitialInvariants() {
-        int n = this.molecule.getAtomCount();
-        String[] symbols = new String[n];
-        int[] parentCounts = new int[n];
+    private void calculateInitialInvariants() {
+        // store these values temporarily, to make it easier to look them up
+        String[] symbols = new String[this.nodeCount+1];
+        int[] parentCounts = new int[this.nodeCount+1];
     
+        // create the list of invariant strings (like "C,2" or "H,1"
         ArrayList<String> invariantStrings = new ArrayList<String>();
+        int i = 0;
         for (ArrayList<Node> layer : this.layers) {
             for (Node node : layer) {
-                int i = node.atomNumber;
-                for (Node p : node.parents) {
-                    if (!p.visited) {
-                        parentCounts[i] += 1;
-                    }
-                    p.visited = true;
-                }
-                for (Node p : node.parents) {
-                    p.visited = false;
-                }
-                
-                String symbol = molecule.getAtom(i).getSymbol();
+                String symbol = molecule.getAtom(node.atomNumber).getSymbol();
                 symbols[i] = symbol;
+                parentCounts[i] = node.parents.size();
                 String invariantString = symbol + "," + parentCounts[i];
                 if (!invariantStrings.contains(invariantString)) {
                     invariantStrings.add(invariantString);
                 }
+                i++;
             }
         }
         Collections.sort(invariantStrings);
-        int[] initialInvariants = new int[n];
-        for (int i = 0; i < n; i ++) {
-            String invariantString = symbols[i] + "," + parentCounts[i];
-            initialInvariants[i] = invariantStrings.indexOf(invariantString) + 1;
-        }
         
-        // store these initial invariants in the tree
+        // store the index of the invariant string in the tree
+        i = 0;
         for (ArrayList<Node> layer : this.layers) {
             printLayer(layer);
             for (Node node : layer) {
-                node.invariant = initialInvariants[node.atomNumber];
+                String invariantString = symbols[i] + "," + parentCounts[i];
+                node.invariant = invariantStrings.indexOf(invariantString) + 1;
             }
         }
         
         System.out.println("parents " + Arrays.toString(parentCounts));
+        System.out.println("symbols " + Arrays.toString(symbols));
         System.out.println("invstri " + invariantStrings);
-        System.out.println(
-                "Initial invariants " + Arrays.toString(initialInvariants));
-        return initialInvariants;
     }
     
+    private int numberOfParents(int atomNumber) {
+        for (List<Node> layer : this.layers) {
+            for (Node node : layer) {
+                if (node.atomNumber == atomNumber) {
+                    return node.parents.size();
+                }
+            }
+        }
+        return 0;
+    }
+
     private void printLayer(ArrayList<Node> layer) {
         System.out.print("Layer ");
         for (Node node : layer) {
