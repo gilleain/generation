@@ -184,6 +184,9 @@ public class SignaturePort {
         } 
         SMAX = s;
         for (int i = 0; i < SIZE; i++) {
+            if (klasses[i] == null) {
+                klasses[i] = new Klass();
+            }
             klasses[i].l = label[i];
         }
     }
@@ -252,10 +255,11 @@ public class SignaturePort {
             return;
         }
         
-        /* Find the orbit to singularise from leaves to root
+        /* Find the orbit to singularize from leaves to root
          * this orbit has the maximum number of elements and the max invariant
          */
         for (int l = h; l >= 0; l--) {
+            if (l >= L.size()) continue;
             for (Vertex N : L.get(l)) {
                 if (COLOR[N.atomNumber] > 1 
                         && ((occur[N.atomNumber] > omax) 
@@ -406,10 +410,10 @@ public class SignaturePort {
         int li;
         if (relation.equals("child")) {
             l0 = 0;
-            ln = h + 1;
+            ln = L.size();
             li = 1;
         } else {
-            l0 = h;
+            l0 = L.size() - 1;
             ln = -1;
             li = -1;
         }
@@ -466,6 +470,7 @@ public class SignaturePort {
          */
         Bucket[] invar = new Bucket[SIZE + 1];
         for (int i = 0; i < SIZE; i++) {
+            invar[i] = new Bucket();
             invar[i].x = INV[i];
             invar[i].y = invar[i].z = i;
         }
@@ -519,7 +524,7 @@ public class SignaturePort {
         }
         
         Collections.sort(layer, this.cmp_vertex_invariant_element_instance);
-        double[] invar = new double[layer.size()];
+        double[] invar = new double[layer.size() + 1];
         invar[0] = 1;
         
         int inv = 1;
@@ -530,6 +535,7 @@ public class SignaturePort {
             while (cmp_vertex_invariant_element_instance.compare(a, b) == 0) {
                 invar[i] = inv;
                 i++;
+                if (i >= layer.size()) break;
             }
             inv++; 
             invar[i] = inv;
@@ -686,6 +692,9 @@ public class SignaturePort {
             }
         }
         build_layer(NN, E, L, h - 1);
+        if (NN.size() != 0) {
+            L.add(NN);
+        }
     }
     
     private void add_vertex(
@@ -709,6 +718,7 @@ public class SignaturePort {
         }
         n.child.add(v);
         v.parent.add(n);
+        NN.add(v);
         E.add(e);
     }
 
