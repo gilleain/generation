@@ -33,6 +33,10 @@ public class SignaturePort {
             this.child = new ArrayList<Vertex>();
         }
         
+        public String toString() {
+            return String.format("%s%d(%d)", element, atomNumber, invariant);
+        }
+        
     }
     
     private class Edge {
@@ -47,6 +51,9 @@ public class SignaturePort {
             } else {
                 return false;
             }
+        }
+        public String toString() {
+            return String.format("%s-%s", a, b);
         }
     }
     
@@ -223,7 +230,7 @@ public class SignaturePort {
         ArrayList<ArrayList<Vertex>> L = new ArrayList<ArrayList<Vertex>>();  
         build_dag(atomNumber, L, h);
         
-        printDAG(L);
+//        printDAG(L);
         
         if (LABEL == null) {
             LABEL = new int[SIZE];
@@ -331,10 +338,10 @@ public class SignaturePort {
 
     private String layer_print_string(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int L0) {
-        ArrayList<Edge> edges = new ArrayList<Edge>();
         Vertex root = L.get(0).get(0);
         int[] OCC = new int[SIZE + 1];
-        occur_string(root, edges, OCC);
+        occur_string(root, new ArrayList<Edge>(), OCC);
+        System.out.println(Arrays.toString(OCC));
         
         /* remove labels occurring only one time JLF 02-05 */
         for (int i = 0; i < SIZE; i++) {
@@ -342,7 +349,7 @@ public class SignaturePort {
         }
         LL = L0 + 1;
         StringBuffer sb = new StringBuffer();
-        print_string(sb, null, root, edges, LAB, OCC);
+        print_string(sb, null, root, new ArrayList<Edge>(), LAB, OCC);
         
         return sb.toString();
     }
@@ -399,7 +406,7 @@ public class SignaturePort {
             else if (o == 4) sb.append("p").append(element);
             else sb.append(String.format("%d-%s", o, element));
         } else {
-            sb.append(current.element);
+            sb.append(element);
         }
         
         if (LACUR[current.atomNumber] < 0) LACUR[current.atomNumber] = NBCUR++;
