@@ -181,28 +181,14 @@ public class SignatureTreePanel extends JPanel {
     
     public static void main(String[] args) {
         JFrame f = new JFrame();
-//        String a = "[C]([C]([C]([C,2][C,3])[C,3]([C,1]))[C]([C,1]([C,4])[C,4]([C,2])))";
-//        String a = "[C]([C]([C][C])[C]([C][C])[C]([C][C]))";
-//        String a = "[c_]([c_]([c_,1])[c_]([c_,1])[c_]([c_,1])[c_,1])";
-//       
-        String a = "[c_]([c_]([c_,2]([c_]([c_,3][c_,4]))[c_]([c_,5][c_,3]([c_,6]([c_,1]))))[c_]([c_]([c_,7][c_]([c_,1][c_,8]))[c_,5]([c_,8]([c_,6])))[c_]([c_,2][c_,7]([c_,4]([c_,1]))))";
-        
-        
-//        String b = "[cp](p[cp](p[cp](p[cp,1]([h_])[h_])[h_])p[cp](p[cp](p[cp,1][h_])[h_])[h_])";
-//        String b = "[C]([C]([C][C,1])[C]([C][C,1])[C]([C][C]))";
-//        String b = "[C](p[C](p[C](p[C,1]([H])[O]([H]))[H])p[C](p[C](p[C,1][O]([C](p[C](p[C](p[C,2]([H])[O]([C]([C]([C]([H][O,3][O]([C](p[C](p[C][H])p[C]([C]p[C]))))[H][O]([H]))[C]([C](=[O][O]([H]))[C]([C]([H][H][O]([H]))[H][O,3])[H])[O]([H]))))[H])p[C]([C](=[C]([C](=[O][O]([H]))[H])[H])p[C](p[C,2][H])))))[H])[N]([C]([C](=[O][O]([H]))[C]([C]([H][H][S]([C]([H][H][H])))[H][H])[H])[H]))";
-//        String b = "[c_]([c_]([c_,1][c_,2][c_,3])[c_,2]([c_,1][c_,3]))";
-//        String b = "[c_]([c_]([c_]([c_,2][c_]([c_,1][c_,3]))[c_]([c_,1]([c_,4])[c_,5]))[c_]([c_,2]([c_,6]([c_,3]))[c_]([c_,7][c_,6]))[c_]([c_,5]([c_,4]([c_,8]))[c_,7]([c_,8]([c_,3]))))";
-        String b = "[c_]([c_]([c_]([c_]([c_,4]([c_])[c_,2])[c_])[c_,1]([c_]([c_])))[c_]([c_,1][c_]([c_][c_]([c_,3])))[c_]([c_]([c_]([c_,3][c_]))[c_]([c_]([c_,4]))))";
+        String a = "[C]([C]([C,1][C,2][C,3])[C,2]([C,1][C,3]))";
+        String b = "[C]([C,2]([C,3][C,0])[C]([C,3][C,0][C,2]))";
         int width = 1400;
         int height = 400;
-//        int height = 800;
         f.setLayout(new GridLayout(2, 1));
-//        f.setLayout(new GridLayout(1, 1));
         f.add(new SignatureTreePanel(a, width, height));
         f.add(new SignatureTreePanel(b, width, height));
         f.setPreferredSize(new Dimension(width,2*height));
-//        f.setPreferredSize(new Dimension(width,height));
         f.pack();
         f.setVisible(true);
     }

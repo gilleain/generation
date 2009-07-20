@@ -144,6 +144,12 @@ public class SignaturePort {
     private int SIZE;
     private String SMAX;
     
+    /**
+     * added as a temporary hack to get the most recently created string
+     * TODO : refactor this to not be a global!
+     */
+    private String SCURRENT;
+    
     private int MAX_COLOR;
 
     private int NBCUR;
@@ -174,6 +180,11 @@ public class SignaturePort {
             }
             layerNum++;
         }
+    }
+    
+    public String forAtom(int atomNumber) {
+        sicd_signature_atom(atomNumber, SIZE);
+        return SCURRENT;    // :(
     }
     
     public String sisc_canonize() {
@@ -327,6 +338,7 @@ public class SignaturePort {
         }
         NBCUR = 0;
         String s = layer_print_string(L, h, LAB, L0);
+        this.SCURRENT = s;
         if (SMAX != null) {
             if (s.compareTo(SMAX) < 0) return;
         }
@@ -341,7 +353,7 @@ public class SignaturePort {
         Vertex root = L.get(0).get(0);
         int[] OCC = new int[SIZE + 1];
         occur_string(root, new ArrayList<Edge>(), OCC);
-        System.out.println(Arrays.toString(OCC));
+//        System.out.println(Arrays.toString(OCC));
         
         /* remove labels occurring only one time JLF 02-05 */
         for (int i = 0; i < SIZE; i++) {
