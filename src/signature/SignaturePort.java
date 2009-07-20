@@ -61,6 +61,9 @@ public class SignaturePort {
         public double x;
         public int y;
         public int z;
+        public String toString() { 
+            return String.format("(%6.0f, %d, %d)", x, y, z);
+        }
     }
     
     private class cmp_invariant implements Comparator<Double> {
@@ -77,7 +80,7 @@ public class SignaturePort {
         public int compare(Bucket a, Bucket b) {
             if (a == null || b == null) return 0;
             if (a.x + EPS6 < b.x) return 1;
-            if (a.x - EPS6 > b.x) return 1;
+            if (a.x - EPS6 > b.x) return -1;
             return 0;
         }
         
@@ -153,6 +156,8 @@ public class SignaturePort {
     private int MAX_COLOR;
 
     private int NBCUR;
+    
+    private int EXIT_HACK; // very crude way to avoid infinite loops...
 
     private static final double VALENCE = 4;
     
@@ -214,7 +219,7 @@ public class SignaturePort {
     private void print_atom_signature(int atomNumber, int h, Klass[] klasses) {
         int[] label = new int[SIZE];
         String s = sicd_signature_atom_label(atomNumber, h, label);
-        System.out.println("sig for atom " + atomNumber + " is " + s);
+//        System.out.println("sig for atom " + atomNumber + " is " + s);
         klasses[atomNumber] = new Klass();
         klasses[atomNumber].n = atomNumber;
         klasses[atomNumber].s = s;
@@ -243,6 +248,8 @@ public class SignaturePort {
         
 //        printDAG(L);
         
+        this.EXIT_HACK = 0;
+        
         if (LABEL == null) {
             LABEL = new int[SIZE];
             OCCUR = new int[SIZE];
@@ -257,6 +264,10 @@ public class SignaturePort {
             LABEL[i] = LACAN[i] = LACUR[i] = -1;
         }
         init_label_invariant(L, h, LABEL, OCCUR, COLOR, INVAR);
+        
+//        System.out.println("INITIAL INVARS " + Arrays.toString(OCCUR));
+//        System.out.println("INITIAL COLORS " + Arrays.toString(COLOR));
+        
         compute_label_invariant(L, h, LABEL, OCCUR, INVAR, 0);
         return SMAX;
     }
@@ -268,13 +279,19 @@ public class SignaturePort {
         int imax = -1;
         int inv = -1;
         
-        int[] label = new int[SIZE + 1];
-        int[] occur = new int[SIZE + 1];
-        double[] invar = new double[SIZE + 1];
+        int[] label = new int[SIZE];
+        int[] occur = new int[SIZE];
+        double[] invar = new double[SIZE];
         
         for (int i = 0; i < SIZE; i++) {
             label[i] = LAB[i]; invar[i] = INV[i]; occur[i] = OCC[i];
             if (label[i] > L0) { L0 = label[i]; }
+        }
+        
+        this.EXIT_HACK++;
+        if (EXIT_HACK > 5) {
+            SCURRENT = layer_print_string(L, h, LAB, L0);
+            return;
         }
         
         // compute invariant for all vertices
@@ -282,9 +299,15 @@ public class SignaturePort {
         while (true) {
             newinv = compute_invariant(L, h, label, occur, invar, "parent");
             newinv = compute_invariant(L, h, label, occur, invar, "child");
+//            System.out.println("NEW INV = " + newinv + " OLD = " + inv);
             if (newinv == inv) break;
             inv = newinv;
         }
+        // XXX recurses forever without this, but seems contradictory!
+        inv = -1;
+        // XXX
+        
+//        System.out.println("occur now " + Arrays.toString(occur));
         
         int j;
         for (j = 0; j < SIZE; j++) {
@@ -338,6 +361,7 @@ public class SignaturePort {
         }
         NBCUR = 0;
         String s = layer_print_string(L, h, LAB, L0);
+//        System.out.println("FRESHLY PRINTED " + s);
         this.SCURRENT = s;
         if (SMAX != null) {
             if (s.compareTo(SMAX) < 0) return;
@@ -351,7 +375,7 @@ public class SignaturePort {
     private String layer_print_string(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int L0) {
         Vertex root = L.get(0).get(0);
-        int[] OCC = new int[SIZE + 1];
+        int[] OCC = new int[SIZE];
         occur_string(root, new ArrayList<Edge>(), OCC);
 //        System.out.println(Arrays.toString(OCC));
         
@@ -360,9 +384,13 @@ public class SignaturePort {
             if (LAB[i] > -1 && OCC[i] < 2) L0--;
         }
         LL = L0 + 1;
+        
+//        System.out.println("OCC BEFORE PRINTING " + Arrays.toString(OCC));
+//        System.out.println("LAB BEFORE PRINTING " + Arrays.toString(LAB));
+//        System.out.println("LL BEFORE PRINTING " + LL);
+        
         StringBuffer sb = new StringBuffer();
         print_string(sb, null, root, new ArrayList<Edge>(), LAB, OCC);
-        
         return sb.toString();
     }
     
@@ -393,32 +421,29 @@ public class SignaturePort {
     private void print_string(StringBuffer sb, Vertex parent,
             Vertex current, ArrayList<Edge> edges, int[] LAB,
             int[] OCC) {
-        String element = "";
         if (OCC[current.atomNumber] > 1) {
-            
-            if (LAB[current.atomNumber] < 0) {
-                LAB[current.atomNumber] = (++LL);
+            if (!current.element.contains(",")) {
+                if (LAB[current.atomNumber] < 0) {
+                    LAB[current.atomNumber] = (++LL);
+                }
+                //System.out.println("set label to " + LAB[current.atomNumber]);
+                current.element = "[";
+                current.element += getType(current);
+                current.element += ",";
+                current.element += String.valueOf(LAB[current.atomNumber]);
+                current.element += "]";
             }
-            element += "[";
-            element += getType(current);
-            element += ",";
-            element += String.valueOf(LAB[current.atomNumber]);
-            element += "]";
-        } else {
-            element += "[";
-            element += getType(current);
-            element += "]";
-        }
+        } 
         
         if (parent != null) {
             double o = order(parent, current);
-            if      (o <= 1) sb.append(element);
-            else if (o == 2) sb.append("=").append(element);
-            else if (o == 3) sb.append("t").append(element);
-            else if (o == 4) sb.append("p").append(element);
-            else sb.append(String.format("%d-%s", o, element));
+            if      (o <= 1) sb.append(current.element);
+            else if (o == 2) sb.append("=").append(current.element);
+            else if (o == 3) sb.append("t").append(current.element);
+            else if (o == 4) sb.append("p").append(current.element);
+            else sb.append(String.format("%d-%s", o, current.element));
         } else {
-            sb.append(element);
+            sb.append(current.element);
         }
         
         if (LACUR[current.atomNumber] < 0) LACUR[current.atomNumber] = NBCUR++;
@@ -469,8 +494,9 @@ public class SignaturePort {
         
         // find K, the maximum invariant for nodes and atoms
         double K = 0;
-        double n = L.size();
+        double n = 0;
         for (ArrayList<Vertex> layer : L) {
+            n++;
             for (Vertex vertex : layer) {
                 if (vertex.invariant > K) {
                     K = (double)vertex.invariant;
@@ -494,15 +520,29 @@ public class SignaturePort {
         } else {
             KK = K;
         }
+        String s = String.format("KK = %f K = %f n = %f K**n = %f\n",
+                KK, K, n, Math.pow(K, n));
+//        System.out.println(s);
         
         // compute new invariant for all atoms
         n = 1;
         for (ArrayList<Vertex> layer : L) {
             n++;
             for (Vertex vertex : layer) {
-                double invariant = vertex.invariant * KK / K;
+                double invariant = vertex.invariant * (KK / K);
                 invariant *= Math.pow(KK, n);
                 INV[vertex.atomNumber] += invariant;
+//                System.out.print(String.format(
+//                        "%s KK = %d n = %d (initinv = %d pow = %d) inv = %d INV[%d] = %d\n",
+//                        relation, 
+//                        (int)KK, 
+//                        (int)n, 
+//                        (int)vertex.invariant, 
+//                        (int)Math.pow(KK,n), 
+//                        (int)invariant, 
+//                        vertex.atomNumber,
+//                        (int)INV[vertex.atomNumber]));
+
             }
         }
         
@@ -512,13 +552,15 @@ public class SignaturePort {
          * y is the new invariant
          * z in the location in the new array
          */
-        Bucket[] invar = new Bucket[SIZE + 1];
+        Bucket[] invar = new Bucket[SIZE];
         for (int i = 0; i < SIZE; i++) {
             invar[i] = new Bucket();
             invar[i].x = INV[i];
             invar[i].y = invar[i].z = i;
         }
+//        System.out.println("before sorting " + Arrays.toString(invar));
         Arrays.sort(invar, this.cmp_invar_instance);
+//        System.out.println("after sorting " + Arrays.toString(invar));
         
         // rank the sorted buckets
         invar[0].y = 1;
@@ -533,6 +575,7 @@ public class SignaturePort {
             }
         }
         for (int i = 0; i < SIZE; i++) { INV[invar[i].z] = invar[i].y; }
+//        System.out.println("invariants now " + Arrays.toString(INV));
         
         // compute OCC
         int nb = 1;
@@ -558,7 +601,7 @@ public class SignaturePort {
             }
         }
         
-        return 0;
+        return inv;
     }
 
     private void compute_layer_invariant(ArrayList<Vertex> layer,
@@ -595,7 +638,7 @@ public class SignaturePort {
 
     private void compute_vertex_invariant(Vertex vertex, int[] LAB,
             double[] INV, String relation) {
-        vertex.element += "[";
+        vertex.element = "[";
         vertex.element += getType(vertex);
         if (LAB[vertex.atomNumber] >= 0) {
             vertex.element += ",";
@@ -603,6 +646,7 @@ public class SignaturePort {
         }
         vertex.element += "]";
         vertex.invariant = (int)INV[vertex.atomNumber];
+//        System.out.println("set vertex " + vertex.atomNumber + " element to " + vertex.element);
         
         double K = SIZE + 1;
         Double[] invar;
@@ -679,9 +723,6 @@ public class SignaturePort {
 
     private void init_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int[] OCC, int[] COL, double[] INV) {
-        Vertex root = L.get(0).get(0);
-        OCC[root.atomNumber] = COL[root.atomNumber] = 1;
-        for (int i = 0; i < SIZE; i++) { COL[i] = OCC[i] = 0; }
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -689,10 +730,15 @@ public class SignaturePort {
          * vertices occurring alone with more than one parent have OCC += 1 
          * all other vertices have OCC += (number of parents) each time they occur
          */
+        int l = 0;
         for (ArrayList<Vertex> N : L) {
             int parent = 0;
+            int k = 0;
             for (Vertex vertex : N) {
                 if (vertex.parent.size() > 1) { parent++; }
+                String m ="vertex %d with atomID %d in layer %d has %d parents";
+//                System.out.println(String.format(m, k, vertex.atomNumber, l, vertex.parent.size()));
+                k++;
             }
             for (Vertex vertex : N) {
                 int degree = molecule.getConnectedBondsCount(vertex.atomNumber); 
@@ -705,6 +751,7 @@ public class SignaturePort {
                     else            COL[vertex.atomNumber] += j;
                 }
             }
+            l++;
         }
         for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
     }
@@ -729,20 +776,23 @@ public class SignaturePort {
                              int h) {
         if (h < 0) return;
         ArrayList<Vertex> NN = new ArrayList<Vertex>();
+        ArrayList<Edge> layerE = new ArrayList<Edge>();
         for (Vertex n : N) {
             IAtom atom = this.molecule.getAtom(n.atomNumber);
             for (IAtom aa : this.molecule.getConnectedAtomsList(atom)) {
-                add_vertex(n, this.molecule.getAtomNumber(aa), E, h, NN);
+                add_vertex(n, this.molecule.getAtomNumber(aa), layerE, E, h, NN);
             }
         }
         if (NN.size() != 0) {
             L.add(NN);
         }
+        E.addAll(layerE);
         build_layer(NN, E, L, h - 1);
     }
     
     private void add_vertex(
-            Vertex n, int aa, ArrayList<Edge> E, int h, ArrayList<Vertex> NN) {
+            Vertex n, int aa, ArrayList<Edge> layerE, ArrayList<Edge> E, int h, 
+            ArrayList<Vertex> NN) {
         // check to see if this edge (this bond) has been traversed before
         Edge e = new Edge(n.atomNumber, aa);
         if (E.contains(e)) { return; }
@@ -763,7 +813,7 @@ public class SignaturePort {
         }
         n.child.add(v);
         v.parent.add(n);
-        E.add(e);
+        layerE.add(e);
     }
 
 }
