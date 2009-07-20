@@ -137,7 +137,7 @@ public class SignaturePort {
     private int SIZE;
     private String SMAX;
     
-    private int MAX_COLOR = Integer.MAX_VALUE;
+    private int MAX_COLOR;
 
     private int NBCUR;
 
@@ -146,6 +146,7 @@ public class SignaturePort {
     public SignaturePort(IMolecule molecule) {
         this.molecule = molecule;
         this.SIZE = this.molecule.getAtomCount();
+        this.MAX_COLOR = this.SIZE;
         this.LACAN = new int[SIZE];
     }
     
@@ -176,6 +177,7 @@ public class SignaturePort {
     private void print_atom_signature(int atomNumber, int h, Klass[] klasses) {
         int[] label = new int[SIZE];
         String s = sicd_signature_atom_label(atomNumber, h, label);
+        System.out.println("sig for atom " + atomNumber + " is " + s);
         klasses[atomNumber] = new Klass();
         klasses[atomNumber].n = atomNumber;
         klasses[atomNumber].s = s;
@@ -192,9 +194,9 @@ public class SignaturePort {
     }
 
     private String sicd_signature_atom_label(int atomNumber, int h, int[] label) {
-        this.SMAX = sicd_signature_atom(atomNumber, h);
+        String sMax = sicd_signature_atom(atomNumber, h);
         for (int i = 0; i < SIZE; i++) label[i] = LACAN[i];
-        return SMAX;
+        return sMax;
     }
 
     private String sicd_signature_atom(int atomNumber, int h) {
@@ -350,26 +352,21 @@ public class SignaturePort {
     private void print_string(StringBuffer sb, Vertex parent,
             Vertex current, ArrayList<Edge> edges, int[] LAB,
             int[] OCC) {
+        String element = "";
         if (OCC[current.atomNumber] > 1) {
-            String element = current.element;
-            int i;
-            for (i = 0; i < element.length(); i++) {
-                if (element.charAt(i) == ',') {
-                    break;
-                }
+            
+            if (LAB[current.atomNumber] < 0) {
+                LAB[current.atomNumber] = (++LL);
             }
-            if (i == element.length()) {
-                if (LAB[current.atomNumber] < 0) {
-                    LAB[current.atomNumber] = (++LL);
-                }
-                current.element += "[";
-                current.element += getType(current);
-                current.element += ",";
-                current.element += String.valueOf(LAB[current.atomNumber]);
-                current.element += "]";
-            }
+            element += "[";
+            element += getType(current);
+            element += ",";
+            element += String.valueOf(LAB[current.atomNumber]);
+            element += "]";
         } else {
-            current.element += "]";
+            element += "[";
+            element += getType(current);
+            element += "]";
         }
         
         if (parent != null) {
@@ -389,17 +386,23 @@ public class SignaturePort {
         }
         
         // recursion
-        sb.append("(");
+        boolean addedBracket = false;
         for (Vertex child : current.child) {
             Edge e = new Edge(current.atomNumber, child.atomNumber);
             if (edges.contains(e)) {
                 continue;
             } else {
+                if (!addedBracket) {
+                    sb.append("(");
+                    addedBracket = true;
+                }
                 edges.add(e);
                 print_string(sb, current, child, edges, LAB, OCC); 
             }
         }
-        sb.append(")");
+        if (addedBracket) {
+            sb.append(")");
+        }
     }
    
 
