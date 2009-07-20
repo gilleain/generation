@@ -150,6 +150,25 @@ public class SignaturePort {
         this.LACAN = new int[SIZE];
     }
     
+    public void printDAG(ArrayList<ArrayList<Vertex>> L) {
+        int layerNum = 0;
+        for (ArrayList<Vertex> layer : L) {
+            int vertexNum = 0;
+            for (Vertex vertex : layer) {
+                String message = "vertex %d in layer %d has atomnumber %d and children %s";
+                String childString = "[";
+                for (Vertex child : vertex.child) {
+                    childString += " " + child.atomNumber;
+                }
+                childString += " ]";
+                System.out.println(String.format(
+                        message, vertexNum, layerNum, vertex.atomNumber, childString));
+                vertexNum++;
+            }
+            layerNum++;
+        }
+    }
+    
     public String sisc_canonize() {
         Klass[] klasses = new Klass[SIZE];
         int height = Integer.MAX_VALUE;
@@ -203,6 +222,9 @@ public class SignaturePort {
         if (h > this.SIZE + 1) h = SIZE + 1;
         ArrayList<ArrayList<Vertex>> L = new ArrayList<ArrayList<Vertex>>();  
         build_dag(atomNumber, L, h);
+        
+        printDAG(L);
+        
         if (LABEL == null) {
             LABEL = new int[SIZE];
             OCCUR = new int[SIZE];
@@ -371,11 +393,11 @@ public class SignaturePort {
         
         if (parent != null) {
             double o = order(parent, current);
-            if      (o <= 1) sb.append(current.element);
-            else if (o == 2) sb.append("=").append(current.element);
-            else if (o == 3) sb.append("t").append(current.element);
-            else if (o == 4) sb.append("p").append(current.element);
-            else sb.append(String.format("%d-%s", o, current.element));
+            if      (o <= 1) sb.append(element);
+            else if (o == 2) sb.append("=").append(element);
+            else if (o == 3) sb.append("t").append(element);
+            else if (o == 4) sb.append("p").append(element);
+            else sb.append(String.format("%d-%s", o, element));
         } else {
             sb.append(current.element);
         }
@@ -694,10 +716,10 @@ public class SignaturePort {
                 add_vertex(n, this.molecule.getAtomNumber(aa), E, h, NN);
             }
         }
-        build_layer(NN, E, L, h - 1);
         if (NN.size() != 0) {
             L.add(NN);
         }
+        build_layer(NN, E, L, h - 1);
     }
     
     private void add_vertex(
@@ -718,10 +740,10 @@ public class SignaturePort {
         // make a new vertex if no existing one is found
         if (v == null) {
             v = new Vertex(aa, "", 1);
+            NN.add(v);
         }
         n.child.add(v);
         v.parent.add(n);
-        NN.add(v);
         E.add(e);
     }
 
