@@ -39,7 +39,7 @@ public class TestSignaturePort {
 //            System.out.println(expectedSig);
             System.out.println(actualSig);
 //            System.out.println("---------");
-//            Assert.assertEquals("not correct", expectedSig, actualSig);
+            Assert.assertEquals(i + " not correct", expectedSig, actualSig);
         }
     }
     
@@ -105,6 +105,31 @@ public class TestSignaturePort {
         TestSignaturePort.testCanonical(mol, expectedB);
 //        TestSignaturePort.testAtoms(mol, expected);
 //        TestSignaturePort.testAtom(mol, 1, expectedB);
+    }
+    
+    @Test
+    public void testNapthalene() {
+        String expectedA = "[C](p[C](p[C](p[C](p[C](p[C,1]))" +
+        		           "p[C,2](p[C](p[C,1]))))p[C](p[C](p[C,2])))";
+        String expectedB = "[C](p[C](p[C](p[C,1]))" +
+        		           "p[C](p[C](p[C](p[C,2]))p[C](p[C,1]p[C](p[C,2]))))";
+        String expectedC = "[C](p[C](p[C](p[C,1]))" +
+        		           "p[C](p[C](p[C,2]))p[C](p[C](p[C,2])p[C](p[C,1])))";
+        IMolecule mol = TestSignature.makeNapthalene();
+        TestSignaturePort.printSignatures(mol);
+        Map<Integer, String> expected = new HashMap<Integer, String>();
+        expected.put(0, expectedA);
+        expected.put(1, expectedB);
+        expected.put(2, expectedC);
+        expected.put(3, expectedB);
+        expected.put(4, expectedA);
+        expected.put(5, expectedA);
+        expected.put(6, expectedB);
+        expected.put(7, expectedC);
+        expected.put(8, expectedB);
+        expected.put(9, expectedA);
+        
+        TestSignaturePort.testAtoms(mol, expected);
     }
     
 
