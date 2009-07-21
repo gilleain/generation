@@ -69,7 +69,6 @@ public class TestSignature {
         mol.addAtom(new Atom("C")); // 5
         mol.addAtom(new Atom("C")); // 6
         mol.addAtom(new Atom("C")); // 7
-        mol.addAtom(new Atom("C")); // 8
         mol.addBond(0, 1, IBond.Order.SINGLE);
         mol.addBond(0, 3, IBond.Order.SINGLE);
         mol.addBond(0, 7, IBond.Order.SINGLE);

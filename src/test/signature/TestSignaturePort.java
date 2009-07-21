@@ -78,15 +78,17 @@ public class TestSignaturePort {
         Map<Integer, String> expected = new HashMap<Integer, String>();
         expected.put(0, expectedA);
         IMolecule mol = TestSignature.makeCage();
-        TestSignaturePort.printSignatures(mol);
+//        TestSignaturePort.printSignatures(mol);
+        TestSignaturePort.testCanonical(mol, expectedB);
     }
     
     @Test
     public void testCubane() {
-        String expected = "[C]([C]([C](C,1])[C]([C,2])" +
-                          "[C]([C,3]))[C]([C,2][C,2]))";
+        String expected = "[C]([C]([C,2]([C,3])[C,4]([C,3]))" +
+        		          "[C]([C,1]([C,3])[C,4])[C]([C,1][C,2]))";
         IMolecule mol = TestSignature.makeCubane();
-        TestSignaturePort.testAllSame(mol, expected);
+//        TestSignaturePort.testAllSame(mol, expected);
+        TestSignaturePort.testCanonical(mol, expected);
     }
      
     @Test
@@ -116,7 +118,6 @@ public class TestSignaturePort {
         String expectedC = "[C](p[C](p[C](p[C,1]))" +
         		           "p[C](p[C](p[C,2]))p[C](p[C](p[C,2])p[C](p[C,1])))";
         IMolecule mol = TestSignature.makeNapthalene();
-        TestSignaturePort.printSignatures(mol);
         Map<Integer, String> expected = new HashMap<Integer, String>();
         expected.put(0, expectedA);
         expected.put(1, expectedB);
