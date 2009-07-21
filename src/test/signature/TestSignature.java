@@ -3,7 +3,6 @@ package test.signature;
 import org.junit.*;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.CDKConstants;
-import org.openscience.cdk.Molecule;
 import org.openscience.cdk.graph.AtomContainerAtomPermutor;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -60,7 +59,7 @@ public class TestSignature {
      * @return
      */
     public static IMolecule makeCubane() {
-        Molecule mol = new Molecule();
+        IMolecule mol = builder.newMolecule();
         mol.addAtom(new Atom("C")); // 0
         mol.addAtom(new Atom("C")); // 1
         mol.addAtom(new Atom("C")); // 2
@@ -84,8 +83,31 @@ public class TestSignature {
         return mol;
     }
     
+    public static IMolecule makeCuneane() {
+        IMolecule mol = builder.newMolecule();
+        mol.addAtom(new Atom("C")); // 0
+        mol.addAtom(new Atom("C")); // 1
+        mol.addAtom(new Atom("C")); // 2
+        mol.addAtom(new Atom("C")); // 3
+        mol.addAtom(new Atom("C")); // 4
+        mol.addAtom(new Atom("C")); // 5
+        mol.addAtom(new Atom("C")); // 6
+        mol.addAtom(new Atom("C")); // 7
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(0, 5, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(1, 7, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE);
+        mol.addBond(2, 7, IBond.Order.SINGLE);
+        mol.addBond(3, 4, IBond.Order.SINGLE);
+        mol.addBond(4, 5, IBond.Order.SINGLE);
+        mol.addBond(4, 6, IBond.Order.SINGLE);
+        mol.addBond(5, 6, IBond.Order.SINGLE);
+        return mol;
+    }
+    
     public static IMolecule makeNapthalene() {
-        Molecule mol = new Molecule();
+        IMolecule mol = builder.newMolecule();
         mol.addAtom(new Atom("C")); // 0
         mol.addAtom(new Atom("C")); // 1
         mol.addAtom(new Atom("C")); // 2
@@ -135,7 +157,7 @@ public class TestSignature {
     }
     
     public static IMolecule makeBenzene() {
-        Molecule mol = new Molecule();
+        IMolecule mol = builder.newMolecule();
         mol.addAtom(new Atom("C"));
         mol.addAtom(new Atom("C"));
         mol.addAtom(new Atom("C"));
@@ -166,7 +188,7 @@ public class TestSignature {
      * @return
      */
     public static IMolecule makePseudoPropellane() {
-        Molecule mol = new Molecule();
+        IMolecule mol = builder.newMolecule();
         mol.addAtom(new Atom("C"));
         mol.addAtom(new Atom("C"));
         mol.addAtom(new Atom("C"));
