@@ -89,6 +89,28 @@ public class TestSignaturePort {
 //        TestSignaturePort.testAllSame(mol, expected);
         TestSignaturePort.testCanonical(mol, expected);
     }
+    
+    @Test
+    public void testCuneane() {
+        String expectedA = "[C]([C]([C]([C,2][C,3])[C,3]([C,1]))" +
+        		           "[C]([C,1]([C,4])[C,4]([C,2])))";
+        String expectedB = "[C]([C]([C]([C,1][C,2]))[C]([C,3][C,1]" +
+        		           "([C,2]))[C,3]([C]([C,2])))";
+        String expectedC = "[C]([C]([C]([C,1][C,2])[C,2]([C,3]))" +
+        		           "[C]([C,4][C,1])[C,4]([C,3]))";
+        IMolecule mol = TestSignature.makeCuneane();
+//        TestSignaturePort.printSignatures(mol);
+        Map<Integer, String> expected = new HashMap<Integer, String>();
+        expected.put(0, expectedA);
+        expected.put(1, expectedB);
+        expected.put(2, expectedB);
+        expected.put(3, expectedA);
+        expected.put(4, expectedB);
+        expected.put(5, expectedB);
+        expected.put(6, expectedC);
+        expected.put(7, expectedC);
+        TestSignaturePort.testAtoms(mol, expected);
+    }
      
     @Test
     public void testPropellane() {

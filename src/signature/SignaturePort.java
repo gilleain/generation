@@ -383,6 +383,7 @@ public class SignaturePort {
             Vertex current, ArrayList<Edge> edges, int[] LAB,
             int[] OCC) {
         if (OCC[current.atomNumber] > 1) {
+            // if it SHOULD have a number, but doesn't, add one
             if (!current.element.contains(",")) {
                 if (LAB[current.atomNumber] < 0) {
                     LAB[current.atomNumber] = (++LL);
@@ -393,7 +394,13 @@ public class SignaturePort {
                 current.element += String.valueOf(LAB[current.atomNumber]);
                 current.element += "]";
             }
-        } 
+        } else {
+            // if it SHOULDN'T have a number, but does, remove it
+            int commaIndex = current.element.indexOf(",");
+            if (commaIndex != -1) {
+                current.element = current.element.substring(0, commaIndex) + "]";
+            }
+        }
         
         if (parent != null) {
             double o = order(parent, current);

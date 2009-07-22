@@ -103,6 +103,7 @@ public class TestSignature {
         mol.addBond(4, 5, IBond.Order.SINGLE);
         mol.addBond(4, 6, IBond.Order.SINGLE);
         mol.addBond(5, 6, IBond.Order.SINGLE);
+        mol.addBond(6, 7, IBond.Order.SINGLE);
         return mol;
     }
     
