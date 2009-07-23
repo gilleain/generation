@@ -18,19 +18,23 @@ import org.openscience.cdk.interfaces.IMolecule;
  */
 public class SignaturePort {
     
+    /**
+     * A vertex in the DAG, that holds a reference to an atom number
+     *
+     */
     private class Vertex {
         public int atomNumber;
         public String element;
         public int invariant;
         public ArrayList<Vertex> parent;
-        public ArrayList<Vertex> child;
+        public ArrayList<Vertex> children;
         
         public Vertex(int atomNumber, String element, int invariant) {
             this.atomNumber = atomNumber;
             this.element = element;
             this.invariant = invariant;
             this.parent = new ArrayList<Vertex>();
-            this.child = new ArrayList<Vertex>();
+            this.children = new ArrayList<Vertex>();
         }
         
         public String toString() {
@@ -39,6 +43,10 @@ public class SignaturePort {
         
     }
     
+    /**
+     * An edge in the DAG that is not repeated when printed out, or
+     * when constructing.
+     */
     private class Edge {
         public int a;
         public int b;
@@ -57,6 +65,10 @@ public class SignaturePort {
         }
     }
     
+    /**
+     * Small class used to bucket-sort (sometimes called radix sort)
+     * values in a layer
+     */
     private class Bucket {
         public double x;
         public int y;
@@ -66,6 +78,10 @@ public class SignaturePort {
         }
     }
     
+    /**
+     * Used for sorting the double-valued invariants
+     *
+     */
     private class cmp_invariant implements Comparator<Double> {
         public int compare(Double a, Double b) {
             if (a.doubleValue() + EPS6 < b.doubleValue()) return 1;
@@ -75,6 +91,10 @@ public class SignaturePort {
     }
     private cmp_invariant cmp_invariant_instance = new cmp_invariant();
     
+    /**
+     * Used for bucket-sorting the vertices by their invariants
+     *
+     */
     private class cmp_invar implements Comparator<Bucket> {
 
         public int compare(Bucket a, Bucket b) {
@@ -87,6 +107,10 @@ public class SignaturePort {
     }
     private cmp_invar cmp_invar_instance = new cmp_invar();
     
+    /**
+     * Used for sorting the vertices by their invariants
+     *
+     */
     private class cmp_vertex_invariant implements Comparator<Vertex> {
         public int compare(Vertex a, Vertex b) {
            return cmp_invariant_instance.
@@ -96,6 +120,10 @@ public class SignaturePort {
     private cmp_vertex_invariant 
         cmp_vertex_invariant_instance = new cmp_vertex_invariant();
     
+    /**
+     * Used for sorting vertices first by their string form, THEN
+     * by thier invariants
+     */
     private class cmp_vertex_invariant_element implements Comparator<Vertex> {
 
         public int compare(Vertex a, Vertex b) {
@@ -113,11 +141,21 @@ public class SignaturePort {
     private cmp_vertex_invariant_element cmp_vertex_invariant_element_instance 
         = new cmp_vertex_invariant_element();
     
+    /**
+     * Basically an 'equivalence class' that stores the information about
+     * which atom corresponds to which signature; allowing the atoms to
+     * be partitioned by signatures.
+     *
+     */
     private class Klass {
         public int n, c, l;
         public String s;
     }
     
+    /**
+     * Used to sort the equivalence classes.
+     *
+     */
     private class klasscmp implements Comparator<Klass> {
 
         public int compare(Klass a, Klass b) {
@@ -131,8 +169,15 @@ public class SignaturePort {
     }
     private klasscmp klasscmp_instance = new klasscmp();
     
+    /**
+     * A tolerance factor used when sorting double values
+     */
     private static final double EPS6 = 1E-5;
 
+    /**
+     * Used to re-scale for certain unusual graphs, such as those
+     * with a high vertex degree.
+     */
     private static final double POWMAX = 10E30;
     
     private IMolecule molecule;
@@ -142,6 +187,9 @@ public class SignaturePort {
     private int[] LACAN;
     private int[] LACUR;
     
+    /**
+     * The number of atoms in the molecule - used everywhere!
+     */
     private int SIZE;
     private String SMAX;
     
@@ -157,6 +205,12 @@ public class SignaturePort {
     
     private static final double VALENCE = 4;
     
+    /**
+     * Create a signature 'factory' for a molecule - to actually get 
+     * signature strings, the canonize method needs to be called.
+     * 
+     * @param molecule
+     */
     public SignaturePort(IMolecule molecule) {
         this.molecule = molecule;
         this.SIZE = this.molecule.getAtomCount();
@@ -165,6 +219,13 @@ public class SignaturePort {
     }
     
     
+    /**
+     * Get the (lexicographically least) signature for a particular atom
+     * of the molecule.
+     * 
+     * @param atomNumber
+     * @return the signature of this atom
+     */
     public String forAtom(int atomNumber) {
         sicd_signature_atom(atomNumber, SIZE);
         if (SMAX != null) {
@@ -178,6 +239,13 @@ public class SignaturePort {
         }
     }
     
+    /**
+     * The basic entry point for producing a canonical signature for a molecule.
+     * It creates sigantures for each atom, then finds the lexicographically 
+     * smallest one, and returns that.
+     * 
+     * @return the canonical signature for the molecule
+     */
     public String sisc_canonize() {
         Klass[] klasses = new Klass[SIZE];
         int height = Integer.MAX_VALUE;
@@ -202,6 +270,13 @@ public class SignaturePort {
         return SMAX;
     }
     
+    /**
+     * Make a signature for atom numbered <code>atomNumber</code>.
+     * 
+     * @param atomNumber the atom to use as the root
+     * @param h the height of the signature
+     * @param klasses the array of equivalence classes
+     */
     private void print_atom_signature(int atomNumber, int h, Klass[] klasses) {
         int[] label = new int[SIZE];
         String s = sicd_signature_atom_label(atomNumber, h, label);
@@ -220,12 +295,27 @@ public class SignaturePort {
         }
     }
 
+    /**
+     * TODO : Inline/fold this method into its caller
+     * 
+     * @param atomNumber
+     * @param h
+     * @param label the labels that will be created (unused?)
+     * @return
+     */
     private String sicd_signature_atom_label(int atomNumber, int h, int[] label) {
         String sMax = sicd_signature_atom(atomNumber, h);
         for (int i = 0; i < SIZE; i++) label[i] = LACAN[i];
         return sMax;
     }
 
+    /**
+     * Start point : create a DAG, make the initial labels, and canonize
+     * 
+     * @param atomNumber the atom to use as the root
+     * @param h the height
+     * @return the canonical string
+     */
     private String sicd_signature_atom(int atomNumber, int h) {
         if (h > this.SIZE + 1) h = SIZE + 1;
         ArrayList<ArrayList<Vertex>> L = new ArrayList<ArrayList<Vertex>>();  
@@ -243,12 +333,23 @@ public class SignaturePort {
             LABEL[i] = LACAN[i] = LACUR[i] = -1;
         }
         
-        init_label_invariant(L, h, LABEL, OCCUR, COLOR, INVAR);
+        init_label_invariant(L, OCCUR, COLOR, INVAR);
         
         compute_label_invariant(L, h, LABEL, OCCUR, INVAR, 0);
         return SMAX;
     }
 
+    /**
+     * Make a canonical labelling of the DAG, recursively trying 
+     * possible labels.
+     * 
+     * @param L the directed acyclic graph
+     * @param h the height
+     * @param LAB the labels
+     * @param OCC the occurrances
+     * @param INV the invariants
+     * @param ITER the current iteration (TODO : remove)
+     */
     private void compute_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int[] OCC, double[] INV, int ITER) {
         int L0 = -1;
@@ -320,6 +421,16 @@ public class SignaturePort {
         }
     }
 
+    /**
+     * Finish the labelling and generate the string form.
+     * 
+     * @param L the DAG
+     * @param h the height
+     * @param LAB the labels
+     * @param OCC the occurrances
+     * @param INV the invariants
+     * @param L0 the max label used (?)
+     */
     private void end_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int[] OCC, double[] INV, int L0) {
         for (int i = 0; i < SIZE; i++) {
@@ -338,6 +449,15 @@ public class SignaturePort {
         }
     }
 
+    /**
+     * Convert the DAG into a string
+     * 
+     * @param L the DAG
+     * @param h the height
+     * @param LAB the labels
+     * @param L0 the max (?) label
+     * @return the canonical string
+     */
     private String layer_print_string(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int L0) {
         Vertex root = L.get(0).get(0);
@@ -355,17 +475,25 @@ public class SignaturePort {
         return sb.toString();
     }
     
+    /**
+     * Count the occurrences of atom numbers in the tree? (NOTE : why do this
+     * now?) Also, as a side-effect (!), sort the children of each vertex...
+     *  
+     * @param v the current vertex
+     * @param edges the edges seen so far
+     * @param OCC the recorded occurrences
+     */
     private void occur_string(Vertex v, ArrayList<Edge> edges, int[] OCC) {
         if (OCCUR[v.atomNumber] > 1) {
             OCC[v.atomNumber] += 1;
         }
         
         // sort children by invariant
-        if (v.child.size() == 0) return;
-        Collections.sort(v.child, this.cmp_vertex_invariant_instance);
+        if (v.children.size() == 0) return;
+        Collections.sort(v.children, this.cmp_vertex_invariant_instance);
         
         // recursion
-        for (Vertex child : v.child) {
+        for (Vertex child : v.children) {
             Edge e = new Edge(v.atomNumber, child.atomNumber);
             if (edges.contains(e)) {
                 continue;
@@ -379,6 +507,17 @@ public class SignaturePort {
     // TODO either rename, or pass into the method, or get rid of, this.
     int LL = -1;
     
+    /**
+     * Recursively convert the DAG into a string, putting the contents into
+     * the string buffer sb.
+     * 
+     * @param sb the string buffer that is being filled
+     * @param parent the parent of the current vertex
+     * @param current the current vertex
+     * @param edges the edges seen so far
+     * @param LAB the labels
+     * @param OCC the occurrences
+     */
     private void print_string(StringBuffer sb, Vertex parent,
             Vertex current, ArrayList<Edge> edges, int[] LAB,
             int[] OCC) {
@@ -414,13 +553,13 @@ public class SignaturePort {
         }
         
         if (LACUR[current.atomNumber] < 0) LACUR[current.atomNumber] = NBCUR++;
-        if (current.child.size() == 0) {
+        if (current.children.size() == 0) {
             return;
         }
         
         // recursion
         boolean addedBracket = false;
-        for (Vertex child : current.child) {
+        for (Vertex child : current.children) {
             Edge e = new Edge(current.atomNumber, child.atomNumber);
             if (edges.contains(e)) {
                 continue;
@@ -439,6 +578,19 @@ public class SignaturePort {
     }
    
 
+    /**
+     * Compute the vertex invariants, either going UP or DOWN the tree (DAG),
+     * depending on the value of the relation parameter. If this is 'parent',
+     * go down - otherwise go up.  
+     * 
+     * @param L the DAG
+     * @param h the height
+     * @param LAB the labels
+     * @param OCC the occurrences
+     * @param INV the invariants
+     * @param relation 'parent' or 'child'
+     * @return the maximum invariant after ranking
+     */
     private int compute_invariant(ArrayList<ArrayList<Vertex>> L, int h,
             int[] LAB, int[] OCC, double[] INV, String relation) {
         int l0;
@@ -554,6 +706,14 @@ public class SignaturePort {
         return inv;
     }
 
+    /**
+     * Compute invariants for a layer of the DAG.
+     * 
+     * @param layer the list of vertices at this layer
+     * @param LAB the labels
+     * @param INV the (atom?) invariants
+     * @param relation 'parent' or 'child'
+     */
     private void compute_layer_invariant(
             ArrayList<Vertex> layer, int[] LAB, double[] INV, String relation) {
         for (Vertex vertex : layer) {
@@ -577,7 +737,6 @@ public class SignaturePort {
                     break;
                 }
             }
-//            System.out.println("end run i = " + i + " inv = " + inv + " a " + a + " b " + b + " " + cmp_vertex_invariant_element_instance.compare(a, b));
             inv++; 
             invar[i] = inv;
             i++;
@@ -590,6 +749,15 @@ public class SignaturePort {
         
     }
 
+    /**
+     * Compute the invariant for a single vertex, relative either to its 
+     * children or its parents.
+     * 
+     * @param vertex the vertex to compute for
+     * @param LAB the labels
+     * @param INV the invariants
+     * @param relation 'parent' or 'child'
+     */
     private void compute_vertex_invariant(Vertex vertex, int[] LAB,
             double[] INV, String relation) {
         vertex.element = "[";
@@ -605,11 +773,11 @@ public class SignaturePort {
         Double[] invar;
         int n = 0;
         if (relation.equals("child")) {
-            if (vertex.child.size() == 0) {
+            if (vertex.children.size() == 0) {
                 return;
             } else {
-                invar = new Double[2 * vertex.child.size()];
-                for (Vertex child : vertex.child) {
+                invar = new Double[2 * vertex.children.size()];
+                for (Vertex child : vertex.children) {
                     invar[n++] = new Double(child.invariant);
                     invar[n++] = order(vertex, child) + K;
                 }
@@ -645,6 +813,14 @@ public class SignaturePort {
         }
     }
     
+    /**
+     * Determine the bond order between the atoms referred to by these two
+     * vertices. Single = 1, Double = 2, Triple = 3, Aromatic = 4.
+     * 
+     * @param vertex a vartex
+     * @param parent its parent
+     * @return the bond order as a double
+     */
     private double order(Vertex vertex, Vertex parent) {
         double order = -1;
         if (vertex == null || parent == null) return order;
@@ -665,16 +841,36 @@ public class SignaturePort {
         }
     }
     
+    /**
+     * Check for aromaticity of the atom referred to by this vertex.
+     * @param v a vertex
+     * @return true if the referred atom has the correct flag
+     */
     private boolean isAromatic(Vertex v) {
         return molecule.getAtom(v.atomNumber).getFlag(CDKConstants.ISAROMATIC);
     }
 
+    /**
+     * Get the 'type' of the vertex - can be any string, so long as it is used
+     * consistently (and does not contain a "," character!).
+     * 
+     * @param vertex a vertex
+     * @return the string for this vertex
+     */
     private String getType(Vertex vertex) {
         return this.molecule.getAtom(vertex.atomNumber).getSymbol();
     }
 
-    private void init_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
-            int[] LAB, int[] OCC, int[] COL, double[] INV) {
+    /**
+     * Determine the initial invariants using the parents of each vertex.
+     * 
+     * @param L the DAG
+     * @param OCC the occurrences
+     * @param COL the colors (TODO : difference between colors and labels?)
+     * @param INV the invariants
+     */
+    private void init_label_invariant(ArrayList<ArrayList<Vertex>> L,
+            int[] OCC, int[] COL, double[] INV) {
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -683,14 +879,14 @@ public class SignaturePort {
          * all other vertices have OCC += (number of parents) each time they occur
          */
         int l = 0;
-        for (ArrayList<Vertex> N : L) {
+        for (ArrayList<Vertex> layer : L) {
             int parent = 0;
             int k = 0;
-            for (Vertex vertex : N) {
+            for (Vertex vertex : layer) {
                 if (vertex.parent.size() > 1) { parent++; }
                 k++;
             }
-            for (Vertex vertex : N) {
+            for (Vertex vertex : layer) {
                 int degree = molecule.getConnectedBondsCount(vertex.atomNumber); 
                 if (degree < 2) {
                     OCC[vertex.atomNumber] = COL[vertex.atomNumber] = 1;
@@ -706,6 +902,13 @@ public class SignaturePort {
         for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
     }
 
+    /**
+     * Construct the DAG (directed acyclic graph) rooted at this atom number.
+     * 
+     * @param atomNumber
+     * @param L the DAG that is being built
+     * @param h the height to build it to
+     */
     private void build_dag(int atomNumber, ArrayList<ArrayList<Vertex>> L, int h) {
         assert atomNumber <= this.molecule.getAtomCount();
         assert h >= 0;
@@ -720,6 +923,13 @@ public class SignaturePort {
         build_layer(rootLayer, E, L, h - 1);
     }
 
+    /**
+     * Build a layer of the DAG
+     * @param N the previous layer
+     * @param E the edges seen so far
+     * @param L the DAG
+     * @param h the height to build to
+     */
     private void build_layer(ArrayList<Vertex> N, 
                              ArrayList<Edge> E, 
                              ArrayList<ArrayList<Vertex>> L, 
@@ -730,7 +940,7 @@ public class SignaturePort {
         for (Vertex n : N) {
             IAtom atom = this.molecule.getAtom(n.atomNumber);
             for (IAtom aa : this.molecule.getConnectedAtomsList(atom)) {
-                add_vertex(n, this.molecule.getAtomNumber(aa), layerE, E, h, NN);
+                add_vertex(n, this.molecule.getAtomNumber(aa), layerE, E, NN);
             }
         }
         if (NN.size() != 0) {
@@ -740,8 +950,17 @@ public class SignaturePort {
         build_layer(NN, E, L, h - 1);
     }
     
+    /**
+     * Add a vertex to this layer.
+     * 
+     * @param n the parent vertex
+     * @param aa the atom number we are adding
+     * @param layerE the edges seen in this layer
+     * @param E all the edges seen so far (except the ones in this layer)
+     * @param NN the new layer
+     */
     private void add_vertex(
-            Vertex n, int aa, ArrayList<Edge> layerE, ArrayList<Edge> E, int h, 
+            Vertex n, int aa, ArrayList<Edge> layerE, ArrayList<Edge> E, 
             ArrayList<Vertex> NN) {
         // check to see if this edge (this bond) has been traversed before
         Edge e = new Edge(n.atomNumber, aa);
@@ -761,7 +980,7 @@ public class SignaturePort {
             v = new Vertex(aa, "", 1);
             NN.add(v);
         }
-        n.child.add(v);
+        n.children.add(v);
         v.parent.add(n);
         layerE.add(e);
     }
