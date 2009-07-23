@@ -19,53 +19,6 @@ import org.openscience.cdk.interfaces.IMolecule;
 public class SignaturePort {
     
     /**
-     * A vertex in the DAG, that holds a reference to an atom number
-     *
-     */
-    private class Vertex {
-        public int atomNumber;
-        public String element;
-        public int invariant;
-        public ArrayList<Vertex> parent;
-        public ArrayList<Vertex> children;
-        
-        public Vertex(int atomNumber, String element, int invariant) {
-            this.atomNumber = atomNumber;
-            this.element = element;
-            this.invariant = invariant;
-            this.parent = new ArrayList<Vertex>();
-            this.children = new ArrayList<Vertex>();
-        }
-        
-        public String toString() {
-            return String.format("%s%d(%d)", element, atomNumber, invariant);
-        }
-        
-    }
-    
-    /**
-     * An edge in the DAG that is not repeated when printed out, or
-     * when constructing.
-     */
-    private class Edge {
-        public int a;
-        public int b;
-        public Edge(int a, int b) { this.a = a; this.b = b; }
-        public boolean equals(Object other) {
-            if (other instanceof Edge) {
-                Edge o = (Edge) other;
-                return (this.a == o.a && this.b == o.b) 
-                        || (this.a == o.b && this.b == o.a);
-            } else {
-                return false;
-            }
-        }
-        public String toString() {
-            return String.format("%s-%s", a, b);
-        }
-    }
-    
-    /**
      * Small class used to bucket-sort (sometimes called radix sort)
      * values in a layer
      */
@@ -318,8 +271,7 @@ public class SignaturePort {
      */
     private String sicd_signature_atom(int atomNumber, int h) {
         if (h > this.SIZE + 1) h = SIZE + 1;
-        ArrayList<ArrayList<Vertex>> L = new ArrayList<ArrayList<Vertex>>();  
-        build_dag(atomNumber, L, h);
+        DAG dag = new DAG(this.molecule, atomNumber, h);
         
         int[] LABEL = new int[SIZE];
         OCCUR = new int[SIZE];
@@ -333,9 +285,9 @@ public class SignaturePort {
             LABEL[i] = LACAN[i] = LACUR[i] = -1;
         }
         
-        init_label_invariant(L, OCCUR, COLOR, INVAR);
+        init_label_invariant(dag, OCCUR, COLOR, INVAR);
         
-        compute_label_invariant(L, h, LABEL, OCCUR, INVAR, 0);
+        compute_label_invariant(dag, h, LABEL, OCCUR, INVAR, 0);
         return SMAX;
     }
 
@@ -343,15 +295,15 @@ public class SignaturePort {
      * Make a canonical labelling of the DAG, recursively trying 
      * possible labels.
      * 
-     * @param L the directed acyclic graph
+     * @param dag the directed acyclic graph
      * @param h the height
      * @param LAB the labels
      * @param OCC the occurrances
      * @param INV the invariants
      * @param ITER the current iteration (TODO : remove)
      */
-    private void compute_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
-            int[] LAB, int[] OCC, double[] INV, int ITER) {
+    private void compute_label_invariant(
+            DAG dag, int h, int[] LAB, int[] OCC, double[] INV, int ITER) {
         int L0 = -1;
         int omax = 1;
         int imax = -1;
@@ -369,8 +321,8 @@ public class SignaturePort {
         // compute invariant for all vertices
         int newinv;
         while (true) {
-            newinv = compute_invariant(L, h, label, occur, invar, "parent");
-            newinv = compute_invariant(L, h, label, occur, invar, "child");
+            newinv = compute_invariant(dag, h, label, occur, invar, "parent");
+            newinv = compute_invariant(dag, h, label, occur, invar, "child");
             if (newinv == inv) break;
             inv = newinv;
         }
@@ -383,7 +335,7 @@ public class SignaturePort {
             }
         }
         if (j == SIZE) {
-            end_label_invariant(L, h, label, occur, invar, L0);
+            end_label_invariant(dag, h, label, occur, invar, L0);
             return;
         }
         
@@ -391,8 +343,8 @@ public class SignaturePort {
          * this orbit has the maximum number of elements and the max invariant
          */
         for (int l = h; l >= 0; l--) {
-            if (l >= L.size()) continue;
-            for (Vertex vertex : L.get(l)) {
+            if (l >= dag.size()) continue;
+            for (Vertex vertex : dag.get(l)) {
                 if (COLOR[vertex.atomNumber] > 1 
                         && ((occur[vertex.atomNumber] > omax)
                                 && invar[vertex.atomNumber] > inv)) {
@@ -409,7 +361,7 @@ public class SignaturePort {
                 if (invar[i] == invar[imax]) {
                     int l = label[i];
                     label[i] = L0 + 1;
-                    compute_label_invariant(L, h, label, occur, invar, ITER + 1);
+                    compute_label_invariant(dag, h, label, occur, invar, ITER + 1);
                     label[i] = l;
                     
                     if (ITER >= MAX_COLOR) break; 
@@ -417,27 +369,27 @@ public class SignaturePort {
             }
         }
         if (omax == 1) {
-            compute_label_invariant(L, h, label, occur, invar, ITER + 1);
+            compute_label_invariant(dag, h, label, occur, invar, ITER + 1);
         }
     }
 
     /**
      * Finish the labelling and generate the string form.
      * 
-     * @param L the DAG
+     * @param dag the DAG
      * @param h the height
      * @param LAB the labels
      * @param OCC the occurrances
      * @param INV the invariants
      * @param L0 the max label used (?)
      */
-    private void end_label_invariant(ArrayList<ArrayList<Vertex>> L, int h,
-            int[] LAB, int[] OCC, double[] INV, int L0) {
+    private void end_label_invariant(
+            DAG dag, int h, int[] LAB, int[] OCC, double[] INV, int L0) {
         for (int i = 0; i < SIZE; i++) {
             LACUR[i] = -1;
         }
         NBCUR = 0;
-        String s = layer_print_string(L, h, LAB, L0);
+        String s = layer_print_string(dag, LAB, L0);
         System.out.println("FRESH " + s);
         this.SCURRENT = s;
         if (SMAX != null) {
@@ -452,15 +404,13 @@ public class SignaturePort {
     /**
      * Convert the DAG into a string
      * 
-     * @param L the DAG
-     * @param h the height
+     * @param dag the DAG
      * @param LAB the labels
      * @param L0 the max (?) label
      * @return the canonical string
      */
-    private String layer_print_string(ArrayList<ArrayList<Vertex>> L, int h,
-            int[] LAB, int L0) {
-        Vertex root = L.get(0).get(0);
+    private String layer_print_string(DAG dag, int[] LAB, int L0) {
+        Vertex root = dag.getRoot();
         int[] OCC = new int[SIZE];
         occur_string(root, new ArrayList<Edge>(), OCC);
         
@@ -583,7 +533,7 @@ public class SignaturePort {
      * depending on the value of the relation parameter. If this is 'parent',
      * go down - otherwise go up.  
      * 
-     * @param L the DAG
+     * @param dag the DAG
      * @param h the height
      * @param LAB the labels
      * @param OCC the occurrences
@@ -591,30 +541,30 @@ public class SignaturePort {
      * @param relation 'parent' or 'child'
      * @return the maximum invariant after ranking
      */
-    private int compute_invariant(ArrayList<ArrayList<Vertex>> L, int h,
+    private int compute_invariant(DAG dag, int h,
             int[] LAB, int[] OCC, double[] INV, String relation) {
         int l0;
         int ln;
         int li;
         if (relation.equals("parent")) {
             l0 = 0;
-            ln = L.size();
+            ln = dag.size();
             li = 1;
         } else {
-            l0 = L.size() - 1;
+            l0 = dag.size() - 1;
             ln = -1;
             li = -1;
         }
         
         // compute invariant for all vertices
         for (int l = l0; l != ln; l += li) {
-            compute_layer_invariant(L.get(l), LAB, INV, relation);
+            compute_layer_invariant(dag.get(l), LAB, INV, relation);
         }
         
         // find K, the maximum invariant for nodes and atoms
         double K = 0;
         double n = 0;
-        for (ArrayList<Vertex> layer : L) {
+        for (ArrayList<Vertex> layer : dag) {
             n++;
             for (Vertex vertex : layer) {
                 if (vertex.invariant > K) {
@@ -642,7 +592,7 @@ public class SignaturePort {
         
         // compute new invariant for all atoms
         n = 1;
-        for (ArrayList<Vertex> layer : L) {
+        for (ArrayList<Vertex> layer : dag) {
             n++;
             for (Vertex vertex : layer) {
                 double invariant = vertex.invariant * (KK / K);
@@ -864,13 +814,13 @@ public class SignaturePort {
     /**
      * Determine the initial invariants using the parents of each vertex.
      * 
-     * @param L the DAG
+     * @param dag the DAG
      * @param OCC the occurrences
      * @param COL the colors (TODO : difference between colors and labels?)
      * @param INV the invariants
      */
-    private void init_label_invariant(ArrayList<ArrayList<Vertex>> L,
-            int[] OCC, int[] COL, double[] INV) {
+    private void init_label_invariant(
+            DAG dag, int[] OCC, int[] COL, double[] INV) {
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -879,7 +829,7 @@ public class SignaturePort {
          * all other vertices have OCC += (number of parents) each time they occur
          */
         int l = 0;
-        for (ArrayList<Vertex> layer : L) {
+        for (ArrayList<Vertex> layer : dag) {
             int parent = 0;
             int k = 0;
             for (Vertex vertex : layer) {
@@ -901,88 +851,4 @@ public class SignaturePort {
         }
         for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
     }
-
-    /**
-     * Construct the DAG (directed acyclic graph) rooted at this atom number.
-     * 
-     * @param atomNumber
-     * @param L the DAG that is being built
-     * @param h the height to build it to
-     */
-    private void build_dag(int atomNumber, ArrayList<ArrayList<Vertex>> L, int h) {
-        assert atomNumber <= this.molecule.getAtomCount();
-        assert h >= 0;
-        
-        ArrayList<Edge> E = new ArrayList<Edge>();
-        Vertex root = new Vertex(atomNumber, "", 1);
-        ArrayList<Vertex> rootLayer = new ArrayList<Vertex>();
-        rootLayer.add(root);
-        L.add(rootLayer);
-        if (h < 1) return;
-        
-        build_layer(rootLayer, E, L, h - 1);
-    }
-
-    /**
-     * Build a layer of the DAG
-     * @param N the previous layer
-     * @param E the edges seen so far
-     * @param L the DAG
-     * @param h the height to build to
-     */
-    private void build_layer(ArrayList<Vertex> N, 
-                             ArrayList<Edge> E, 
-                             ArrayList<ArrayList<Vertex>> L, 
-                             int h) {
-        if (h < 0) return;
-        ArrayList<Vertex> NN = new ArrayList<Vertex>();
-        ArrayList<Edge> layerE = new ArrayList<Edge>();
-        for (Vertex n : N) {
-            IAtom atom = this.molecule.getAtom(n.atomNumber);
-            for (IAtom aa : this.molecule.getConnectedAtomsList(atom)) {
-                add_vertex(n, this.molecule.getAtomNumber(aa), layerE, E, NN);
-            }
-        }
-        if (NN.size() != 0) {
-            L.add(NN);
-        }
-        E.addAll(layerE);
-        build_layer(NN, E, L, h - 1);
-    }
-    
-    /**
-     * Add a vertex to this layer.
-     * 
-     * @param n the parent vertex
-     * @param aa the atom number we are adding
-     * @param layerE the edges seen in this layer
-     * @param E all the edges seen so far (except the ones in this layer)
-     * @param NN the new layer
-     */
-    private void add_vertex(
-            Vertex n, int aa, ArrayList<Edge> layerE, ArrayList<Edge> E, 
-            ArrayList<Vertex> NN) {
-        // check to see if this edge (this bond) has been traversed before
-        Edge e = new Edge(n.atomNumber, aa);
-        if (E.contains(e)) { return; }
-        
-        // check for an existing vertex referring to this atom
-        Vertex v = null;
-        for (Vertex x : NN) {
-            if (x.atomNumber == aa) {
-                v = x;
-                break;
-            }
-        }
-        
-        // make a new vertex if no existing one is found
-        if (v == null) {
-            v = new Vertex(aa, "", 1);
-            NN.add(v);
-        }
-        n.children.add(v);
-        v.parent.add(n);
-        layerE.add(e);
-    }
-
 }
