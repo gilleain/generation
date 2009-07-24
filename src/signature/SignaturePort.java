@@ -199,7 +199,7 @@ public class SignaturePort {
      * 
      * @return the canonical signature for the molecule
      */
-    public String sisc_canonize() {
+    public String getCanonicalSignatureString() {
         Klass[] klasses = new Klass[SIZE];
         int height = Integer.MAX_VALUE;
         
@@ -292,6 +292,48 @@ public class SignaturePort {
     }
 
     /**
+     * Determine the initial invariants using the parents of each vertex.
+     * 
+     * @param dag the DAG
+     * @param OCC the occurrences
+     * @param COL the colors (TODO : difference between colors and labels?)
+     * @param INV the invariants
+     */
+    private void init_label_invariant(
+            DAG dag, int[] OCC, int[] COL, double[] INV) {
+        
+        /* (coment copied from c source)
+         * vertices with degree 1 have OCC = 1 
+         * JLF 10/03 
+         * vertices occurring alone with more than one parent have OCC += 1 
+         * all other vertices have OCC += (number of parents) each time they occur
+         */
+        int l = 0;
+        for (ArrayList<Vertex> layer : dag) {
+            int parent = 0;
+            int k = 0;
+            for (Vertex vertex : layer) {
+                if (vertex.parent.size() > 1) { parent++; }
+                k++;
+            }
+            for (Vertex vertex : layer) {
+                int degree = molecule.getConnectedBondsCount(vertex.atomNumber); 
+                if (degree < 2) {
+                    OCC[vertex.atomNumber] = COL[vertex.atomNumber] = 1;
+                } else {
+                    int j = vertex.parent.size();
+                    OCC[vertex.atomNumber] += j;
+                    if (parent < 2) COL[vertex.atomNumber] += 1;
+                    else            COL[vertex.atomNumber] += j;
+                }
+            }
+            l++;
+        }
+        for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
+    }
+
+
+    /**
      * Make a canonical labelling of the DAG, recursively trying 
      * possible labels.
      * 
@@ -372,6 +414,244 @@ public class SignaturePort {
             compute_label_invariant(dag, h, label, occur, invar, ITER + 1);
         }
     }
+
+    /**
+     * Compute the vertex invariants, either going UP or DOWN the tree (DAG),
+     * depending on the value of the relation parameter. If this is 'parent',
+     * go down - otherwise go up.  
+     * 
+     * @param dag the DAG
+     * @param h the height
+     * @param LAB the labels
+     * @param OCC the occurrences
+     * @param INV the invariants
+     * @param relation 'parent' or 'child'
+     * @return the maximum invariant after ranking
+     */
+    private int compute_invariant(DAG dag, int h,
+            int[] LAB, int[] OCC, double[] INV, String relation) {
+        int l0;
+        int ln;
+        int li;
+        if (relation.equals("parent")) {
+            l0 = 0;
+            ln = dag.size();
+            li = 1;
+        } else {
+            l0 = dag.size() - 1;
+            ln = -1;
+            li = -1;
+        }
+        
+        // compute invariant for all vertices
+        for (int l = l0; l != ln; l += li) {
+            compute_layer_invariant(dag.get(l), LAB, INV, relation);
+        }
+        
+        // find K, the maximum invariant for nodes and atoms
+        double K = 0;
+        double n = 0;
+        for (ArrayList<Vertex> layer : dag) {
+            n++;
+            for (Vertex vertex : layer) {
+                if (vertex.invariant > K) {
+                    K = (double)vertex.invariant;
+                }
+            }
+        }
+        for (int i = 0; i < SIZE; i++) {
+            if (INV[i] > K) {
+                K = INV[i];
+            }
+        }
+        K = K + 1;
+        
+        // rescale if necessary
+        double KK;
+        if (Math.pow(K, n) > POWMAX) {
+            KK = Math.pow(10.0, (10.0 / n));
+            for (int i = 0; i < SIZE; i++) {
+                INV[i] = INV[i] * KK / K;
+            }
+        } else {
+            KK = K;
+        }
+        
+        // compute new invariant for all atoms
+        n = 1;
+        for (ArrayList<Vertex> layer : dag) {
+            n++;
+            for (Vertex vertex : layer) {
+                double invariant = vertex.invariant * (KK / K);
+                invariant *= Math.pow(KK, n);
+                INV[vertex.atomNumber] += invariant;
+            }
+        }
+        
+        /*
+         * sort and compute arry INV
+         * x is the inital invariant
+         * y is the new invariant
+         * z in the location in the new array
+         */
+        Bucket[] invar = new Bucket[SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            invar[i] = new Bucket();
+            invar[i].x = INV[i];
+            invar[i].y = invar[i].z = i;
+        }
+        Arrays.sort(invar, this.cmp_invar_instance);
+        
+        // rank the sorted buckets
+        invar[0].y = 1;
+        int inv = 1;
+        for (int i = 1; i < SIZE; i++) {
+            Bucket a = invar[i];
+            Bucket b = invar[i - 1];
+            if (this.cmp_invar_instance.compare(a, b) == 0) {
+                a.y = b.y;
+            } else {
+                a.y = (++inv);
+            }
+        }
+        for (int i = 0; i < SIZE; i++) { INV[invar[i].z] = invar[i].y; }
+        
+        // compute OCC
+        int nb = 1;
+        int i0 = 0;
+        for (int i = 1; i < SIZE; i++) {
+            if (invar[i].y == invar[i - 1].y) {
+                nb++;
+            } else {
+                for (int k = i0; k < i0 + nb; k++) {
+                    invar[k].x = nb;
+                }
+                nb = 1;
+                i0 = i;
+            }
+        }
+        for (int i = i0; i < SIZE; i++) {
+            invar[i].x = nb;
+        }
+        
+        for (int i = 0; i < SIZE; i++) {
+            if (OCC[invar[i].z] > 1) {
+                OCC[invar[i].z] = (int)invar[i].x;
+            }
+        }
+        
+        return inv;
+    }
+
+
+    /**
+     * Compute invariants for a layer of the DAG.
+     * 
+     * @param layer the list of vertices at this layer
+     * @param LAB the labels
+     * @param INV the (atom?) invariants
+     * @param relation 'parent' or 'child'
+     */
+    private void compute_layer_invariant(
+            ArrayList<Vertex> layer, int[] LAB, double[] INV, String relation) {
+        for (Vertex vertex : layer) {
+            compute_vertex_invariant(vertex, LAB, INV, relation);
+        }
+        
+        Collections.sort(layer, this.cmp_vertex_invariant_element_instance);
+        
+        double[] invar = new double[layer.size() + 1];
+        invar[0] = 1;
+        
+        int inv = 1;
+        int i = 1;
+        int n = layer.size();
+        while (i < n) {
+            while (cmp_vertex_invariant_element_instance.compare(
+                    layer.get(i), layer.get(i - 1)) == 0) {
+                invar[i] = inv;
+                i++;
+                if (i >= n) {
+                    break;
+                }
+            }
+            inv++; 
+            invar[i] = inv;
+            i++;
+        }
+        i = 0;
+        for (Vertex vertex : layer) {
+            vertex.invariant = (int)invar[i];
+            i++;
+        }
+        
+    }
+
+
+    /**
+     * Compute the invariant for a single vertex, relative either to its 
+     * children or its parents.
+     * 
+     * @param vertex the vertex to compute for
+     * @param LAB the labels
+     * @param INV the invariants
+     * @param relation 'parent' or 'child'
+     */
+    private void compute_vertex_invariant(Vertex vertex, int[] LAB,
+            double[] INV, String relation) {
+        vertex.element = "[";
+        vertex.element += getType(vertex);
+        if (LAB[vertex.atomNumber] >= 0) {
+            vertex.element += ",";
+            vertex.element += String.valueOf(LAB[vertex.atomNumber] + 1);
+        }
+        vertex.element += "]";
+        vertex.invariant = (int)INV[vertex.atomNumber];
+        
+        double K = SIZE + 1;
+        Double[] invar;
+        int n = 0;
+        if (relation.equals("child")) {
+            if (vertex.children.size() == 0) {
+                return;
+            } else {
+                invar = new Double[2 * vertex.children.size()];
+                for (Vertex child : vertex.children) {
+                    invar[n++] = new Double(child.invariant);
+                    invar[n++] = order(vertex, child) + K;
+                }
+            }
+        } else if (relation.equals("parent")) {
+            if (vertex.parent.size() == 0) {
+                return;
+            } else {
+                invar = new Double[2 * vertex.parent.size()];
+                for (Vertex parent : vertex.parent) {
+                    invar[n++] = new Double(parent.invariant);
+                    invar[n++] = order(vertex, parent) + K;
+                }
+            }
+        } else {
+            return;
+        }
+        Arrays.sort(invar, this.cmp_invariant_instance);
+        
+        // rescale if necessary
+        K += VALENCE;
+        double KK;
+        if (Math.pow(K, n) > POWMAX) {
+            KK = Math.pow(10.0, (10.0 / n));
+        } else {
+            KK = K;
+        }
+        
+        // compute and scale invariant
+        for (int i = 0; i < n; i++) {
+            double z = Math.pow(KK, (double)(i + 1)) * (KK / K);
+            vertex.invariant += ((double)invar[i]) * z;
+        }
+    }
+
 
     /**
      * Finish the labelling and generate the string form.
@@ -529,241 +809,6 @@ public class SignaturePort {
    
 
     /**
-     * Compute the vertex invariants, either going UP or DOWN the tree (DAG),
-     * depending on the value of the relation parameter. If this is 'parent',
-     * go down - otherwise go up.  
-     * 
-     * @param dag the DAG
-     * @param h the height
-     * @param LAB the labels
-     * @param OCC the occurrences
-     * @param INV the invariants
-     * @param relation 'parent' or 'child'
-     * @return the maximum invariant after ranking
-     */
-    private int compute_invariant(DAG dag, int h,
-            int[] LAB, int[] OCC, double[] INV, String relation) {
-        int l0;
-        int ln;
-        int li;
-        if (relation.equals("parent")) {
-            l0 = 0;
-            ln = dag.size();
-            li = 1;
-        } else {
-            l0 = dag.size() - 1;
-            ln = -1;
-            li = -1;
-        }
-        
-        // compute invariant for all vertices
-        for (int l = l0; l != ln; l += li) {
-            compute_layer_invariant(dag.get(l), LAB, INV, relation);
-        }
-        
-        // find K, the maximum invariant for nodes and atoms
-        double K = 0;
-        double n = 0;
-        for (ArrayList<Vertex> layer : dag) {
-            n++;
-            for (Vertex vertex : layer) {
-                if (vertex.invariant > K) {
-                    K = (double)vertex.invariant;
-                }
-            }
-        }
-        for (int i = 0; i < SIZE; i++) {
-            if (INV[i] > K) {
-                K = INV[i];
-            }
-        }
-        K = K + 1;
-        
-        // rescale if necessary
-        double KK;
-        if (Math.pow(K, n) > POWMAX) {
-            KK = Math.pow(10.0, (10.0 / n));
-            for (int i = 0; i < SIZE; i++) {
-                INV[i] = INV[i] * KK / K;
-            }
-        } else {
-            KK = K;
-        }
-        
-        // compute new invariant for all atoms
-        n = 1;
-        for (ArrayList<Vertex> layer : dag) {
-            n++;
-            for (Vertex vertex : layer) {
-                double invariant = vertex.invariant * (KK / K);
-                invariant *= Math.pow(KK, n);
-                INV[vertex.atomNumber] += invariant;
-            }
-        }
-        
-        /*
-         * sort and compute arry INV
-         * x is the inital invariant
-         * y is the new invariant
-         * z in the location in the new array
-         */
-        Bucket[] invar = new Bucket[SIZE];
-        for (int i = 0; i < SIZE; i++) {
-            invar[i] = new Bucket();
-            invar[i].x = INV[i];
-            invar[i].y = invar[i].z = i;
-        }
-        Arrays.sort(invar, this.cmp_invar_instance);
-        
-        // rank the sorted buckets
-        invar[0].y = 1;
-        int inv = 1;
-        for (int i = 1; i < SIZE; i++) {
-            Bucket a = invar[i];
-            Bucket b = invar[i - 1];
-            if (this.cmp_invar_instance.compare(a, b) == 0) {
-                a.y = b.y;
-            } else {
-                a.y = (++inv);
-            }
-        }
-        for (int i = 0; i < SIZE; i++) { INV[invar[i].z] = invar[i].y; }
-        
-        // compute OCC
-        int nb = 1;
-        int i0 = 0;
-        for (int i = 1; i < SIZE; i++) {
-            if (invar[i].y == invar[i - 1].y) {
-                nb++;
-            } else {
-                for (int k = i0; k < i0 + nb; k++) {
-                    invar[k].x = nb;
-                }
-                nb = 1;
-                i0 = i;
-            }
-        }
-        for (int i = i0; i < SIZE; i++) {
-            invar[i].x = nb;
-        }
-        
-        for (int i = 0; i < SIZE; i++) {
-            if (OCC[invar[i].z] > 1) {
-                OCC[invar[i].z] = (int)invar[i].x;
-            }
-        }
-        
-        return inv;
-    }
-
-    /**
-     * Compute invariants for a layer of the DAG.
-     * 
-     * @param layer the list of vertices at this layer
-     * @param LAB the labels
-     * @param INV the (atom?) invariants
-     * @param relation 'parent' or 'child'
-     */
-    private void compute_layer_invariant(
-            ArrayList<Vertex> layer, int[] LAB, double[] INV, String relation) {
-        for (Vertex vertex : layer) {
-            compute_vertex_invariant(vertex, LAB, INV, relation);
-        }
-        
-        Collections.sort(layer, this.cmp_vertex_invariant_element_instance);
-        
-        double[] invar = new double[layer.size() + 1];
-        invar[0] = 1;
-        
-        int inv = 1;
-        int i = 1;
-        int n = layer.size();
-        while (i < n) {
-            while (cmp_vertex_invariant_element_instance.compare(
-                    layer.get(i), layer.get(i - 1)) == 0) {
-                invar[i] = inv;
-                i++;
-                if (i >= n) {
-                    break;
-                }
-            }
-            inv++; 
-            invar[i] = inv;
-            i++;
-        }
-        i = 0;
-        for (Vertex vertex : layer) {
-            vertex.invariant = (int)invar[i];
-            i++;
-        }
-        
-    }
-
-    /**
-     * Compute the invariant for a single vertex, relative either to its 
-     * children or its parents.
-     * 
-     * @param vertex the vertex to compute for
-     * @param LAB the labels
-     * @param INV the invariants
-     * @param relation 'parent' or 'child'
-     */
-    private void compute_vertex_invariant(Vertex vertex, int[] LAB,
-            double[] INV, String relation) {
-        vertex.element = "[";
-        vertex.element += getType(vertex);
-        if (LAB[vertex.atomNumber] >= 0) {
-            vertex.element += ",";
-            vertex.element += String.valueOf(LAB[vertex.atomNumber] + 1);
-        }
-        vertex.element += "]";
-        vertex.invariant = (int)INV[vertex.atomNumber];
-        
-        double K = SIZE + 1;
-        Double[] invar;
-        int n = 0;
-        if (relation.equals("child")) {
-            if (vertex.children.size() == 0) {
-                return;
-            } else {
-                invar = new Double[2 * vertex.children.size()];
-                for (Vertex child : vertex.children) {
-                    invar[n++] = new Double(child.invariant);
-                    invar[n++] = order(vertex, child) + K;
-                }
-            }
-        } else if (relation.equals("parent")) {
-            if (vertex.parent.size() == 0) {
-                return;
-            } else {
-                invar = new Double[2 * vertex.parent.size()];
-                for (Vertex parent : vertex.parent) {
-                    invar[n++] = new Double(parent.invariant);
-                    invar[n++] = order(vertex, parent) + K;
-                }
-            }
-        } else {
-            return;
-        }
-        Arrays.sort(invar, this.cmp_invariant_instance);
-        
-        // rescale if necessary
-        K += VALENCE;
-        double KK;
-        if (Math.pow(K, n) > POWMAX) {
-            KK = Math.pow(10.0, (10.0 / n));
-        } else {
-            KK = K;
-        }
-        
-        // compute and scale invariant
-        for (int i = 0; i < n; i++) {
-            double z = Math.pow(KK, (double)(i + 1)) * (KK / K);
-            vertex.invariant += ((double)invar[i]) * z;
-        }
-    }
-    
-    /**
      * Determine the bond order between the atoms referred to by these two
      * vertices. Single = 1, Double = 2, Triple = 3, Aromatic = 4.
      * 
@@ -809,46 +854,5 @@ public class SignaturePort {
      */
     private String getType(Vertex vertex) {
         return this.molecule.getAtom(vertex.atomNumber).getSymbol();
-    }
-
-    /**
-     * Determine the initial invariants using the parents of each vertex.
-     * 
-     * @param dag the DAG
-     * @param OCC the occurrences
-     * @param COL the colors (TODO : difference between colors and labels?)
-     * @param INV the invariants
-     */
-    private void init_label_invariant(
-            DAG dag, int[] OCC, int[] COL, double[] INV) {
-        
-        /* (coment copied from c source)
-         * vertices with degree 1 have OCC = 1 
-         * JLF 10/03 
-         * vertices occurring alone with more than one parent have OCC += 1 
-         * all other vertices have OCC += (number of parents) each time they occur
-         */
-        int l = 0;
-        for (ArrayList<Vertex> layer : dag) {
-            int parent = 0;
-            int k = 0;
-            for (Vertex vertex : layer) {
-                if (vertex.parent.size() > 1) { parent++; }
-                k++;
-            }
-            for (Vertex vertex : layer) {
-                int degree = molecule.getConnectedBondsCount(vertex.atomNumber); 
-                if (degree < 2) {
-                    OCC[vertex.atomNumber] = COL[vertex.atomNumber] = 1;
-                } else {
-                    int j = vertex.parent.size();
-                    OCC[vertex.atomNumber] += j;
-                    if (parent < 2) COL[vertex.atomNumber] += 1;
-                    else            COL[vertex.atomNumber] += j;
-                }
-            }
-            l++;
-        }
-        for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
     }
 }
