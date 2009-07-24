@@ -26,7 +26,7 @@ public class TestSignaturePort {
     
     public static void testCanonical(IMolecule mol, String expected) {
         SignaturePort sig = new SignaturePort(mol);
-        String actual = sig.sisc_canonize();
+        String actual = sig.getCanonicalSignatureString();
         Assert.assertEquals("not canonical", expected, actual);
     }
     
@@ -92,12 +92,12 @@ public class TestSignaturePort {
     
     @Test
     public void testCuneane() {
-        String expectedA = "[C]([C]([C]([C,2][C,3])[C,3]([C,1]))" +
-        		           "[C]([C,1]([C,4])[C,4]([C,2])))";
-        String expectedB = "[C]([C]([C]([C,1][C,2]))[C]([C,3][C,1]" +
-        		           "([C,2]))[C,3]([C]([C,2])))";
+        String expectedA = "[C]([C]([C,2]([C,3])[C,3]([C,1]))" +
+                           "[C]([C,2][C,4]([C,1]))[C]([C,1][C,4]))";
+        String expectedB = "[C]([C]([C,1][C]([C,2][C,3]))[C]([C,4]" +
+        		           "([C,3])[C,2]([C,3]))[C,1]([C,4]))";
         String expectedC = "[C]([C]([C]([C,1][C,2])[C,2]([C,3]))" +
-        		           "[C]([C,4][C,1])[C,4]([C,3]))";
+                           "[C]([C,4][C,1]([C,3]))[C,4]([C,3]))";
         IMolecule mol = TestSignature.makeCuneane();
 //        TestSignaturePort.printSignatures(mol);
         Map<Integer, String> expected = new HashMap<Integer, String>();
