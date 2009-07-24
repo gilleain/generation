@@ -16,7 +16,7 @@ import org.openscience.cdk.interfaces.IMolecule;
 public class DAG implements Iterable<ArrayList<Vertex>> {
     
     private IMolecule molecule;
-    private ArrayList<ArrayList<Vertex>> L;
+    private ArrayList<ArrayList<Vertex>> layers;
 
     /**
      * Construct the DAG (directed acyclic graph) rooted at this atom number.
@@ -30,28 +30,32 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
         assert atomNumber <= this.molecule.getAtomCount();
         assert h >= 0;
         
-        L = new ArrayList<ArrayList<Vertex>>();
+        layers = new ArrayList<ArrayList<Vertex>>();
         
         ArrayList<Edge> E = new ArrayList<Edge>();
         Vertex root = new Vertex(atomNumber, "", 1);
         ArrayList<Vertex> rootLayer = new ArrayList<Vertex>();
         rootLayer.add(root);
-        L.add(rootLayer);
+        layers.add(rootLayer);
         if (h < 1) return;
         
-        build_layer(rootLayer, E, h - 1);
+        buildLayer(rootLayer, E, h - 1);
     }
     
+    public Iterator<ArrayList<Vertex>> iterator() {
+        return this.layers.iterator();
+    }
+
     public Vertex getRoot() {
-        return this.L.get(0).get(0);
+        return this.layers.get(0).get(0);
     }
     
     public ArrayList<Vertex> get(int l) {
-        return this.L.get(l);
+        return this.layers.get(l);
     }
     
     public int size() {
-        return this.L.size();
+        return this.layers.size();
     }
 
     /**
@@ -61,7 +65,7 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
      * @param E the edges seen so far
      * @param h the height to build to
      */
-    private void build_layer(ArrayList<Vertex> N, 
+    private void buildLayer(ArrayList<Vertex> N, 
                              ArrayList<Edge> E, 
                              int h) {
         if (h < 0) return;
@@ -70,14 +74,14 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
         for (Vertex n : N) {
             IAtom atom = this.molecule.getAtom(n.atomNumber);
             for (IAtom aa : this.molecule.getConnectedAtomsList(atom)) {
-                add_vertex(n, this.molecule.getAtomNumber(aa), layerE, E, NN);
+                addVertex(n, this.molecule.getAtomNumber(aa), layerE, E, NN);
             }
         }
         if (NN.size() != 0) {
-            L.add(NN);
+            layers.add(NN);
         }
         E.addAll(layerE);
-        build_layer(NN, E, h - 1);
+        buildLayer(NN, E, h - 1);
     }
     
     /**
@@ -89,7 +93,7 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
      * @param E all the edges seen so far (except the ones in this layer)
      * @param NN the new layer
      */
-    private void add_vertex(
+    private void addVertex(
             Vertex n, int aa, ArrayList<Edge> layerE, ArrayList<Edge> E, 
             ArrayList<Vertex> NN) {
         // check to see if this edge (this bond) has been traversed before
@@ -113,10 +117,6 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
         n.children.add(v);
         v.parent.add(n);
         layerE.add(e);
-    }
-
-    public Iterator<ArrayList<Vertex>> iterator() {
-        return this.L.iterator();
     }
 
 }
