@@ -16,7 +16,7 @@ import org.openscience.cdk.interfaces.IMolecule;
  * @author maclean
  *
  */
-public class SignaturePort {
+public class SignaturePort implements ISignature {
     
     /**
      * Small class used to bucket-sort (sometimes called radix sort)
