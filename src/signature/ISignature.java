@@ -1,5 +1,8 @@
 package signature;
 
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.interfaces.IMolecule;
+
 /**
  * A signature is a path-descriptor of some part (or all) of a molecule. If it
  * spans the whole molecule, it can be used for isomorphism - as two structures
@@ -21,5 +24,24 @@ public interface ISignature {
      * @return a canonical string 
      */
     public String getCanonicalSignatureString();
+    
+    /**
+     * Convert or return the molecule corresponding to this signature. If the
+     * signature was created from a molecule in the first place, this can just
+     * return a reference to that molecule. For signatures read from strings,
+     * the molecule has to be built from scratch. It may be a subgraph - that 
+     * is to say, a fragment - of a molecule. 
+     *  
+     * @return an IMolecule
+     */
+    public IMolecule toMolecule();
+    
+    /**
+     * Construct the molecule using the supplied builder.
+     *  
+     * @param builder the builder to use
+     * @return an IMolecule
+     */
+    public IMolecule toMolecule(IChemObjectBuilder builder);
 
 }

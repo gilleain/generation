@@ -8,6 +8,7 @@ import java.util.Comparator;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IMolecule;
 
 /**
@@ -194,7 +195,7 @@ public class SignaturePort implements ISignature {
     
     /**
      * The basic entry point for producing a canonical signature for a molecule.
-     * It creates sigantures for each atom, then finds the lexicographically 
+     * It creates signatures for each atom, then finds the lexicographically 
      * smallest one, and returns that.
      * 
      * @return the canonical signature for the molecule
@@ -223,6 +224,19 @@ public class SignaturePort implements ISignature {
         return SMAX;
     }
     
+    public IMolecule toMolecule() {
+        // we don't really care about the builder, since no construction is
+        // going on...
+        return this.toMolecule(null);    
+    }
+
+    public IMolecule toMolecule(IChemObjectBuilder builder) {
+        // XXX note that if the height is less than the span, it should really
+        // return a subgraph, not the whole molecule...
+        return this.molecule;
+    }
+
+
     /**
      * Make a signature for atom numbered <code>atomNumber</code>.
      * 
@@ -313,7 +327,7 @@ public class SignaturePort implements ISignature {
             int parent = 0;
             int k = 0;
             for (Vertex vertex : layer) {
-                if (vertex.parent.size() > 1) { parent++; }
+                if (vertex.parents.size() > 1) { parent++; }
                 k++;
             }
             for (Vertex vertex : layer) {
@@ -321,7 +335,7 @@ public class SignaturePort implements ISignature {
                 if (degree < 2) {
                     OCC[vertex.atomNumber] = COL[vertex.atomNumber] = 1;
                 } else {
-                    int j = vertex.parent.size();
+                    int j = vertex.parents.size();
                     OCC[vertex.atomNumber] += j;
                     if (parent < 2) COL[vertex.atomNumber] += 1;
                     else            COL[vertex.atomNumber] += j;
@@ -622,11 +636,11 @@ public class SignaturePort implements ISignature {
                 }
             }
         } else if (relation.equals("parent")) {
-            if (vertex.parent.size() == 0) {
+            if (vertex.parents.size() == 0) {
                 return;
             } else {
-                invar = new Double[2 * vertex.parent.size()];
-                for (Vertex parent : vertex.parent) {
+                invar = new Double[2 * vertex.parents.size()];
+                for (Vertex parent : vertex.parents) {
                     invar[n++] = new Double(parent.invariant);
                     invar[n++] = order(vertex, parent) + K;
                 }
@@ -670,7 +684,7 @@ public class SignaturePort implements ISignature {
         }
         NBCUR = 0;
         String s = layer_print_string(dag, LAB, L0);
-        System.out.println("FRESH " + s);
+//        System.out.println("FRESH " + s);
         this.SCURRENT = s;
         if (SMAX != null) {
             if (s.compareTo(SMAX) < 0) return;
