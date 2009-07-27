@@ -9,17 +9,22 @@ import java.util.ArrayList;
  *
  */
 public class Vertex {
+    
     public int atomNumber;
+    
     public String element;
+    
     public int invariant;
-    public ArrayList<Vertex> parent;
+    
+    public ArrayList<Vertex> parents;
+    
     public ArrayList<Vertex> children;
     
     public Vertex(int atomNumber, String element, int invariant) {
         this.atomNumber = atomNumber;
         this.element = element;
         this.invariant = invariant;
-        this.parent = new ArrayList<Vertex>();
+        this.parents = new ArrayList<Vertex>();
         this.children = new ArrayList<Vertex>();
     }
     

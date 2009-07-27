@@ -115,7 +115,7 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
             NN.add(v);
         }
         n.children.add(v);
-        v.parent.add(n);
+        v.parents.add(n);
         layerE.add(e);
     }
 
