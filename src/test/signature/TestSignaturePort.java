@@ -61,7 +61,7 @@ public class TestSignaturePort {
         SignaturePort sig = new SignaturePort(mol);
         for (int i = 0; i < mol.getAtomCount(); i++) {
             String sigForAtomI = sig.forAtom(i);
-            System.out.println(i + " " + sigForAtomI);
+            System.out.println(String.format("%3d %s", i, sigForAtomI));
         }
     }
     
@@ -84,7 +84,7 @@ public class TestSignaturePort {
     public void testCage() {
         String expectedA =  "[C]([C]([C,2]([C]([C,3][C,4]))[C]([C,5]" +
                             "[C,3]([C,6]([C,1]))))[C]([C]([C,7][C]" +
-                            "([C,1[C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +
+                            "([C,1][C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +
                             "[C,7]([C,4]([C,1]))))";
         String expectedB =  "[C]([C]([C]([C,2][C]([C,1][C,3]))[C]" +
                             "([C,1]([C,4])[C,5]))[C]([C,2]([C,6]" +
@@ -92,8 +92,24 @@ public class TestSignaturePort {
                             "([C,8]))[C,7]([C,8]([C,3]))))";
         Map<Integer, String> expected = new HashMap<Integer, String>();
         expected.put(0, expectedA);
+        expected.put(1, expectedA);
+        expected.put(2, expectedA);
+        expected.put(3, expectedA);
+        expected.put(4, expectedB);
+        expected.put(5, expectedB);
+        expected.put(6, expectedB);
+        expected.put(7, expectedB);
+        expected.put(8, expectedB);
+        expected.put(9, expectedB);
+        expected.put(10, expectedB);
+        expected.put(11, expectedB);
+        expected.put(12, expectedA);
+        expected.put(13, expectedA);
+        expected.put(14, expectedA);
+        expected.put(15, expectedA);
+        
         IMolecule mol = TestSignature.makeCage();
-//        TestSignaturePort.printSignatures(mol);
+        TestSignaturePort.testAtoms(mol, expected);
         TestSignaturePort.testCanonical(mol, expectedB);
     }
     
