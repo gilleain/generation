@@ -10,6 +10,7 @@ import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.templates.MoleculeFactory;
 
 import signature.TargetAtomicSignature;
@@ -57,6 +58,11 @@ public class TestTargetAtomicSignature {
         }
     }
     
+    public static void printSmiles(IMolecule mol) {
+        SmilesGenerator generator = new SmilesGenerator();
+        System.out.println(generator.createSMILES(mol));
+    }
+    
     public static void checkMolecule(String sigString, IMolecule expected) {
         TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
         IMolecule actual = sig.toMolecule();
@@ -69,13 +75,20 @@ public class TestTargetAtomicSignature {
         }
     }
     
+    public static void testRoundtrip(String expected) {
+        TargetAtomicSignature sig = new TargetAtomicSignature(expected);
+        String actual = sig.toString();
+        Assert.assertEquals("labelled roundtrip failed", expected, actual);
+    }
+    
     @Test
     public void testCageMolecule() {
         IMolecule molecule = TestSignature.makeCage();
         String sigString = "[C]([C]([C,2]([C]([C,3][C,4]))[C]([C,5]" +
                            "[C,3]([C,6]([C,1]))))[C]([C]([C,7][C]" +
-                           "([C,1[C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +
+                           "([C,1][C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +
                            "[C,7]([C,4]([C,1]))))";
+        TestTargetAtomicSignature.testRoundtrip(sigString);
         TestTargetAtomicSignature.checkMolecule(sigString, molecule);
     }
     
@@ -97,9 +110,7 @@ public class TestTargetAtomicSignature {
     @Test
     public void labelledRoundtrip() {
         String expected = "[C]([C,1][C,2][C,3])";
-        TargetAtomicSignature sig = new TargetAtomicSignature(expected);
-        String actual = sig.toString();
-        Assert.assertEquals("labelled roundtrip failed", expected, actual);
+        TestTargetAtomicSignature.testRoundtrip(expected);
     }
     
     @Test
