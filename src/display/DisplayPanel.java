@@ -72,6 +72,11 @@ public class DisplayPanel extends JPanel {
         return generators;
     }
     
+    public void setMolecule(IMolecule molecule) {
+        this.molecules = new ArrayList<IMolecule>();
+        this.molecules.add(diagramGenerate(molecule));
+    }
+
     public void setMolecules(List<IMolecule> molecules) {
         this.molecules = new ArrayList<IMolecule>();
         for (IMolecule molecule : molecules) {
@@ -119,8 +124,10 @@ public class DisplayPanel extends JPanel {
     private void paintMolecules(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         int columns = panelWidth / (moleculeWidth / 2);
-        int x = moleculeWidth / 4;
-        int y = moleculeHeight / 4;
+//        int x = moleculeWidth / 4;
+        int x = moleculeWidth / 2;
+//        int y = moleculeHeight / 4;
+        int y = moleculeHeight / 3;
         int i = 0;
         renderer.setDrawCenter(x, y);
         for (IMolecule molecule : molecules) {

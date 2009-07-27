@@ -107,6 +107,7 @@ public class SignatureTreePanel extends JPanel {
         this.s = s;
         this.width = width;
         this.height = height;
+        this.setPreferredSize(new Dimension(width, height));
     }
     
     public Node parse(String s) {
@@ -181,11 +182,11 @@ public class SignatureTreePanel extends JPanel {
     
     public static void main(String[] args) {
         JFrame f = new JFrame();
-        String a = "[C]([C]([C]([C,1][C,2])[C,2]([C,3]))[C]([C,4][C,1])[C,4]([C,3]))";
-        String b = "[C]([C]([C,1]([C,1][C,2])[C,2]([C,3]))[C]([C,4][C,1])[C,4]([C,3]))";
+        String a ="[C]([C]([C][C][C])[C]([C][C]))"; 
+        String b = "[C]([C]([C])[C]([C])[C]([C])[C])";
         
-        int width = 1400;
-        int height = 400;
+        int width = 1200;
+        int height = 350;
         f.setLayout(new GridLayout(2, 1));
         f.add(new SignatureTreePanel(a, width, height));
         f.add(new SignatureTreePanel(b, width, height));
