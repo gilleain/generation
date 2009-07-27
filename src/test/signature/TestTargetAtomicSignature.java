@@ -57,36 +57,41 @@ public class TestTargetAtomicSignature {
         }
     }
     
-    @Test
-    public void treeMoleculeRoundtrip() {
-         IMolecule treeMolecule = TestTargetAtomicSignature.makeTreeMolecule();
-         String expected = "[C]([H][H][H][C]([H][H][C]([H][H][H])))";
-         
-         TargetAtomicSignature sig = new TargetAtomicSignature(expected);
-         IMolecule outputMolecule = sig.toMolecule();
-         try {
-             boolean isIsomorph = UniversalIsomorphismTester.isIsomorph(
-                     treeMolecule, outputMolecule);
-             Assert.assertEquals(true, isIsomorph);
-         } catch (CDKException c) {
-             
-         }
+    public static void checkMolecule(String sigString, IMolecule expected) {
+        TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
+        IMolecule actual = sig.toMolecule();
+        try {
+            boolean isIsomorph = 
+                UniversalIsomorphismTester.isIsomorph(expected, actual);
+            Assert.assertEquals(true, isIsomorph);
+        } catch (CDKException c) {
+            
+        }
     }
     
     @Test
-    public void cyclicMoleculeRoundtrip() {
-         IMolecule treeMolecule = TestTargetAtomicSignature.makeRingMolecule();
-         String expected = "[H]([C]([C]([C]([C,1]([H][H])[H][H])[H][H])" +
-                           "[C]([C]([C,1][H][H])[H][H])[H]))";
-         TargetAtomicSignature sig = new TargetAtomicSignature(expected);
-         IMolecule outputMolecule = sig.toMolecule();
-         try {
-             boolean isIsomorph = UniversalIsomorphismTester.isIsomorph(
-                     treeMolecule, outputMolecule);
-             Assert.assertEquals(true, isIsomorph);
-         } catch (CDKException c) {
-             
-         }
+    public void testCageMolecule() {
+        IMolecule molecule = TestSignature.makeCage();
+        String sigString = "[C]([C]([C,2]([C]([C,3][C,4]))[C]([C,5]" +
+                           "[C,3]([C,6]([C,1]))))[C]([C]([C,7][C]" +
+                           "([C,1[C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +
+                           "[C,7]([C,4]([C,1]))))";
+        TestTargetAtomicSignature.checkMolecule(sigString, molecule);
+    }
+    
+    @Test
+    public void testTreeMolecule() {
+         IMolecule molecule = TestTargetAtomicSignature.makeTreeMolecule();
+         String sigString = "[C]([H][H][H][C]([H][H][C]([H][H][H])))";
+         TestTargetAtomicSignature.checkMolecule(sigString, molecule);
+    }
+    
+    @Test
+    public void testCyclicMolecule() {
+         IMolecule molecule = TestTargetAtomicSignature.makeRingMolecule();
+         String sigString = "[H]([C]([C]([C]([C,1]([H][H])[H][H])[H][H])" +
+                            "[C]([C]([C,1][H][H])[H][H])[H]))";
+         TestTargetAtomicSignature.checkMolecule(sigString, molecule);
     }
     
     @Test
