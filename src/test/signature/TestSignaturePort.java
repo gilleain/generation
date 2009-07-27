@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.io.MDLWriter;
+import org.openscience.cdk.templates.MoleculeFactory;
 
 import signature.SignaturePort;
 
@@ -62,6 +63,21 @@ public class TestSignaturePort {
             String sigForAtomI = sig.forAtom(i);
             System.out.println(i + " " + sigForAtomI);
         }
+    }
+    
+    @Test
+    public void testCyclohexaneWithHydrogens() {
+        IMolecule cyclohexane = MoleculeFactory.makeCyclohexane();
+        for (int i = 0; i < 6; i++) {
+            TestTargetAtomicSignature.addHydrogens(
+                    cyclohexane, cyclohexane.getAtom(i), 2);
+        }
+        String expected = "[H]([C]([C]([C]([C,1]([H][H])[H][H])[H][H])" +
+        		          "[C]([C]([C,1][H][H])[H][H])[H]))";
+        SignaturePort signature = new SignaturePort(cyclohexane);
+        
+        String actual = signature.getCanonicalSignatureString();
+        Assert.assertEquals(expected, actual);
     }
     
     @Test

@@ -1,6 +1,14 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 /**
  * A target atomic signature records the structural context that an atom must 
@@ -12,11 +20,13 @@ import java.util.ArrayList;
  * @author maclean
  *
  */
-public class TargetAtomicSignature {
+public class TargetAtomicSignature implements ISignature {
     
     private class Node {
         
-        public char label;
+        public String symbol;
+        
+        public int label;
         
         public Node parent;
         
@@ -24,21 +34,75 @@ public class TargetAtomicSignature {
         
         public boolean visited;
         
-        public Node(char label, Node parent) {
+        public Node(String symbol, Node parent) {
+            this(symbol, -1, parent);
+        }
+        
+        public Node(String symbol, int label, Node parent) {
+            this.symbol = symbol;
             this.label = label;
             this.parent = parent;
             this.children = new ArrayList<Node>();
             this.visited = false;
         }
         
+        private void toMolecule(IChemObjectBuilder builder,
+                                IMolecule mol,
+                                IAtom parentAtom,
+                                Map<Integer, Integer> labelAtomNumberMap) {
+            if (this.visited) return;
+            
+            // add a new atom if necessary, or use an existing one if labelled
+            IAtom atom;
+            if (this.isLabelled()) {
+                if (labelAtomNumberMap.containsKey(label)) {
+                    int number = labelAtomNumberMap.get(label);
+                    atom = mol.getAtom(number);
+                } else {
+                    atom = builder.newAtom(this.symbol);
+                    mol.addAtom(atom);
+                    int atomIndex = mol.getAtomCount() - 1;
+                    labelAtomNumberMap.put(label, atomIndex);
+                }
+                
+            } else {
+              // XXX - what if the symbol is not an atom symbol?
+                atom = builder.newAtom(this.symbol);
+                mol.addAtom(atom);
+            }
+            
+            // now check to see if a bond should be added
+            if (parentAtom != null) {
+                IBond bond = builder.newBond(parentAtom, atom);
+                if (!mol.contains(bond)) {
+                    mol.addBond(bond);
+                }
+            }
+            for (Node child : this.children) {
+                child.toMolecule(builder, mol, atom, labelAtomNumberMap);
+            }
+        }
+        
+        public boolean isLabelled() {
+            return this.label != -1;
+        }
+        
         public void toString(StringBuffer buffer) {
-            buffer.append(this.label);
+            buffer.append(this.toString());
             if (this.children.size() == 0) return;
             buffer.append("(");
             for (Node child : this.children) {
                 child.toString(buffer);
             }
             buffer.append(")");
+        }
+        
+        public String toString() {
+            if (this.isLabelled()) {
+                return "[" + this.symbol + "," + this.label + "]";
+            } else {
+                return "[" + this.symbol + "]";
+            }
         }
     }
     
@@ -55,6 +119,28 @@ public class TargetAtomicSignature {
         this.root = this.parse(signatureString);
     }
     
+    public String getCanonicalSignatureString() {
+        // TODO make a canonical string from the tree - this can be done more
+        // easily than for the DAG built from a molecule, as that needs the 
+        // tricky up-and-down traversal to take account of vertices with 
+        // multiple parents, and also the labelling.
+        
+        return this.toString(); // XXX - not canonical!
+    }
+
+    public IMolecule toMolecule() {
+        // TODO Auto-generated method stub
+        return this.toMolecule(NoNotificationChemObjectBuilder.getInstance());
+    }
+
+    public IMolecule toMolecule(IChemObjectBuilder builder) {
+        IMolecule molecule = builder.newMolecule();
+        this.root.toMolecule(
+                builder, molecule, null, new HashMap<Integer, Integer>());
+        return molecule;
+    }
+    
+
     public ArrayList<String> getSignatureStrings(int height) {
         ArrayList<String> sigStrings = new ArrayList<String>();
         for (Node child : this.root.children) {
@@ -108,7 +194,7 @@ public class TargetAtomicSignature {
 
     private void traverse(Node current, int h, int maxH, StringBuffer buffer) {
         if (current.visited) return;
-        buffer.append(current.label);
+        buffer.append(current.toString());
         current.visited = true;
         if (h < maxH) {
             boolean visited = visitedChildren(current);
@@ -147,25 +233,45 @@ public class TargetAtomicSignature {
         Node root = null;
         Node parent = null;
         Node current = null;
+        
+        int symbolStart = 0;
+        int labelStart = -1;
+        
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            switch (c) {
-                case '(':
-                    parent = current;
-                    break;
-                case ')':
-                    parent = parent.parent;
-                    break;
-                default:
-                    Node node = new Node(c, parent);
-                    if (root == null) {
-                        root = node;
-                        parent = node;
+            if (c == '(') {
+                parent = current;
+            } else if (c == ')') {
+                current = parent;
+                parent = current.parent;
+            } else if (c == '[') {
+                symbolStart = i + 1;
+            } else if (c == ',') {
+                labelStart = i + 1;
+            } else if (c == ']') {
+                String ss;
+                if (labelStart == -1) {
+                    ss = s.substring(symbolStart, i);
+                } else {
+                    ss = s.substring(symbolStart, labelStart - 1);
+                }
+                if (root == null) {
+                    root = new Node(ss, null);
+                    parent = root;
+                    current = root;
+                } else {
+                    if (labelStart != -1) {
+                        int label = Integer.parseInt(s.substring(labelStart, i)); 
+                        current = new Node(ss, label, parent);
                     } else {
-                        parent.children.add(node);
+                        current = new Node(ss, parent);
                     }
-                    current = node;
-                    break;
+                    parent.children.add(current);
+                }
+                labelStart = -1;
+            } else if (c == 'p') {
+                // ignore, for now
+            } else {
             }
         }
         return root;
