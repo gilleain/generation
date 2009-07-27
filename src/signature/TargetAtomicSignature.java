@@ -119,7 +119,7 @@ public class TargetAtomicSignature implements ISignature {
         this.root = this.parse(signatureString);
     }
     
-    public String getCanonicalSignatureString() {
+    public String toCanonicalSignatureString() {
         // TODO make a canonical string from the tree - this can be done more
         // easily than for the DAG built from a molecule, as that needs the 
         // tricky up-and-down traversal to take account of vertices with 

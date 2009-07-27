@@ -45,7 +45,7 @@ public class SignaturesForSDF {
         while (reader.hasNext()) {
             IMolecule next = (IMolecule) reader.next();
             ISignature signature = new SignaturePort(next);
-            String canonicalString = signature.getCanonicalSignatureString();
+            String canonicalString = signature.toCanonicalSignatureString();
             out.println(canonicalString);
         }
         reader.close();

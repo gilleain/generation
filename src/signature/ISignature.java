@@ -23,7 +23,7 @@ public interface ISignature {
      * 
      * @return a canonical string 
      */
-    public String getCanonicalSignatureString();
+    public String toCanonicalSignatureString();
     
     /**
      * Convert or return the molecule corresponding to this signature. If the

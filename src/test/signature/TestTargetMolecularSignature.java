@@ -11,9 +11,9 @@ public class TestTargetMolecularSignature {
      */
     public static TargetMolecularSignature makeSimpleMolecularSignature() {
         TargetMolecularSignature sig = new TargetMolecularSignature(5);
-        sig.add("C(C(C(C(C(C)))))", 2);
-        sig.add("C(CC(C(C(C))))", 2);
-        sig.add("C(C(C(C))C(C))", 2);
+        sig.add("[C]([C]([C]([C]([C]([C])))))", 2);
+        sig.add("[C]([C][C]([C]([C]([C]))))", 2);
+        sig.add("[C]([C]([C]([C]))[C]([C]))", 2);
         return sig;
     }
     

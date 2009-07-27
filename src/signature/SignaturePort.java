@@ -200,7 +200,7 @@ public class SignaturePort implements ISignature {
      * 
      * @return the canonical signature for the molecule
      */
-    public String getCanonicalSignatureString() {
+    public String toCanonicalSignatureString() {
         Klass[] klasses = new Klass[SIZE];
         int height = Integer.MAX_VALUE;
         

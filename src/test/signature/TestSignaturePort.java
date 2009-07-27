@@ -27,7 +27,7 @@ public class TestSignaturePort {
     
     public static void testCanonical(IMolecule mol, String expected) {
         SignaturePort sig = new SignaturePort(mol);
-        String actual = sig.getCanonicalSignatureString();
+        String actual = sig.toCanonicalSignatureString();
         Assert.assertEquals("not canonical", expected, actual);
     }
     
@@ -76,7 +76,7 @@ public class TestSignaturePort {
         		          "[C]([C]([C,1][H][H])[H][H])[H]))";
         SignaturePort signature = new SignaturePort(cyclohexane);
         
-        String actual = signature.getCanonicalSignatureString();
+        String actual = signature.toCanonicalSignatureString();
         Assert.assertEquals(expected, actual);
     }
     
