@@ -181,7 +181,7 @@ public class SignaturePort implements ISignature {
      * @return the signature of this atom
      */
     public String forAtom(int atomNumber) {
-        sicd_signature_atom(atomNumber, SIZE);
+        signatureAtom(atomNumber, SIZE);
         if (SMAX != null) {
             if (SMAX.compareTo(SCURRENT) < 1) {
                 return SMAX;
@@ -206,7 +206,7 @@ public class SignaturePort implements ISignature {
         
         // make a signature for each atom
         for (int i = 0; i < SIZE; i++) {
-            print_atom_signature(i, height, klasses);
+            printAtomSignature(i, height, klasses);
         }
         
         // bucket-sort the classes
@@ -244,9 +244,9 @@ public class SignaturePort implements ISignature {
      * @param h the height of the signature
      * @param klasses the array of equivalence classes
      */
-    private void print_atom_signature(int atomNumber, int h, Klass[] klasses) {
+    private void printAtomSignature(int atomNumber, int h, Klass[] klasses) {
         int[] label = new int[SIZE];
-        String s = sicd_signature_atom_label(atomNumber, h, label);
+        String s = signatureAtomLabel(atomNumber, h, label);
         klasses[atomNumber] = new Klass();
         klasses[atomNumber].n = atomNumber;
         klasses[atomNumber].s = s;
@@ -270,8 +270,8 @@ public class SignaturePort implements ISignature {
      * @param label the labels that will be created (unused?)
      * @return
      */
-    private String sicd_signature_atom_label(int atomNumber, int h, int[] label) {
-        String sMax = sicd_signature_atom(atomNumber, h);
+    private String signatureAtomLabel(int atomNumber, int h, int[] label) {
+        String sMax = signatureAtom(atomNumber, h);
         for (int i = 0; i < SIZE; i++) label[i] = LACAN[i];
         return sMax;
     }
@@ -283,7 +283,7 @@ public class SignaturePort implements ISignature {
      * @param h the height
      * @return the canonical string
      */
-    private String sicd_signature_atom(int atomNumber, int h) {
+    private String signatureAtom(int atomNumber, int h) {
         if (h > this.SIZE + 1) h = SIZE + 1;
         DAG dag = new DAG(this.molecule, atomNumber, h);
         
@@ -299,9 +299,10 @@ public class SignaturePort implements ISignature {
             LABEL[i] = LACAN[i] = LACUR[i] = -1;
         }
         
-        init_label_invariant(dag, OCCUR, COLOR, INVAR);
+        int[] intInv = initialInvariants(dag, OCCUR, COLOR);
+        for (int i = 0; i < intInv.length; i++) { INVAR[i] = intInv[i]; }
         
-        compute_label_invariant(dag, h, LABEL, OCCUR, INVAR, 0);
+        computeLabelInvariant(dag, h, LABEL, OCCUR, INVAR, 0);
         return SMAX;
     }
 
@@ -313,8 +314,7 @@ public class SignaturePort implements ISignature {
      * @param COL the colors (TODO : difference between colors and labels?)
      * @param INV the invariants
      */
-    private void init_label_invariant(
-            DAG dag, int[] OCC, int[] COL, double[] INV) {
+    private int[] initialInvariants(DAG dag, int[] OCC, int[] COL) {
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -343,7 +343,7 @@ public class SignaturePort implements ISignature {
             }
             l++;
         }
-        for (int i = 0; i < SIZE; i++) { INV[i] = OCC[i]; }
+        return OCC;
     }
 
 
@@ -358,7 +358,7 @@ public class SignaturePort implements ISignature {
      * @param INV the invariants
      * @param ITER the current iteration (TODO : remove)
      */
-    private void compute_label_invariant(
+    private void computeLabelInvariant(
             DAG dag, int h, int[] LAB, int[] OCC, double[] INV, int ITER) {
         int L0 = -1;
         int omax = 1;
@@ -377,8 +377,8 @@ public class SignaturePort implements ISignature {
         // compute invariant for all vertices
         int newinv;
         while (true) {
-            newinv = compute_invariant(dag, h, label, occur, invar, "parent");
-            newinv = compute_invariant(dag, h, label, occur, invar, "child");
+            newinv = computeInvariant(dag, h, label, occur, invar, "parent");
+            newinv = computeInvariant(dag, h, label, occur, invar, "child");
             if (newinv == inv) break;
             inv = newinv;
         }
@@ -391,7 +391,7 @@ public class SignaturePort implements ISignature {
             }
         }
         if (j == SIZE) {
-            end_label_invariant(dag, h, label, occur, invar, L0);
+            endLabelInvariant(dag, h, label, occur, invar, L0);
             return;
         }
         
@@ -417,7 +417,7 @@ public class SignaturePort implements ISignature {
                 if (invar[i] == invar[imax]) {
                     int l = label[i];
                     label[i] = L0 + 1;
-                    compute_label_invariant(dag, h, label, occur, invar, ITER + 1);
+                    computeLabelInvariant(dag, h, label, occur, invar, ITER + 1);
                     label[i] = l;
                     
                     if (ITER >= MAX_COLOR) break; 
@@ -425,7 +425,7 @@ public class SignaturePort implements ISignature {
             }
         }
         if (omax == 1) {
-            compute_label_invariant(dag, h, label, occur, invar, ITER + 1);
+            computeLabelInvariant(dag, h, label, occur, invar, ITER + 1);
         }
     }
 
@@ -442,7 +442,7 @@ public class SignaturePort implements ISignature {
      * @param relation 'parent' or 'child'
      * @return the maximum invariant after ranking
      */
-    private int compute_invariant(DAG dag, int h,
+    private int computeInvariant(DAG dag, int h,
             int[] LAB, int[] OCC, double[] INV, String relation) {
         int l0;
         int ln;
@@ -459,7 +459,7 @@ public class SignaturePort implements ISignature {
         
         // compute invariant for all vertices
         for (int l = l0; l != ln; l += li) {
-            compute_layer_invariant(dag.get(l), LAB, INV, relation);
+            computeLayerInvariant(dag.get(l), LAB, INV, relation);
         }
         
         // find K, the maximum invariant for nodes and atoms
@@ -566,10 +566,10 @@ public class SignaturePort implements ISignature {
      * @param INV the (atom?) invariants
      * @param relation 'parent' or 'child'
      */
-    private void compute_layer_invariant(
+    private void computeLayerInvariant(
             ArrayList<Vertex> layer, int[] LAB, double[] INV, String relation) {
         for (Vertex vertex : layer) {
-            compute_vertex_invariant(vertex, LAB, INV, relation);
+            computeVertexInvariant(vertex, LAB, INV, relation);
         }
         
         Collections.sort(layer, this.cmp_vertex_invariant_element_instance);
@@ -611,7 +611,7 @@ public class SignaturePort implements ISignature {
      * @param INV the invariants
      * @param relation 'parent' or 'child'
      */
-    private void compute_vertex_invariant(Vertex vertex, int[] LAB,
+    private void computeVertexInvariant(Vertex vertex, int[] LAB,
             double[] INV, String relation) {
         vertex.element = "[";
         vertex.element += getType(vertex);
@@ -677,13 +677,13 @@ public class SignaturePort implements ISignature {
      * @param INV the invariants
      * @param L0 the max label used (?)
      */
-    private void end_label_invariant(
+    private void endLabelInvariant(
             DAG dag, int h, int[] LAB, int[] OCC, double[] INV, int L0) {
         for (int i = 0; i < SIZE; i++) {
             LACUR[i] = -1;
         }
         NBCUR = 0;
-        String s = layer_print_string(dag, LAB, L0);
+        String s = layerPrintString(dag, LAB, L0);
 //        System.out.println("FRESH " + s);
         this.SCURRENT = s;
         if (SMAX != null) {
@@ -703,10 +703,10 @@ public class SignaturePort implements ISignature {
      * @param L0 the max (?) label
      * @return the canonical string
      */
-    private String layer_print_string(DAG dag, int[] LAB, int L0) {
+    private String layerPrintString(DAG dag, int[] LAB, int L0) {
         Vertex root = dag.getRoot();
         int[] OCC = new int[SIZE];
-        occur_string(root, new ArrayList<Edge>(), OCC);
+        occurString(root, new ArrayList<Edge>(), OCC);
         
         /* remove labels occurring only one time JLF 02-05 */
         for (int i = 0; i < SIZE; i++) {
@@ -715,7 +715,7 @@ public class SignaturePort implements ISignature {
         LL = L0 + 1;
         
         StringBuffer sb = new StringBuffer();
-        print_string(sb, null, root, new ArrayList<Edge>(), LAB, OCC);
+        printString(sb, null, root, new ArrayList<Edge>(), LAB, OCC);
         return sb.toString();
     }
     
@@ -727,7 +727,7 @@ public class SignaturePort implements ISignature {
      * @param edges the edges seen so far
      * @param OCC the recorded occurrences
      */
-    private void occur_string(Vertex v, ArrayList<Edge> edges, int[] OCC) {
+    private void occurString(Vertex v, ArrayList<Edge> edges, int[] OCC) {
         if (OCCUR[v.atomNumber] > 1) {
             OCC[v.atomNumber] += 1;
         }
@@ -743,7 +743,7 @@ public class SignaturePort implements ISignature {
                 continue;
             } else {
                 edges.add(e);
-                occur_string(child, edges, OCC);
+                occurString(child, edges, OCC);
             }
         }
     }
@@ -762,7 +762,7 @@ public class SignaturePort implements ISignature {
      * @param LAB the labels
      * @param OCC the occurrences
      */
-    private void print_string(StringBuffer sb, Vertex parent,
+    private void printString(StringBuffer sb, Vertex parent,
             Vertex current, ArrayList<Edge> edges, int[] LAB,
             int[] OCC) {
         if (OCC[current.atomNumber] > 1) {
@@ -813,7 +813,7 @@ public class SignaturePort implements ISignature {
                     addedBracket = true;
                 }
                 edges.add(e);
-                print_string(sb, current, child, edges, LAB, OCC); 
+                printString(sb, current, child, edges, LAB, OCC); 
             }
         }
         if (addedBracket) {
