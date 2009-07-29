@@ -1,5 +1,7 @@
 package test.signature;
 
+import org.junit.Test;
+
 import signature.TargetMolecularSignature;
 
 public class TestTargetMolecularSignature {
@@ -48,22 +50,23 @@ public class TestTargetMolecularSignature {
      */
     public static TargetMolecularSignature makePaperExampleMolecularSignature() {
         TargetMolecularSignature sig = new TargetMolecularSignature(2);
-        sig.add("H(C(HHC))", 9, "h3");
-        sig.add("H(C(HCC))", 12, "h2");
-        sig.add("H(C(CCC))", 1, "h1");
-        sig.add("C(HHHC(HCC))", 1, "c31");
-        sig.add("C(HHHC(HHC))", 2, "c32");
-        sig.add("C(HHC(HHH)C(HHC))", 2, "c232");
-        sig.add("C(HHC(HHC)C(HHC))", 2, "c222");
-        sig.add("C(HHC(HHC)C(HCC))", 2, "c221");
+        sig.add("[H]([C]([H][H][C]))", 9, "h3");
+        sig.add("[H]([C]([H][C][C]))", 12, "h2");
+        sig.add("[H]([C]([C][C][C]))", 1, "h1");
+        sig.add("[C]([H][H][H][C]([H][C][C]))", 1, "c31");
+        sig.add("[C]([H][H][H][C]([H][H][C]))", 2, "c32");
+        sig.add("[C]([H][H][C]([H][H][H])[C]([H][H][C]))", 2, "c232");
+        sig.add("[C]([H][H][C]([H][H][C])[C]([H][H][C]))", 2, "c222");
+        sig.add("[C]([H][H][C]([H][H][C])[C]([H]CC))", 2, "c221");
         
         // NOTE : why is this called '1322' in the paper, when all the
         // others follow the naming pattern of number of hydrogens? 
-        sig.add("C(HC(HHH)C(HHC)C(HCC))", 1, "c1322");
+        sig.add("[C]([H][C]([H][H][H])[C]([H][H][C])[C]([H][C][C]))", 1, "c1322");
 
         return sig;
     }
     
+    @Test
     public void roundtrip() {
         TargetMolecularSignature tms = makePaperExampleMolecularSignature();
         System.out.println(tms);

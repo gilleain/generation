@@ -122,14 +122,13 @@ public class TargetAtomicSignature implements ISignature {
     public String toCanonicalSignatureString() {
         // TODO make a canonical string from the tree - this can be done more
         // easily than for the DAG built from a molecule, as that needs the 
-        // tricky up-and-down traversal to take account of vertices with 
-        // multiple parents, and also the labelling.
+        // tricky up-and-down traversal to take account of both vertices with  
+        // multiple parents, and the labelling.
         
         return this.toString(); // XXX - not canonical!
     }
 
     public IMolecule toMolecule() {
-        // TODO Auto-generated method stub
         return this.toMolecule(NoNotificationChemObjectBuilder.getInstance());
     }
 
@@ -139,7 +138,6 @@ public class TargetAtomicSignature implements ISignature {
                 builder, molecule, null, new HashMap<Integer, Integer>());
         return molecule;
     }
-    
 
     public ArrayList<String> getSignatureStrings(int height) {
         ArrayList<String> sigStrings = new ArrayList<String>();

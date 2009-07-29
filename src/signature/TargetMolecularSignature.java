@@ -2,6 +2,8 @@ package signature;
 
 import java.util.ArrayList;
 
+import org.openscience.cdk.interfaces.IMolecule;
+
 public class TargetMolecularSignature {
     
     private ArrayList<TargetAtomicSignature> signatures;
@@ -9,6 +11,8 @@ public class TargetMolecularSignature {
     private ArrayList<Integer> counts;
     
     private int height;
+    
+    private int[][] lookupTable;
 
     public TargetMolecularSignature(ArrayList<String> signatureStrings, 
                                     ArrayList<Integer> counts,
@@ -25,6 +29,36 @@ public class TargetMolecularSignature {
         this.signatures = new ArrayList<TargetAtomicSignature>();
         this.counts = new ArrayList<Integer>();
         this.height = height;
+    }
+    
+    private void populateLookupTable() {
+        
+        // first, generate and store the reconstructed fragments
+        ArrayList<IMolecule> molecules = new ArrayList<IMolecule>();
+        for (TargetAtomicSignature signature : this.signatures) {
+            molecules.add(signature.toMolecule());
+        }
+        
+        // now, use these to do an all-v-all comparison, and store the results
+        int i = 0;
+        this.lookupTable = new int[this.signatures.size()][];
+        for (TargetAtomicSignature signatureA : this.signatures) {
+            this.lookupTable[i] = new int[this.signatures.size()];
+            IMolecule moleculeA = molecules.get(i);
+            int j = 0;
+            for (TargetAtomicSignature signatureB : this.signatures) {
+                IMolecule moleculeB = molecules.get(j);
+                int cAB = compatibleCount(moleculeA, signatureB);
+                int cBA = compatibleCount(moleculeB, signatureA);
+                j++;
+            }
+            i++;
+        }
+    }
+    
+    private int compatibleCount(
+            IMolecule molecule, TargetAtomicSignature signature) {
+        return -1;
     }
     
     /**

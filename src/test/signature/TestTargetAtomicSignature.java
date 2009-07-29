@@ -83,7 +83,7 @@ public class TestTargetAtomicSignature {
     
     @Test
     public void testCageMolecule() {
-        IMolecule molecule = TestSignature.makeCage();
+        IMolecule molecule = AbstractSignatureTest.makeCage();
         String sigString = "[C]([C]([C,2]([C]([C,3][C,4]))[C]([C,5]" +
                            "[C,3]([C,6]([C,1]))))[C]([C]([C,7][C]" +
                            "([C,1][C,8]))[C,5]([C,8]([C,6])))[C]([C,2]" +

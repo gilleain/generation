@@ -114,6 +114,25 @@ public class Graph {
         return m12;
     }
     
+    /**
+     * The signatures of the atoms in the graph bonded to the atom at <code>x
+     * </code> up to height <code>h</code>.
+     * 
+     * @param x the atom to get the neighbour-signatures of
+     * @param h the height of those signatures
+     * @return a list of signature strings
+     */
+    public List<String> getSignaturesOfBondedAtoms(int x, int h) {
+        IAtom atom = atomContainer.getAtom(x);
+        List<String> signatures = new ArrayList<String>();
+        for (IAtom connected : atomContainer.getConnectedAtomsList(atom)) {
+            int atomNumber = atomContainer.getAtomNumber(connected);
+            AtomicSignature signature = new AtomicSignature(atomNumber, this, h);
+            signatures.add(signature.toString());
+        }
+        return signatures;
+    }
+
     public IAtomContainer getAtomContainer() {
         return this.atomContainer;
     }
@@ -252,25 +271,6 @@ public class Graph {
         this.atomContainer.addBond(x, y, IBond.Order.SINGLE);
     }
 
-    /**
-     * The signatures of the atoms in the graph bonded to the atom at <code>x
-     * </code> up to height <code>h</code>.
-     * 
-     * @param x the atom to get the neighbour-signatures of
-     * @param h the height of those signatures
-     * @return a list of signature strings
-     */
-    public List<String> getSignaturesOfBondedAtoms(int x, int h) {
-        IAtom atom = atomContainer.getAtom(x);
-        List<String> signatures = new ArrayList<String>();
-        for (IAtom connected : atomContainer.getConnectedAtomsList(atom)) {
-            int atomNumber = atomContainer.getAtomNumber(connected);
-            AtomicSignature signature = new AtomicSignature(atomNumber, this, h);
-            signatures.add(signature.toString());
-        }
-        return signatures;
-    }
-    
     /**
      * Get the list of orbits (the equivalence classes of atoms).
      * 
