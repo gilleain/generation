@@ -9,7 +9,7 @@ import org.openscience.cdk.io.iterator.IteratingMDLReader;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 import signature.ISignature;
-import signature.SignaturePort;
+import signature.Signature;
 
 /**
  * Process an SDF file, and create canonical signatures for each molecule.
@@ -44,7 +44,7 @@ public class SignaturesForSDF {
             );
         while (reader.hasNext()) {
             IMolecule next = (IMolecule) reader.next();
-            ISignature signature = new SignaturePort(next);
+            ISignature signature = new Signature(next);
             String canonicalString = signature.toCanonicalSignatureString();
             out.println(canonicalString);
         }
