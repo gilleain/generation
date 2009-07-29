@@ -13,6 +13,7 @@ import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.templates.MoleculeFactory;
 
+import signature.Signature;
 import signature.TargetAtomicSignature;
 
 public class TestTargetAtomicSignature {
@@ -122,14 +123,19 @@ public class TestTargetAtomicSignature {
     }
     
     @Test
-    public void signatureStrings() {
-        String sigString = "[C]([H][H][H][C]([H][C][C]))";
+    public void signatureStringsFromRootChildren() {
+        // cubane
+        String sigString = "[C]([C]([C,2]([C,3])[C,4]([C,3]))" +
+                           "[C]([C,1]([C,3])[C,4])[C]([C,1][C,2]))";
+        int height = 2;
+        
         TargetAtomicSignature sig = new TargetAtomicSignature(sigString);
-        for (int height = 0; height < 2; height++) {
-            for (String s : sig.getSignatureStrings(height)) {
-                // TODO
-                System.out.println(height + " " + s);
-            }
+        Signature sigSig = new Signature(sig.toMolecule());
+        String expected = sigSig.toCanonicalSignatureString(height);
+        // every sub-signature of height 2 for cubane's children of the
+        // root node is equal to the subsignature of height 2 for cubane
+        for (String actual : sig.getSignatureStringsFromRootChildren(height)) {
+            Assert.assertEquals(expected, actual);
         }
     }
     
