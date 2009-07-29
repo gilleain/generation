@@ -21,6 +21,7 @@ public class TargetMolecularSignature {
         for (String signatureString : signatureStrings) {
             this.signatures.add(new TargetAtomicSignature(signatureString));
         }
+        this.lookupTable = createLookupTable();
         this.counts = counts;
         this.height = height;
     }
@@ -31,8 +32,24 @@ public class TargetMolecularSignature {
         this.height = height;
     }
     
-    private void populateLookupTable() {
-        
+    public int size() {
+        return this.signatures.size();
+    }
+    
+    /**
+     * Do an all-v-all comparison of the signatures that make up this molecular
+     * signature so that they are not re-computed each time.
+     * 
+     * @return a square N*N array of bond compatibility counts
+     */
+    private int[][] createLookupTable() {
+        // allocate space
+        int n = this.signatures.size();
+        int[][] table = new int[n][];
+        for (int i = 0; i < n; i++) { 
+            table[i] = new int[n]; 
+        }
+
         // first, generate and store the reconstructed fragments
         ArrayList<IMolecule> molecules = new ArrayList<IMolecule>();
         for (TargetAtomicSignature signature : this.signatures) {
@@ -40,20 +57,19 @@ public class TargetMolecularSignature {
         }
         
         // now, use these to do an all-v-all comparison, and store the results
-        int i = 0;
-        this.lookupTable = new int[this.signatures.size()][];
-        for (TargetAtomicSignature signatureA : this.signatures) {
-            this.lookupTable[i] = new int[this.signatures.size()];
+        for (int i = 0; i < n; i++) {
+            TargetAtomicSignature signatureA = this.signatures.get(i);
             IMolecule moleculeA = molecules.get(i);
-            int j = 0;
-            for (TargetAtomicSignature signatureB : this.signatures) {
+            for (int j = 0; j < n; j++) {
+                TargetAtomicSignature signatureB = this.signatures.get(i);
                 IMolecule moleculeB = molecules.get(j);
                 int cAB = compatibleCount(moleculeA, signatureB);
                 int cBA = compatibleCount(moleculeB, signatureA);
-                j++;
+                table[i][j] = cAB;
+                table[j][i] = cBA;
             }
-            i++;
         }
+        return table;
     }
     
     private int compatibleCount(IMolecule molecule, TargetAtomicSignature target) {
@@ -65,6 +81,20 @@ public class TargetMolecularSignature {
             if (a.equals(b)) count++;
         }
         return count;
+    }
+    
+    /**
+     * Lookup the number of compatible bonds between target atomic signatures.
+     * 
+     * @param i the index of one signature
+     * @param j the index of the other signature
+     * @return the count of the number of bonds that can be made
+     */
+    public int compatibleTargetBonds(int i, int j) {
+        if (this.lookupTable == null) {
+            this.lookupTable = this.createLookupTable();
+        }
+        return this.lookupTable[i][j];
     }
     
     /**

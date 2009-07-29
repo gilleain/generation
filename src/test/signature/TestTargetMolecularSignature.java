@@ -66,10 +66,40 @@ public class TestTargetMolecularSignature {
         return sig;
     }
     
+    public static void printTable(TargetMolecularSignature tms) {
+        int n = tms.size();
+        System.out.print("  ");
+        for (int i = 0; i < n; i++) {
+            System.out.print(i + " ");
+        }
+        System.out.print("\n");
+        for (int i = 0; i < n; i++) {
+            System.out.print(i + " ");
+            for (int j = 0; j < n; j++) {
+               System.out.print(tms.compatibleTargetBonds(i, j));
+               System.out.print(" ");
+            }
+            System.out.print("\n");
+        }
+    }
+    
     @Test
     public void roundtrip() {
         TargetMolecularSignature tms = makePaperExampleMolecularSignature();
         System.out.println(tms);
+    }
+    
+    @Test
+    public void compatibleBondsForSimpleExample() {
+        TargetMolecularSignature tms = 
+            TestTargetMolecularSignature.makeSimpleMolecularSignature();
+        TestTargetMolecularSignature.printTable(tms);
+//        int n = tms.size();
+//        for (int i = 0; i < n; i++) {
+//            for (int j = 0; j < n; j++) {
+//                
+//            }
+//        }
     }
     
 }
