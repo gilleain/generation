@@ -110,6 +110,8 @@ public class TargetAtomicSignature implements ISignature {
     
     private String name;
     
+    private int height;
+    
     public TargetAtomicSignature(String signatureString, String name) {
         this(signatureString);
         this.name = name;
@@ -117,6 +119,10 @@ public class TargetAtomicSignature implements ISignature {
     
     public TargetAtomicSignature(String signatureString) {
         this.root = this.parse(signatureString);
+    }
+    
+    public int getHeight() {
+        return this.height;
     }
     
     public String toCanonicalSignatureString() {
@@ -139,10 +145,16 @@ public class TargetAtomicSignature implements ISignature {
         return molecule;
     }
 
-    public ArrayList<String> getSignatureStrings(int height) {
+    public ArrayList<String> getSignatureStringsFromRootChildren(int height) {
+        IMolecule molecule = this.toMolecule();
+        // XXX - this assumes that the molecule is built from the root!
+        IAtom rootAtom = molecule.getAtom(0);
+        
+        Signature signature = new Signature(molecule);
         ArrayList<String> sigStrings = new ArrayList<String>();
-        for (Node child : this.root.children) {
-            sigStrings.add(this.getSignatureString(child, height));
+        for (IAtom child : molecule.getConnectedAtomsList(rootAtom)) {
+            int i = molecule.getAtomNumber(child);
+            sigStrings.add(signature.forAtom(i, height));
         }
         return sigStrings;
     }
@@ -235,13 +247,21 @@ public class TargetAtomicSignature implements ISignature {
         int symbolStart = 0;
         int labelStart = -1;
         
+        int maxHeight = 0;
+        int currentHeight = 0;
+        
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '(') {
                 parent = current;
+                currentHeight++;
+                if (currentHeight > maxHeight) {
+                    maxHeight = currentHeight;
+                }
             } else if (c == ')') {
                 current = parent;
                 parent = current.parent;
+                currentHeight--;
             } else if (c == '[') {
                 symbolStart = i + 1;
             } else if (c == ',') {
@@ -272,6 +292,9 @@ public class TargetAtomicSignature implements ISignature {
             } else {
             }
         }
+        
+        this.height = maxHeight;
+        
         return root;
     }
 }

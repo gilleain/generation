@@ -177,11 +177,28 @@ public class Signature implements ISignature {
      * Get the (lexicographically least) signature for a particular atom
      * of the molecule.
      * 
-     * @param atomNumber
+     * @param atomNumber the index of the atom in the molecule
      * @return the signature of this atom
      */
     public String forAtom(int atomNumber) {
         signatureAtom(atomNumber, SIZE);
+        return getBestSignatureString();
+    }
+    
+    /**
+     * Get the (lexicographically least) signature for a particular atom
+     * of the molecule, of height <code>h</code>.
+     * 
+     * @param atomNumber the index of the atom in the molecule
+     * @param h the height of the signature
+     * @return the signature of this atom
+     */
+    public String forAtom(int atomNumber, int h) {
+        signatureAtom(atomNumber, h);
+        return getBestSignatureString();
+    }
+    
+    private String getBestSignatureString() {
         if (SMAX != null) {
             if (SMAX.compareTo(SCURRENT) < 1) {
                 return SMAX;
@@ -190,7 +207,7 @@ public class Signature implements ISignature {
             }
         } else {
             return SCURRENT;    // :(
-        }
+        }    
     }
     
     /**
@@ -201,8 +218,12 @@ public class Signature implements ISignature {
      * @return the canonical signature for the molecule
      */
     public String toCanonicalSignatureString() {
-        Klass[] klasses = new Klass[SIZE];
         int height = Integer.MAX_VALUE;
+        return toCanonicalSignatureString(height);
+    }
+    
+    public String toCanonicalSignatureString(int height) {
+        Klass[] klasses = new Klass[SIZE];
         
         // make a signature for each atom
         for (int i = 0; i < SIZE; i++) {

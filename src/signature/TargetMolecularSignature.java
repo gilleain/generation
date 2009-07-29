@@ -56,9 +56,15 @@ public class TargetMolecularSignature {
         }
     }
     
-    private int compatibleCount(
-            IMolecule molecule, TargetAtomicSignature signature) {
-        return -1;
+    private int compatibleCount(IMolecule molecule, TargetAtomicSignature target) {
+        Signature sigFromMolecule = new Signature(molecule);
+        int height = target.getHeight();
+        String a = sigFromMolecule.toCanonicalSignatureString(height);
+        int count = 0;
+        for (String b : target.getSignatureStringsFromRootChildren(height)) {
+            if (a.equals(b)) count++;
+        }
+        return count;
     }
     
     /**
@@ -116,7 +122,7 @@ public class TargetMolecularSignature {
      * @return a list of signatures of attached atoms
      */
     public ArrayList<String> getBondedSignatures(int x, int height) {
-        return this.signatures.get(x).getSignatureStrings(height);
+        return this.signatures.get(x).getSignatureStringsFromRootChildren(height);
     }
 
     public int getHeight() {
