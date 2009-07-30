@@ -1,5 +1,7 @@
 package test.signature;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import signature.TargetMolecularSignature;
@@ -35,10 +37,13 @@ public class TestTargetMolecularSignature {
     }
     
     public static TargetMolecularSignature makeCuneaneExample() {
-        TargetMolecularSignature sig = new TargetMolecularSignature(4);
-        sig.add("C(C(C(C)C(CC))C(C(C)C(C))C(C(C)C(CC)))", 2, "A");
-        sig.add("C(C(C(C)C(CC))C(CC(CC))C(C(C)C))", 2, "B");
-        sig.add("C(C(C(CC)C)C(C)C(CC)C(C(CC)C(CC)))", 2, "C");
+        TargetMolecularSignature sig = new TargetMolecularSignature(3);
+        sig.add("[C]([C]([C,2]([C,3])[C,3]([C,1]))" +
+                "[C]([C,2][C,4]([C,1]))[C]([C,1][C,4]))", 2, "A");
+        sig.add("[C]([C]([C,1][C]([C,2][C,3]))[C]([C,4]" +
+                "([C,3])[C,2]([C,3]))[C,1]([C,4]))", 4, "B");
+        sig.add("[C]([C]([C]([C,1][C,2])[C,2]([C,3]))" +
+                "[C]([C,4][C,1]([C,3]))[C,4]([C,3]))", 2, "C");
         return sig;
     }
     
@@ -67,6 +72,7 @@ public class TestTargetMolecularSignature {
     }
     
     public static void printTable(TargetMolecularSignature tms) {
+        tms.compatibleTargetBonds(0, 0);
         int n = tms.size();
         System.out.print("  ");
         for (int i = 0; i < n; i++) {
@@ -100,6 +106,24 @@ public class TestTargetMolecularSignature {
 //                
 //            }
 //        }
+    }
+    
+    @Test
+    public void compatibleBondsForCuneaneExample() {
+        TargetMolecularSignature tms = 
+            TestTargetMolecularSignature.makeCuneaneExample();
+        Assert.assertEquals(1, tms.compatibleTargetBonds(0, 0)); // A->A
+        Assert.assertEquals(1, tms.compatibleTargetBonds(0, 1)); // A->B
+        Assert.assertEquals(0, tms.compatibleTargetBonds(0, 2)); // A->C
+        
+        Assert.assertEquals(2, tms.compatibleTargetBonds(1, 0)); // B->A
+        Assert.assertEquals(1, tms.compatibleTargetBonds(1, 1)); // B->B
+        Assert.assertEquals(2, tms.compatibleTargetBonds(1, 2)); // B->C
+        
+        Assert.assertEquals(0, tms.compatibleTargetBonds(2, 0)); // C->A
+        Assert.assertEquals(1, tms.compatibleTargetBonds(2, 1)); // C->B
+        Assert.assertEquals(1, tms.compatibleTargetBonds(2, 2)); // C->C
+        
     }
     
 }

@@ -61,9 +61,13 @@ public class TargetMolecularSignature {
             TargetAtomicSignature signatureA = this.signatures.get(i);
             IMolecule moleculeA = molecules.get(i);
             for (int j = 0; j < n; j++) {
-                TargetAtomicSignature signatureB = this.signatures.get(i);
+                TargetAtomicSignature signatureB = this.signatures.get(j);
                 IMolecule moleculeB = molecules.get(j);
+//                System.out.println("A-B " + i + " " + j + " " + signatureA.getHeight());
+//                System.out.println(signatureA.toString());
                 int cAB = compatibleCount(moleculeA, signatureB);
+//                System.out.println("B-A " + i + " " + j + " " + signatureB.getHeight());
+//                System.out.println(signatureB.toString());
                 int cBA = compatibleCount(moleculeB, signatureA);
                 table[i][j] = cAB;
                 table[j][i] = cBA;
@@ -74,10 +78,13 @@ public class TargetMolecularSignature {
     
     private int compatibleCount(IMolecule molecule, TargetAtomicSignature target) {
         Signature sigFromMolecule = new Signature(molecule);
-        int height = target.getHeight();
-        String a = sigFromMolecule.toCanonicalSignatureString(height);
+        int height = target.getHeight() - 1;
+        String a = sigFromMolecule.forAtom(0, height);
         int count = 0;
         for (String b : target.getSignatureStringsFromRootChildren(height)) {
+//            System.out.println(a);
+//            System.out.println(b);
+//            System.out.println("---------------------------------");
             if (a.equals(b)) count++;
         }
         return count;
