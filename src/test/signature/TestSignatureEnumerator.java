@@ -30,9 +30,9 @@ public class TestSignatureEnumerator {
         System.out.println(initialContainer);
     }
     
-    public void simpleExample() {
+    public void hexaneExample() {
         TargetMolecularSignature sig = 
-            TestTargetMolecularSignature.makeSimpleMolecularSignature();
+            TestTargetMolecularSignature.makeHexane();
         ArrayList<String> e = new ArrayList<String>();
         ArrayList<Integer> c = new ArrayList<Integer>();
         e.add("C");

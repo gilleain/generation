@@ -155,7 +155,7 @@ public class TestGraph {
     public void compatibleBondsInDisconnected() {
         Graph disconnected = makeDisconnectedAtomGraph();
         TargetMolecularSignature hTau = 
-            TestTargetMolecularSignature.makeSimpleMolecularSignature();
+            TestTargetMolecularSignature.makeHexane();
         disconnected.assignAtomsToTarget(hTau);
         int l = disconnected.getAtomContainer().getAtomCount();
         List<Integer> targets = disconnected.getAtomTargetMap(); 

@@ -13,7 +13,7 @@ public class TestTargetMolecularSignature {
      * 
      * @return a sample molecular signature
      */
-    public static TargetMolecularSignature makeSimpleMolecularSignature() {
+    public static TargetMolecularSignature makeHexane() {
         TargetMolecularSignature sig = new TargetMolecularSignature(5);
         sig.add("[C]([C]([C]([C]([C]([C])))))", 2);
         sig.add("[C]([C][C]([C]([C]([C]))))", 2);
@@ -96,16 +96,20 @@ public class TestTargetMolecularSignature {
     }
     
     @Test
-    public void compatibleBondsForSimpleExample() {
+    public void compatibleBondsForHexane() {
         TargetMolecularSignature tms = 
-            TestTargetMolecularSignature.makeSimpleMolecularSignature();
-        TestTargetMolecularSignature.printTable(tms);
-//        int n = tms.size();
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < n; j++) {
-//                
-//            }
-//        }
+            TestTargetMolecularSignature.makeHexane();
+        Assert.assertEquals(0, tms.compatibleTargetBonds(0, 0)); // A->A
+        Assert.assertEquals(1, tms.compatibleTargetBonds(0, 1)); // A->B
+        Assert.assertEquals(0, tms.compatibleTargetBonds(0, 2)); // A->C
+        
+        Assert.assertEquals(1, tms.compatibleTargetBonds(1, 0)); // B->A
+        Assert.assertEquals(0, tms.compatibleTargetBonds(1, 1)); // B->B
+        Assert.assertEquals(1, tms.compatibleTargetBonds(1, 2)); // B->C
+        
+        Assert.assertEquals(0, tms.compatibleTargetBonds(2, 0)); // C->A
+        Assert.assertEquals(1, tms.compatibleTargetBonds(2, 1)); // C->B
+        Assert.assertEquals(1, tms.compatibleTargetBonds(2, 2)); // C->C
     }
     
     @Test
