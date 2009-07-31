@@ -96,34 +96,6 @@ public class Signature implements ISignature {
         = new cmp_vertex_invariant_element();
     
     /**
-     * Basically an 'equivalence class' that stores the information about
-     * which atom corresponds to which signature; allowing the atoms to
-     * be partitioned by signatures.
-     *
-     */
-    private class Klass {
-        public int n, c, l;
-        public String s;
-    }
-    
-    /**
-     * Used to sort the equivalence classes.
-     *
-     */
-    private class klasscmp implements Comparator<Klass> {
-
-        public int compare(Klass a, Klass b) {
-            if (a == null && b == null) return 0;
-            if (b == null) return -1;
-            if (a == null) return 1;
-            if (b.s == null) return -1;
-            if (a.s == null) return 1;
-            return (-a.s.compareTo(b.s));
-        }
-    }
-    private klasscmp klasscmp_instance = new klasscmp();
-    
-    /**
      * A tolerance factor used when sorting double values
      */
     private static final double EPS6 = 1E-5;
@@ -138,8 +110,13 @@ public class Signature implements ISignature {
     
     private int[] OCCUR;
     private int[] COLOR;
-    private int[] LACAN;
-    private int[] LACUR;
+    
+    
+    /**
+     * These two arrays store the labels assigned when printing the string
+     */
+    private int[] maxLabels;
+    private int[] currentLabels;
     
     /**
      * The number of atoms in the molecule - used everywhere!
@@ -169,7 +146,7 @@ public class Signature implements ISignature {
         this.molecule = molecule;
         this.SIZE = this.molecule.getAtomCount();
         this.MAX_COLOR = this.SIZE;
-        this.LACAN = new int[SIZE];
+        this.maxLabels = new int[SIZE];
     }
     
     
@@ -198,6 +175,20 @@ public class Signature implements ISignature {
         return getBestSignatureString();
     }
     
+    public IMolecule toMolecule() {
+        // we don't really care about the builder, since no construction is
+        // going on...
+        return this.toMolecule(null);
+    }
+
+
+    public IMolecule toMolecule(IChemObjectBuilder builder) {
+        // XXX note that if the height is less than the span, it should really
+        // return a subgraph, not the whole molecule...
+        return this.molecule;
+    }
+
+
     private String getBestSignatureString() {
         if (SMAX != null) {
             if (SMAX.compareTo(SCURRENT) < 1) {
@@ -218,83 +209,65 @@ public class Signature implements ISignature {
      * @return the canonical signature for the molecule
      */
     public String toCanonicalSignatureString() {
-        int height = Integer.MAX_VALUE;
-        return toCanonicalSignatureString(height);
+        return toCanonicalSignatureString(SIZE);
     }
     
     public String toCanonicalSignatureString(int height) {
-        Klass[] klasses = new Klass[SIZE];
-        
         // make a signature for each atom
-        for (int i = 0; i < SIZE; i++) {
-            printAtomSignature(i, height, klasses);
-        }
-        
-        // bucket-sort the classes
-        Arrays.sort(klasses, klasscmp_instance);
-        klasses[0].c = 0;
-        for (int i = 1; i < SIZE; i++) {
-            Klass a = klasses[i];
-            Klass b = klasses[i - 1];
-            if (klasscmp_instance.compare(a, b) == 0) {
-                a.c = b.c;
+        for (int atomNumber = 0; atomNumber < SIZE; atomNumber++) {
+            String s = signatureAtom(atomNumber, height);
+            if (SMAX != null && s.compareTo(SMAX) < 0) {
+                continue;
             } else {
-                a.c = b.c + 1;
+                SMAX = s;
             }
         }
         return SMAX;
     }
     
-    public IMolecule toMolecule() {
-        // we don't really care about the builder, since no construction is
-        // going on...
-        return this.toMolecule(null);    
+    public OrbitElement[] calculateOrbitElements() {
+        return calculateOrbitElements(SIZE);
     }
-
-    public IMolecule toMolecule(IChemObjectBuilder builder) {
-        // XXX note that if the height is less than the span, it should really
-        // return a subgraph, not the whole molecule...
-        return this.molecule;
-    }
-
-
-    /**
-     * Make a signature for atom numbered <code>atomNumber</code>.
-     * 
-     * @param atomNumber the atom to use as the root
-     * @param h the height of the signature
-     * @param klasses the array of equivalence classes
-     */
-    private void printAtomSignature(int atomNumber, int h, Klass[] klasses) {
-        int[] label = new int[SIZE];
-        String s = signatureAtomLabel(atomNumber, h, label);
-        klasses[atomNumber] = new Klass();
-        klasses[atomNumber].n = atomNumber;
-        klasses[atomNumber].s = s;
-        if (SMAX != null) {
-            if (s.compareTo(SMAX) < 0) return;
-        } 
-        SMAX = s;
-        for (int i = 0; i < SIZE; i++) {
-            if (klasses[i] == null) {
-                klasses[i] = new Klass();
+    
+    public OrbitElement[] calculateOrbitElements(int height) {
+        OrbitElement[] orbitElements = new OrbitElement[SIZE];
+        
+        // make a signature for each atom
+        for (int atomNumber = 0; atomNumber < SIZE; atomNumber++) {
+            String s = signatureAtom(atomNumber, height);
+            
+            OrbitElement orbitElement = new OrbitElement(atomNumber, s);
+            if (SMAX != null && s.compareTo(SMAX) < 0) {
+                continue;
+            } else {
+                SMAX = s;
+                for (int i = 0; i < SIZE; i++) {
+                    if (orbitElements[i] == null) {
+                        orbitElements[i] = new OrbitElement(-1, "");
+                    }
+                    orbitElements[i].label = maxLabels[i];
+                }
             }
-            klasses[i].l = label[i];
+            orbitElements[atomNumber] = orbitElement;
         }
+        rankOrbits(orbitElements);
+       
+        return orbitElements;
     }
-
-    /**
-     * TODO : Inline/fold this method into its caller
-     * 
-     * @param atomNumber
-     * @param h
-     * @param label the labels that will be created (unused?)
-     * @return
-     */
-    private String signatureAtomLabel(int atomNumber, int h, int[] label) {
-        String sMax = signatureAtom(atomNumber, h);
-        for (int i = 0; i < SIZE; i++) label[i] = LACAN[i];
-        return sMax;
+    
+    private void rankOrbits(OrbitElement[] orbitElements) {
+        // bucket-sort the orbit elements
+        Arrays.sort(orbitElements);
+        orbitElements[0].orbitIndex = 0;
+        for (int i = 1; i < SIZE; i++) {
+            OrbitElement a = orbitElements[i];
+            OrbitElement b = orbitElements[i - 1];
+            if (a.signatureString == b.signatureString) {
+                a.orbitIndex = b.orbitIndex;
+            } else {
+                a.orbitIndex = b.orbitIndex + 1;
+            }
+        } 
     }
 
     /**
@@ -312,12 +285,12 @@ public class Signature implements ISignature {
         OCCUR = new int[SIZE];
         COLOR = new int[SIZE];
         double[] INVAR = new double[SIZE];
-        LACAN = new int[SIZE];
-        LACUR = new int[SIZE];
+        maxLabels = new int[SIZE];
+        currentLabels = new int[SIZE];
         for (int i = 0; i < SIZE; i++) {
             OCCUR[i] = COLOR[i] = 0;
             INVAR[i] = 0;
-            LABEL[i] = LACAN[i] = LACUR[i] = -1;
+            LABEL[i] = maxLabels[i] = currentLabels[i] = -1;
         }
         
         int[] intInv = initialInvariants(dag, OCCUR, COLOR);
@@ -701,18 +674,21 @@ public class Signature implements ISignature {
     private void endLabelInvariant(
             DAG dag, int h, int[] LAB, int[] OCC, double[] INV, int L0) {
         for (int i = 0; i < SIZE; i++) {
-            LACUR[i] = -1;
+            currentLabels[i] = -1;
         }
         NBCUR = 0;
         String s = layerPrintString(dag, LAB, L0);
 //        System.out.println("FRESH " + s);
         this.SCURRENT = s;
-        if (SMAX != null) {
-            if (s.compareTo(SMAX) < 0) return;
-        }
-        SMAX = s;
-        for (int i = 0; i < SIZE; i++) {
-            LACAN[i] = LACUR[i];
+        
+        // store s only if it is larger than SMAXs
+        if (SMAX != null && s.compareTo(SMAX) < 0) {
+            return;
+        } else {
+            SMAX = s;
+            for (int i = 0; i < SIZE; i++) {
+                maxLabels[i] = currentLabels[i];
+            }
         }
     }
 
@@ -817,7 +793,10 @@ public class Signature implements ISignature {
             sb.append(current.element);
         }
         
-        if (LACUR[current.atomNumber] < 0) LACUR[current.atomNumber] = NBCUR++;
+        if (currentLabels[current.atomNumber] < 0) {
+            currentLabels[current.atomNumber] = NBCUR++;
+        }
+        
         if (current.children.size() == 0) {
             return;
         }
