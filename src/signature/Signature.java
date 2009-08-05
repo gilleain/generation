@@ -7,6 +7,7 @@ import java.util.Comparator;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IMolecule;
@@ -106,7 +107,7 @@ public class Signature implements ISignature {
      */
     private static final double POWMAX = 10E30;
     
-    private IMolecule molecule;
+    private IAtomContainer container;
     
     private int[] OCCUR;
     private int[] COLOR;
@@ -142,9 +143,9 @@ public class Signature implements ISignature {
      * 
      * @param molecule
      */
-    public Signature(IMolecule molecule) {
-        this.molecule = molecule;
-        this.SIZE = this.molecule.getAtomCount();
+    public Signature(IAtomContainer container) {
+        this.container = container;
+        this.SIZE = this.container.getAtomCount();
         this.MAX_COLOR = this.SIZE;
         this.maxLabels = new int[SIZE];
     }
@@ -185,10 +186,9 @@ public class Signature implements ISignature {
     public IMolecule toMolecule(IChemObjectBuilder builder) {
         // XXX note that if the height is less than the span, it should really
         // return a subgraph, not the whole molecule...
-        return this.molecule;
+        return builder.newMolecule(container);
     }
-
-
+    
     private String getBestSignatureString() {
         if (SMAX != null) {
             if (SMAX.compareTo(SCURRENT) < 1) {
@@ -269,6 +269,26 @@ public class Signature implements ISignature {
             }
         } 
     }
+    
+    /**
+     * Determine if the atoms in the atom container are in canonical order. To
+     * do this, the signatures are computed, and ordered lexicographically -
+     * if this order is the same as the original order, then the atom container
+     * is canonical, otherwise it is not.
+     * 
+     * @return true if the atoms are in canonical order
+     */
+    public boolean isCanonical() {
+        OrbitElement[] orbitElements = this.calculateOrbitElements();
+        int last = orbitElements[0].atomNumber;
+        for (int i = 1; i < orbitElements.length; i++) {
+            if (orbitElements[i].atomNumber < last) {
+                return false;
+            }
+            last = orbitElements[i].atomNumber;
+        }
+        return true;
+    }
 
     /**
      * Start point : create a DAG, make the initial labels, and canonize
@@ -279,7 +299,7 @@ public class Signature implements ISignature {
      */
     private String signatureAtom(int atomNumber, int h) {
         if (h > this.SIZE + 1) h = SIZE + 1;
-        DAG dag = new DAG(this.molecule, atomNumber, h);
+        DAG dag = new DAG(this.container, atomNumber, h);
         
         int[] LABEL = new int[SIZE];
         OCCUR = new int[SIZE];
@@ -325,7 +345,7 @@ public class Signature implements ISignature {
                 k++;
             }
             for (Vertex vertex : layer) {
-                int degree = molecule.getConnectedBondsCount(vertex.atomNumber); 
+                int degree = container.getConnectedBondsCount(vertex.atomNumber); 
                 if (degree < 2) {
                     OCC[vertex.atomNumber] = COL[vertex.atomNumber] = 1;
                 } else {
@@ -826,7 +846,7 @@ public class Signature implements ISignature {
      * Determine the bond order between the atoms referred to by these two
      * vertices. Single = 1, Double = 2, Triple = 3, Aromatic = 4.
      * 
-     * @param vertex a vartex
+     * @param vertex a vertex
      * @param parent its parent
      * @return the bond order as a double
      */
@@ -834,9 +854,9 @@ public class Signature implements ISignature {
         double order = -1;
         if (vertex == null || parent == null) return order;
         
-        IAtom a = molecule.getAtom(vertex.atomNumber);
-        IAtom b = molecule.getAtom(parent.atomNumber);
-        IBond bond = molecule.getBond(a, b);
+        IAtom a = container.getAtom(vertex.atomNumber);
+        IAtom b = container.getAtom(parent.atomNumber);
+        IBond bond = container.getBond(a, b);
         if (bond == null) return order;
         if (isAromatic(vertex) && isAromatic(parent)) {
             return 4;
@@ -856,7 +876,7 @@ public class Signature implements ISignature {
      * @return true if the referred atom has the correct flag
      */
     private boolean isAromatic(Vertex v) {
-        return molecule.getAtom(v.atomNumber).getFlag(CDKConstants.ISAROMATIC);
+        return container.getAtom(v.atomNumber).getFlag(CDKConstants.ISAROMATIC);
     }
 
     /**
@@ -867,6 +887,6 @@ public class Signature implements ISignature {
      * @return the string for this vertex
      */
     private String getType(Vertex vertex) {
-        return this.molecule.getAtom(vertex.atomNumber).getSymbol();
+        return container.getAtom(vertex.atomNumber).getSymbol();
     }
 }

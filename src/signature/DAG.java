@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 
 /**
  * A directed acyclic graph - each vertex of the graph refers to an atom in a
@@ -15,7 +15,7 @@ import org.openscience.cdk.interfaces.IMolecule;
  */
 public class DAG implements Iterable<ArrayList<Vertex>> {
     
-    private IMolecule molecule;
+    private IAtomContainer atomContainer;
     private ArrayList<ArrayList<Vertex>> layers;
 
     /**
@@ -25,9 +25,9 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
      * @param atomNumber
      * @param h the height to build it to
      */
-    public DAG(IMolecule molecule, int atomNumber, int h) {
-        this.molecule = molecule;
-        assert atomNumber <= this.molecule.getAtomCount();
+    public DAG(IAtomContainer molecule, int atomNumber, int h) {
+        this.atomContainer = molecule;
+        assert atomNumber <= this.atomContainer.getAtomCount();
         assert h >= 0;
         
         layers = new ArrayList<ArrayList<Vertex>>();
@@ -72,9 +72,9 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
         ArrayList<Vertex> NN = new ArrayList<Vertex>();
         ArrayList<Edge> layerE = new ArrayList<Edge>();
         for (Vertex n : N) {
-            IAtom atom = this.molecule.getAtom(n.atomNumber);
-            for (IAtom aa : this.molecule.getConnectedAtomsList(atom)) {
-                addVertex(n, this.molecule.getAtomNumber(aa), layerE, E, NN);
+            IAtom atom = this.atomContainer.getAtom(n.atomNumber);
+            for (IAtom aa : this.atomContainer.getConnectedAtomsList(atom)) {
+                addVertex(n, this.atomContainer.getAtomNumber(aa), layerE, E, NN);
             }
         }
         if (NN.size() != 0) {
