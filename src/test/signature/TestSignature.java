@@ -32,48 +32,52 @@ public class TestSignature {
     public static void testIsCanonical(IAtomContainer container) {
         AtomContainerAtomPermutor permutor = 
             new AtomContainerAtomPermutor(container);
+        Signature signature = new Signature(container);
+        System.out.println(signature.isCanonical());
         while (permutor.hasNext()) {
             IAtomContainer permutedContainer = permutor.next();
-            Signature signature = new Signature(permutedContainer);
+            signature = new Signature(permutedContainer);
             System.out.println(signature.isCanonical());
         }
     }
     
-    public static void testCanonical(IMolecule mol, String expected) {
-        Signature sig = new Signature(mol);
+    public static void testCanonical(IAtomContainer container, String expected) {
+        Signature sig = new Signature(container);
         String actual = sig.toCanonicalSignatureString();
         Assert.assertEquals("not canonical", expected, actual);
     }
     
-    public static void testAtoms(IMolecule mol, Map<Integer, String> expected) {
-        Signature sig = new Signature(mol);
-        for (int i = 0; i < mol.getAtomCount(); i++) {
+    public static void testAtoms(
+            IAtomContainer container, Map<Integer, String> expected) {
+        Signature sig = new Signature(container);
+        for (int i = 0; i < container.getAtomCount(); i++) {
             String expectedSig = expected.get(i);
             String actualSig = sig.forAtom(i);
-//            System.out.println(expectedSig);
+            System.out.println(expectedSig);
             System.out.println(actualSig);
-//            System.out.println("---------");
+            System.out.println("---------");
             Assert.assertEquals(i + " not correct", expectedSig, actualSig);
         }
     }
     
-    public static void testAtom(IMolecule mol, int i, String expected) {
-        Signature sig = new Signature(mol);
+    public static void testAtom(
+            IAtomContainer container, int i, String expected) {
+        Signature sig = new Signature(container);
         String actual = sig.forAtom(i);
         Assert.assertEquals("not correct", expected, actual);
     }
     
-    public static void testAllSame(IMolecule mol, String expected) {
-        Signature sig = new Signature(mol);
-        for (int i = 0; i < mol.getAtomCount(); i++) {
+    public static void testAllSame(IAtomContainer container, String expected) {
+        Signature sig = new Signature(container);
+        for (int i = 0; i < container.getAtomCount(); i++) {
             String actual = sig.forAtom(i);
             Assert.assertEquals("not equal for atom " + i, expected, actual);
         }
     }
     
-    public static void printSignatures(IMolecule mol) {
-        Signature sig = new Signature(mol);
-        for (int i = 0; i < mol.getAtomCount(); i++) {
+    public static void printSignatures(IAtomContainer container) {
+        Signature sig = new Signature(container);
+        for (int i = 0; i < container.getAtomCount(); i++) {
             String sigForAtomI = sig.forAtom(i);
             System.out.println(String.format("%3d %s", i, sigForAtomI));
         }
@@ -172,7 +176,7 @@ public class TestSignature {
         expected.put(7, expectedC);
         TestSignature.testAtoms(mol, expected);
     }
-     
+    
     @Test
     public void testPropellane() {
         String expectedA = "[C]([C]([C,1])[C]([C,1])[C]([C,1])[C,1])";
@@ -194,10 +198,11 @@ public class TestSignature {
     @Test
     public void testHexaneForOrbitElements() {
         IMolecule mol = AbstractSignatureTest.makeHexane();
-        Signature signature = new Signature(mol);
-        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
-            System.out.println(orbitElement);
-        }
+//        Signature signature = new Signature(mol);
+//        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
+//            System.out.println(orbitElement);
+//        }
+        TestSignature.testIsCanonical(mol);
     }
     
     @Test

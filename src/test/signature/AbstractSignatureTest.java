@@ -11,7 +11,7 @@ public class AbstractSignatureTest {
     
     public static NoNotificationChemObjectBuilder builder =
         NoNotificationChemObjectBuilder.getInstance();
-
+    
     public static IMolecule makeCage() {
         /*
          * This 'molecule' is the example used to illustrate the

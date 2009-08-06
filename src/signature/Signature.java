@@ -252,7 +252,8 @@ public class Signature implements ISignature {
         // make a signature for each atom
         for (int atomNumber = 0; atomNumber < SIZE; atomNumber++) {
             String s = signatureAtom(atomNumber, height);
-            
+            s = getBestSignatureString();   // XXX TODO
+//            System.out.println(String.format("%3d %s", atomNumber, s));
             if (orbitElements[atomNumber] == null) {
                 OrbitElement orbitElement = new OrbitElement(atomNumber, s);
                 orbitElements[atomNumber] = orbitElement;
@@ -270,6 +271,7 @@ public class Signature implements ISignature {
                     }
                     orbitElements[i].label = maxLabels[i];
                 }
+                orbitElements[atomNumber].signatureString = s;
             }
         }
         rankOrbits(orbitElements);
@@ -325,13 +327,22 @@ public class Signature implements ISignature {
      */
     public boolean isCanonical() {
         OrbitElement[] orbitElements = this.calculateOrbitElements();
-        int last = orbitElements[0].atomNumber;
-        for (int i = 1; i < orbitElements.length; i++) {
-            if (orbitElements[i].atomNumber < last) {
+        for (OrbitElement o : orbitElements) System.out.println(o);
+        for (OrbitElement o : orbitElements) {
+            if (o.atomNumber == o.label) {
+                continue;
+            } else {
                 return false;
             }
-            last = orbitElements[i].atomNumber;
         }
+//        int last = orbitElements[0].label;
+//        for (int i = 1; i < orbitElements.length; i++) {
+//            if (orbitElements[i].label > last) {
+//                return false;
+//            }
+//            last = orbitElements[i].label;
+//        }
+//        for (OrbitElement o : orbitElements) System.out.println(o);
         return true;
     }
 
