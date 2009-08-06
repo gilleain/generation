@@ -127,8 +127,10 @@ public class Graph {
         List<String> signatures = new ArrayList<String>();
         for (IAtom connected : atomContainer.getConnectedAtomsList(atom)) {
             int atomNumber = atomContainer.getAtomNumber(connected);
-            AtomicSignature signature = new AtomicSignature(atomNumber, this, h);
-            signatures.add(signature.toString());
+            //XXX temporary!
+            IMolecule tmp = atomContainer.getBuilder().newMolecule(atomContainer);
+            Signature signature = new Signature(tmp);
+            signatures.add(signature.forAtom(atomNumber, h));
         }
         return signatures;
     }
@@ -344,9 +346,9 @@ public class Graph {
     }
 
     public boolean isCanonical() {
-        // TODO Auto-generated method stub
-        return true;
+        return CanonicalChecker.isCanonical(atomContainer);
     }
+    
 
     public boolean signatureMatches(TargetMolecularSignature tau) {
         // TODO Auto-generated method stub

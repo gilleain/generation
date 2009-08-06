@@ -22,4 +22,10 @@ public class OrbitElement implements Comparable<OrbitElement> {
         return -(this.signatureString.compareTo(o.signatureString));
     }
     
+    public String toString() {
+        return String.format(
+                "%3d %3d %3d %s", 
+                atomNumber, orbitIndex, label, signatureString); 
+    }
+    
 }

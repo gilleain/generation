@@ -9,7 +9,7 @@ import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 public class AbstractSignatureTest {
     
-    private static NoNotificationChemObjectBuilder builder =
+    public static NoNotificationChemObjectBuilder builder =
         NoNotificationChemObjectBuilder.getInstance();
 
     public static IMolecule makeCage() {

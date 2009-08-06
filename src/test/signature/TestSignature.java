@@ -6,10 +6,14 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.io.MDLWriter;
 import org.openscience.cdk.templates.MoleculeFactory;
 
+import signature.AtomContainerAtomPermutor;
+import signature.OrbitElement;
 import signature.Signature;
 
 public class TestSignature {
@@ -22,6 +26,16 @@ public class TestSignature {
             System.out.println(stringWriter.toString());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    public static void testIsCanonical(IAtomContainer container) {
+        AtomContainerAtomPermutor permutor = 
+            new AtomContainerAtomPermutor(container);
+        while (permutor.hasNext()) {
+            IAtomContainer permutedContainer = permutor.next();
+            Signature signature = new Signature(permutedContainer);
+            System.out.println(signature.isCanonical());
         }
     }
     
@@ -114,6 +128,21 @@ public class TestSignature {
     }
     
     @Test
+    public void testIsCanonicalForSquare() {
+        IAtomContainer square = AbstractSignatureTest.builder.newAtomContainer();
+        square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        square.addBond(0, 1, IBond.Order.SINGLE);
+        square.addBond(1, 2, IBond.Order.SINGLE);
+        square.addBond(2, 3, IBond.Order.SINGLE);
+        square.addBond(3, 0, IBond.Order.SINGLE);
+        
+        TestSignature.testIsCanonical(square);
+    }
+    
+    @Test
     public void testCubane() {
         String expected = "[C]([C]([C,2]([C,3])[C,4]([C,3]))" +
         		          "[C]([C,1]([C,3])[C,4])[C]([C,1][C,2]))";
@@ -160,6 +189,24 @@ public class TestSignature {
         TestSignature.testCanonical(mol, expectedB);
 //        TestSignaturePort.testAtoms(mol, expected);
 //        TestSignaturePort.testAtom(mol, 1, expectedB);
+    }
+    
+    @Test
+    public void testHexaneForOrbitElements() {
+        IMolecule mol = AbstractSignatureTest.makeHexane();
+        Signature signature = new Signature(mol);
+        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
+            System.out.println(orbitElement);
+        }
+    }
+    
+    @Test
+    public void testCageForOrbitElements() {
+        IMolecule mol = AbstractSignatureTest.makeCage();
+        Signature signature = new Signature(mol);
+        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
+            System.out.println(orbitElement);
+        }
     }
     
     @Test

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.interfaces.IAtom;
@@ -225,10 +226,26 @@ public class Signature implements ISignature {
         return SMAX;
     }
     
+    /**
+     * Calculate the orbit elements, that contain information about the 
+     * signature of each atom (up to maximum height), and what orbit 
+     * it belongs to. 
+     * 
+     * @see calculateOrbits
+     * @return an OrbitElement instance for each atom
+     */
     public OrbitElement[] calculateOrbitElements() {
         return calculateOrbitElements(SIZE);
     }
     
+    /**
+     * Calculate the orbit elements, that contain information about the 
+     * signature of each atom (up to height <code>height</code>), and what 
+     * orbit it belongs to.
+     * 
+     * @param height the height to calculate each signature to
+     * @return an OrbitElement instance for each atom
+     */
     public OrbitElement[] calculateOrbitElements(int height) {
         OrbitElement[] orbitElements = new OrbitElement[SIZE];
         
@@ -236,7 +253,13 @@ public class Signature implements ISignature {
         for (int atomNumber = 0; atomNumber < SIZE; atomNumber++) {
             String s = signatureAtom(atomNumber, height);
             
-            OrbitElement orbitElement = new OrbitElement(atomNumber, s);
+            if (orbitElements[atomNumber] == null) {
+                OrbitElement orbitElement = new OrbitElement(atomNumber, s);
+                orbitElements[atomNumber] = orbitElement;
+            } else {
+                orbitElements[atomNumber].atomNumber = atomNumber;
+                orbitElements[atomNumber].signatureString = s;
+            }
             if (SMAX != null && s.compareTo(SMAX) < 0) {
                 continue;
             } else {
@@ -248,7 +271,6 @@ public class Signature implements ISignature {
                     orbitElements[i].label = maxLabels[i];
                 }
             }
-            orbitElements[atomNumber] = orbitElement;
         }
         rankOrbits(orbitElements);
        
@@ -262,12 +284,35 @@ public class Signature implements ISignature {
         for (int i = 1; i < SIZE; i++) {
             OrbitElement a = orbitElements[i];
             OrbitElement b = orbitElements[i - 1];
-            if (a.signatureString == b.signatureString) {
+            if (a.signatureString.equals(b.signatureString)) {
                 a.orbitIndex = b.orbitIndex;
             } else {
                 a.orbitIndex = b.orbitIndex + 1;
             }
         } 
+    }
+    
+    /**
+     * Calculate the 'orbits' of the atom container; that is, each subset of the
+     * atoms that share the same signature is in the same orbit.
+     * 
+     * @return a list of Orbit instances, that partition the atoms
+     */
+    public List<Orbit> calculateOrbits() {
+        OrbitElement[] orbitElements = this.calculateOrbitElements();
+        List<Orbit> orbits = new ArrayList<Orbit>();
+        int index = -1;
+        Orbit currentOrbit = null;
+        for (OrbitElement element : orbitElements) {
+            if (element.orbitIndex != index || currentOrbit == null) {
+                currentOrbit = new Orbit(element.signatureString);
+                orbits.add(currentOrbit);
+                index = element.orbitIndex;
+            } else {
+                currentOrbit.addAtom(element.atomNumber);
+            }
+        }
+        return orbits;
     }
     
     /**

@@ -2,6 +2,7 @@ package signature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -11,7 +12,7 @@ import java.util.List;
  * @author maclean
  *
  */
-public class Orbit {
+public class Orbit implements Iterable<Integer> {
     
     private List<Integer> atomIndices;
     
@@ -20,6 +21,14 @@ public class Orbit {
     public Orbit(String signatureString) {
         this.signatureString = signatureString;
         this.atomIndices = new ArrayList<Integer>();
+    }
+    
+    public Iterator<Integer> iterator() {
+        return this.atomIndices.iterator();
+    }
+    
+    public List<Integer> getAtomIndices() {
+        return this.atomIndices;
     }
     
     public void addAtom(int i) {
