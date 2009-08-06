@@ -30,7 +30,7 @@ public class Permutor {
     private int currentRank;
     
     /**
-     * The maximum rank possible, given the number of atoms in the container
+     * The maximum rank possible, given the size
      */
     private int maxRank;
     
@@ -135,8 +135,9 @@ public class Permutor {
      * has the order <code>rank</code> in the lexicographically ordered list.
      * 
      * As an implementation note, the algorithm assumes that the permutation is
-     * in the form [1,...n] not the more usual [0,...n-1] for a list of size n.
-     * This is why there is the final step of 'shifting' the permutation.
+     * in the form [1,...N] not the more usual [0,...N-1] for a list of size N.
+     * This is why there is the final step of 'shifting' the permutation. The
+     * shift also reduces the numbers by one to make them array indices.
      * 
      * @param rank the order of the permutation to generate
      * @param size the length/size of the permutation
