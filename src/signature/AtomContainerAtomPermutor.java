@@ -19,6 +19,13 @@ import org.openscience.cdk.interfaces.IBond;
  * Algorithms, Generation, and Search" or C.A.G.E.S. by D.L. Kreher and D.R.
  * Stinson</p>
  * 
+ * <p>Typical use is like:<pre>
+ * AtomContainerAtomPermutor permutor = new AtomContainerAtomPermutor(container);
+ * while (permutor.hasNext()) {
+ *   IAtomContainer permutedContainer = permutor.next();
+ *   ...
+ * }</pre>
+ * 
  * @author maclean
  *
  */
@@ -44,6 +51,12 @@ public class AtomContainerAtomPermutor implements Iterator<IAtomContainer> {
      */
     private int size;
 
+    /**
+     * A permutor wraps the original atom container, and produces cloned
+     * (and permuted!) copies on demand.
+     * 
+     * @param atomContainer
+     */
     public AtomContainerAtomPermutor(IAtomContainer atomContainer) {
         this.atomContainer = atomContainer;
         this.currentRank = 0;
