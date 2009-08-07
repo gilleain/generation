@@ -11,7 +11,8 @@ import org.openscience.cdk.interfaces.IBond;
  * 
  * <p>Given a complete set of isomorphic graphs, one of them will be the 
  * canonical example. Different algorithms for determining canonicity may
- * identify different members of the set as canonical.</p>
+ * identify different members of the set as canonical. However, any one method
+ * should consistently identify the same member of the set each time.</p>
  * 
  * <p>It works by permuting the atoms of the container, and checking to see if
  * this makes a 'certificate' that is lexicographically smaller than the 
@@ -76,43 +77,12 @@ public class CanonicalChecker {
             }
             String permutedString = 
                 CanonicalChecker.asString(atomContainer, fullPermutation);
-//            System.out.println("p " + 
-//                    permutedString + " " 
-//                    + java.util.Arrays.toString(permutation)
-//                    + " " + java.util.Arrays.toString(fullPermutation));
             if (permutedString.compareTo(initialString) > 0) {
                 continue;
             } else {
                 return false;
             }
         }
-//        for (int i = 0; i < atomIndices.size(); i++) {
-//            for (int j = i + 1; j < atomIndices.size(); j++) {
-//                if (checkElement(i, j, atomContainer, initialString)) {
-//                    continue;
-//                } else {
-//                    return false;
-//                }
-//            }
-//        }
-        return true;
-    }
-    
-    /**
-     * Swap the atoms at <code>i</code> and <code>j</code> and check to see if
-     * this produces a certificate that is lexicographically smaller than
-     * the original.
-     * 
-     * @param i the index of the first atom
-     * @param j the index of the second atom
-     * @param atomContainer the container we are checking
-     * @param initialString the initial certificate string
-     * 
-     * @return false if a shorter certificate is found
-     */
-    private static boolean checkElement(
-            int i, int j, IAtomContainer atomContainer, String initialString) {
-        
         return true;
     }
     
@@ -138,6 +108,13 @@ public class CanonicalChecker {
         return bondString.toString(); 
     }
     
+    /**
+     * Produce a certificate under the given permutation.
+     * 
+     * @param container the atom container to make the certificate for
+     * @param permutation the permutation to alter the container with
+     * @return a string 'certificate' that can be checked for minimality
+     */
     private static String asString(IAtomContainer container, int[] permutation){
         StringBuffer bondString = new StringBuffer();
         for (IBond bond : container.bonds()) {
