@@ -310,9 +310,8 @@ public class Signature implements ISignature {
                 currentOrbit = new Orbit(element.signatureString);
                 orbits.add(currentOrbit);
                 index = element.orbitIndex;
-            } else {
-                currentOrbit.addAtom(element.atomNumber);
             }
+            currentOrbit.addAtom(element.atomNumber);
         }
         return orbits;
     }
