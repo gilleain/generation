@@ -1,0 +1,9 @@
+.classpath
+.project
+bin
+*.sdf
+*.smi
+*.sig
+*.txt
+*.out
+*.py
