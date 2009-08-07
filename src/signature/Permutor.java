@@ -1,5 +1,7 @@
 package signature;
 
+import java.util.Random;
+
 /**
  * General permutation generator, that uses orderly generation by ranking and
  * unranking. The basic idea is that all permutations of length N can be ordered
@@ -40,6 +42,11 @@ public class Permutor {
     private int size;
     
     /**
+     * For accessing part of the permutation space
+     */
+    private Random random;
+    
+    /**
      * Create a permutor that will generate permutations of numbers up to
      * <code>size</code>.
      * 
@@ -49,6 +56,7 @@ public class Permutor {
         this.currentRank = 0;
         this.size = size;
         this.maxRank = this.calculateMaxRank();
+        this.random = new Random();
     }
     
     public boolean hasNext() {
@@ -73,6 +81,23 @@ public class Permutor {
         this.currentRank = this.rankPermutationLexicographically(permutation);
     }
     
+    /**
+     * Randomly skip ahead in the list of permutations.
+     *  
+     * @return a permutation in the range (current, N!)
+     */
+    public int[] getRandomNextPermutation() {
+        int d = maxRank - currentRank;
+        int r = this.random.nextInt(d);
+        this.currentRank += Math.max(1, r);
+        return this.getCurrentPermutation();
+    }
+    
+    /**
+     * Get the next permutation in the list.
+     * 
+     * @return the next permutation
+     */
     public int[] getNextPermutation() {
         this.currentRank++;
         return this.getCurrentPermutation();

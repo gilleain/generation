@@ -66,7 +66,7 @@ public class CanonicalChecker {
         for (int i = 0; i < fullPermutation.length; i++) {
             fullPermutation[i] = i;
         }
-        System.out.println(atomIndices);
+//        System.out.println(atomIndices);
         Permutor permutor = new Permutor(atomIndices.size());
         while (permutor.hasNext()) {
             int[] permutation = permutor.getNextPermutation();
@@ -76,10 +76,10 @@ public class CanonicalChecker {
             }
             String permutedString = 
                 CanonicalChecker.asString(atomContainer, fullPermutation);
-            System.out.println("p " + 
-                    permutedString + " " 
-                    + java.util.Arrays.toString(permutation)
-                    + " " + java.util.Arrays.toString(fullPermutation));
+//            System.out.println("p " + 
+//                    permutedString + " " 
+//                    + java.util.Arrays.toString(permutation)
+//                    + " " + java.util.Arrays.toString(fullPermutation));
             if (permutedString.compareTo(initialString) > 0) {
                 continue;
             } else {

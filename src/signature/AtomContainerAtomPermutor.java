@@ -42,6 +42,14 @@ public class AtomContainerAtomPermutor
         super(atomContainer.getAtomCount());
         this.atomContainer = atomContainer;
     }
+    
+    public IAtomContainer randomNext() {
+        if (!this.hasNext()) {
+            throw new NoSuchElementException();
+        } else {
+            return this.containerFromPermutation(this.getRandomNextPermutation());
+        }
+    }
 
     public IAtomContainer next() {
         if (!this.hasNext()) {

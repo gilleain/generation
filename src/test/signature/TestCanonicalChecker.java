@@ -14,7 +14,7 @@ public class TestCanonicalChecker {
             new AtomContainerAtomPermutor(container);
         System.out.println(CanonicalChecker.isCanonical(container));
         while (permutor.hasNext()) {
-            IAtomContainer permutedContainer = permutor.next();
+            IAtomContainer permutedContainer = permutor.randomNext();
             System.out.println(CanonicalChecker.isCanonical(permutedContainer));
         }
     }
@@ -27,10 +27,16 @@ public class TestCanonicalChecker {
         square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
         square.addAtom(AbstractSignatureTest.builder.newAtom("C"));
         square.addBond(0, 1, IBond.Order.SINGLE);
+        square.addBond(0, 3, IBond.Order.SINGLE);
         square.addBond(1, 2, IBond.Order.SINGLE);
         square.addBond(2, 3, IBond.Order.SINGLE);
-        square.addBond(3, 0, IBond.Order.SINGLE);
         
         TestCanonicalChecker.testIsCanonical(square);
+    }
+    
+    @Test
+    public void testCube() {
+        IAtomContainer cube = AbstractSignatureTest.makeCubane();
+        TestCanonicalChecker.testIsCanonical(cube);
     }
 }
