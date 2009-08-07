@@ -38,11 +38,11 @@ public class CanonicalChecker {
                     atomContainer, orbit, initialString)) {
                 continue;
             } else {
-                System.out.print(initialString);
+//                System.out.print(initialString);
                 return false;
             }
         }
-        System.out.print(initialString);
+//        System.out.print(initialString);
         return true;
     }
     
