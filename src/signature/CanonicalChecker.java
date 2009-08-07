@@ -37,9 +37,11 @@ public class CanonicalChecker {
                     atomContainer, orbit, initialString)) {
                 continue;
             } else {
+                System.out.print(initialString);
                 return false;
             }
         }
+        System.out.print(initialString);
         return true;
     }
     
@@ -57,15 +59,37 @@ public class CanonicalChecker {
     private static boolean checkOrbit(
             IAtomContainer atomContainer, Orbit orbit, String initialString) {
         List<Integer> atomIndices = orbit.getAtomIndices();
-        for (int i = 0; i < atomIndices.size(); i++) {
-            for (int j = i + 1; j < atomIndices.size(); j++) {
-                if (checkElement(i, j, atomContainer, initialString)) {
-                    continue;
-                } else {
-                    return false;
-                }
+        
+        // to make things easier, create a complete permutation of the vertices
+        // which will map non-orbit atoms to themselves
+        int[] fullPermutation = new int[atomContainer.getAtomCount()];
+        for (int i = 0; i < fullPermutation.length; i++) {
+            fullPermutation[i] = i;
+        }
+        
+        Permutor permutor = new Permutor(atomIndices.size());
+        while (permutor.hasNext()) {
+            int[] permutation = permutor.getNextPermutation();
+            for (int j = 0; j < permutation.length; j++) {
+                fullPermutation[atomIndices.get(j)] = permutation[j];
+            }
+            String permutedString = 
+                CanonicalChecker.asString(atomContainer, fullPermutation);
+            if (permutedString.compareTo(initialString) < 0) {
+                continue;
+            } else {
+                return false;
             }
         }
+//        for (int i = 0; i < atomIndices.size(); i++) {
+//            for (int j = i + 1; j < atomIndices.size(); j++) {
+//                if (checkElement(i, j, atomContainer, initialString)) {
+//                    continue;
+//                } else {
+//                    return false;
+//                }
+//            }
+//        }
         return true;
     }
     
@@ -107,6 +131,21 @@ public class CanonicalChecker {
             bondString.append(".");
         }
         return bondString.toString(); 
+    }
+    
+    private static String asString(IAtomContainer container, int[] permutation){
+        StringBuffer bondString = new StringBuffer();
+        for (IBond bond : container.bonds()) {
+            int a1 = permutation[container.getAtomNumber(bond.getAtom(0))];
+            int a2 = permutation[container.getAtomNumber(bond.getAtom(1))];
+            if (a1 < a2) {
+                bondString.append(a1).append("-").append(a2);
+            } else {
+                bondString.append(a2).append("-").append(a1);
+            }
+            bondString.append(".");
+        }
+        return bondString.toString();
     }
 
 }

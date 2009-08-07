@@ -34,7 +34,7 @@ public class TestAtomContainerAtomPermutor {
             }
             i++;
         }
-        System.out.print(" ");
+        System.out.print("\n");
     }
     
     @Test
