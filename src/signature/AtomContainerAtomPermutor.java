@@ -44,7 +44,7 @@ public class AtomContainerAtomPermutor
     }
 
     public IAtomContainer next() {
-        if (this.hasNext()) {
+        if (!this.hasNext()) {
             throw new NoSuchElementException();
         } else {
             return this.containerFromPermutation(this.getNextPermutation());
