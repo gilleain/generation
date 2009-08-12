@@ -30,6 +30,27 @@ public class TestGraph {
         }
     }
     
+    public static Graph makeCanonicalExample() {
+        // this is an example from figure 3 of the enumeration paper
+        IAtomContainer ac = builder.newAtomContainer();
+        
+        IAtom c1 = builder.newAtom("C");
+        ac.addAtom(c1);
+        TestGraph.addHydrogens(ac, c1, 3);
+        
+        IAtom c2 = builder.newAtom("C");
+        ac.addAtom(c2);
+        ac.addBond(builder.newBond(c1, c2));
+        TestGraph.addHydrogens(ac, c2, 2);
+        
+        IAtom c3 = builder.newAtom("C");
+        ac.addAtom(c3);
+        TestGraph.addHydrogens(ac, c3, 2);
+        
+        return new Graph(ac);
+    }
+        
+    
     public static Graph makeNonCanonicalExample() {
         // this is an example from figure 3 of the enumeration paper
         IAtomContainer ac = builder.newAtomContainer();
@@ -132,7 +153,8 @@ public class TestGraph {
     @Test
     public void testNonCanonical() {
         Graph g = TestGraph.makeNonCanonicalExample();
-        TestGraph.printAtomContainer(g.getAtomContainer());
+//        TestGraph.printAtomContainer(g.getAtomContainer());
+        Assert.assertFalse(g.isCanonical());
     }
     
     @Test

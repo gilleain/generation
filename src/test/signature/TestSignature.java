@@ -196,13 +196,22 @@ public class TestSignature {
     }
     
     @Test
+    public void testBenzeneForOrbitElements() {
+        IMolecule mol = AbstractSignatureTest.makeBenzene();
+        Signature signature = new Signature(mol);
+        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
+            System.out.println(orbitElement);
+        }
+    }
+    
+    @Test
     public void testHexaneForOrbitElements() {
         IMolecule mol = AbstractSignatureTest.makeHexane();
-//        Signature signature = new Signature(mol);
-//        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
-//            System.out.println(orbitElement);
-//        }
-        TestSignature.testIsCanonical(mol);
+        Signature signature = new Signature(mol);
+        for (OrbitElement orbitElement : signature.calculateOrbitElements()) {
+            System.out.println(orbitElement);
+        }
+//        TestSignature.testIsCanonical(mol);
     }
     
     @Test

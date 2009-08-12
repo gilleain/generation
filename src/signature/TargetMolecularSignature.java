@@ -1,9 +1,28 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.openscience.cdk.interfaces.IIsotope;
+import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
+import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
+/**
+ * A collection of {@link TargetAtomicSignature}s and counts of same. This is
+ * used to represent a structure or set of structures. Note that it is possible 
+ * to make a target molecular signature that does not correspond to any 
+ * structures.
+ * 
+ * As a container of atomic signatures, methods are provided by this class to
+ * determine the compatibilities of these signatures. To this end, it can
+ * calculate an all-v-all table of compatibility counts. This is computed 
+ * lazily on the first call to <code>compatibleTargetBonds(i, j)</code>.  
+ * 
+ * @author maclean
+ *
+ */
 public class TargetMolecularSignature {
     
     private ArrayList<TargetAtomicSignature> signatures;
@@ -13,6 +32,21 @@ public class TargetMolecularSignature {
     private int height;
     
     private int[][] lookupTable;
+    
+    public TargetMolecularSignature(IMolecularFormula formula) {
+        
+        this.signatures = new ArrayList<TargetAtomicSignature>();
+        this.counts = new ArrayList<Integer>();
+        
+        for (IIsotope isotope : formula.isotopes()) {
+            String symbol = isotope.getSymbol();
+            String signatureString = "[" + symbol + "]";
+            this.signatures.add(new TargetAtomicSignature(signatureString));
+            this.counts.add(formula.getIsotopeCount(isotope));
+        }
+        this.lookupTable = createLookupTable();
+        this.height = 0;
+    }
 
     public TargetMolecularSignature(ArrayList<String> signatureStrings, 
                                     ArrayList<Integer> counts,
@@ -63,22 +97,35 @@ public class TargetMolecularSignature {
             for (int j = 0; j < n; j++) {
                 TargetAtomicSignature signatureB = this.signatures.get(j);
                 IMolecule moleculeB = molecules.get(j);
-//                System.out.println("A-B " + i + " " + j + " " + signatureA.getHeight());
+//                System.out.println("A, B:");
 //                System.out.println(signatureA.toString());
-                int cAB = compatibleCount(moleculeA, signatureB);
-//                System.out.println("B-A " + i + " " + j + " " + signatureB.getHeight());
 //                System.out.println(signatureB.toString());
+                
+                int cAB = compatibleCount(moleculeA, signatureB);
+//                System.out.println("A-B " + i + " " + j + " " + signatureA.getHeight() + " " + cAB);
                 int cBA = compatibleCount(moleculeB, signatureA);
+//                System.out.println("B-A " + i + " " + j + " " + signatureB.getHeight() + " " + cBA);
                 table[i][j] = cAB;
                 table[j][i] = cBA;
             }
         }
+        System.out.println(Arrays.deepToString(table));
         return table;
     }
     
     private int compatibleCount(IMolecule molecule, TargetAtomicSignature target) {
         Signature sigFromMolecule = new Signature(molecule);
         int height = target.getHeight() - 1;
+        if (height < 1) {
+            String symbol = "[" + molecule.getAtom(0).getSymbol() + "]";
+            String sig = target.getSubSignature(1);
+//            System.out.println(symbol + "<->" + sig);
+            if (symbol.equals(sig)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
         String a = sigFromMolecule.forAtom(0, height);
         int count = 0;
         for (String b : target.getSignatureStringsFromRootChildren(height)) {

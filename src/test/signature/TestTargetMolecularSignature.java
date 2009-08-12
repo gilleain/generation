@@ -28,11 +28,11 @@ public class TestTargetMolecularSignature {
      */
     public static TargetMolecularSignature makeAdenineExample() {
         TargetMolecularSignature sig = new TargetMolecularSignature(2);
-        sig.add("C(NN)",  3);
-        sig.add("C(NNC)", 2);
-        sig.add("N(CC)",  3);
-        sig.add("N(CCC)", 1);
-        sig.add("N(C)",   1);
+        sig.add("[C]([N][N])",  3);
+        sig.add("[C]([N][N][C])", 2);
+        sig.add("[N]([C][C])",  3);
+        sig.add("[N]([C][C][C])", 1);
+        sig.add("[N]([C])",   1);
         return sig;
     }
     

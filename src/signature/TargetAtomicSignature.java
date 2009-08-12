@@ -147,6 +147,7 @@ public class TargetAtomicSignature implements ISignature {
 
     public ArrayList<String> getSignatureStringsFromRootChildren(int height) {
         IMolecule molecule = this.toMolecule();
+        
         // XXX - this assumes that the molecule is built from the root!
         IAtom rootAtom = molecule.getAtom(0);
         

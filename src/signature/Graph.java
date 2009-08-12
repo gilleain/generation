@@ -88,7 +88,8 @@ public class Graph {
         int targetY = targets.get(y);
         String hMinusOneTauY = hTau.getTargetAtomicSignature(targetY, h - 1);
         
-        int n12 = hTau.compatibleTargetBonds(targetX, h, hMinusOneTauY);
+//        int n12 = hTau.compatibleTargetBonds(targetX, h, hMinusOneTauY);
+        int n12 = hTau.compatibleTargetBonds(targetX, targetY);
         if (n12 == 0) return false;
         int m12 = countExistingBondsOfType(x, h, hMinusOneTauY);
        

@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.interfaces.IIsotope;
+import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 /**
@@ -25,31 +27,21 @@ public class SignatureEnumerator {
     private ArrayList<Graph> solutions;
     
     /**
-     * Give the generator only the chemical element symbols, and the count of
-     * each, as well as a target signature.
-     * 
-     * The number of elements, counts, and atomic signatures must match - in 
-     * other words, there must be a count and atomic signature for each element
-     * symbol. Furthermore, the counts of atomic signatures must match those for
-     * the elements. Precisely, if there are N elements of type X, there must be
-     * N atomic signatures with a root of type X - even if these atomic 
-     * signatures are different. 
-     * 
-     * @param elements a set of element string symbols like ['C', 'H']
-     * @param counts the count of each of the element symbols
+     * Give the generator from only a formula and the target signature.
+     *
+     * @param formula the molecular formula
      * @param hTau the target molecular signature
      */
-    public SignatureEnumerator(ArrayList<String> elements, 
-                               ArrayList<Integer> counts, 
-                               TargetMolecularSignature hTau) {
+    public SignatureEnumerator(
+            IMolecularFormula formula, TargetMolecularSignature hTau) {
         this.builder = NoNotificationChemObjectBuilder.getInstance();
         this.atomContainer = this.builder.newAtomContainer();
-        for (int i = 0; i < elements.size(); i++) {
-            String element = elements.get(i);
-            for (int j = 0; j < counts.get(i); j++) {
-                this.atomContainer.addAtom(this.builder.newAtom(element));
+        for (IIsotope isotope : formula.isotopes()) {
+            for (int i = 0; i < formula.getIsotopeCount(isotope); i++) {
+                this.atomContainer.addAtom(this.builder.newAtom(isotope));
             }
         }
+        
         this.hTau = hTau;
         this.solutions = new ArrayList<Graph>();
     }
@@ -85,6 +77,7 @@ public class SignatureEnumerator {
             this.solutions.add(g);
         } else {
             g.partition();
+            g.determineUnsaturated();
             Orbit o = g.getUnsaturatedOrbit();
             ArrayList<Graph> orbitSolutions = new ArrayList<Graph>();
             saturateOrbitSignature(o, g, orbitSolutions);
@@ -134,6 +127,7 @@ public class SignatureEnumerator {
      * @param s the list of resulting graphs
      */
     public void saturateAtomSignature(int x, Graph g, List<Graph> s) {
+        System.out.println("saturating atom " + x);
         if (g.isSaturated(x)) {
             return;
         } else {

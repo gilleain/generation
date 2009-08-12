@@ -3,12 +3,15 @@ package test.signature;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 import signature.Graph;
 import signature.Orbit;
@@ -20,24 +23,28 @@ public class TestSignatureEnumerator {
     private IChemObjectBuilder builder = 
         NoNotificationChemObjectBuilder.getInstance();
     
-    public void create() {
-        TargetMolecularSignature sig = 
-            TestTargetMolecularSignature.makePaperExampleMolecularSignature();
-        ArrayList<String> e = new ArrayList<String>();
-        ArrayList<Integer> c = new ArrayList<Integer>();
-        SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
-        IAtomContainer initialContainer = enumerator.getInitialContainer();
-        System.out.println(initialContainer);
+    public static IMolecularFormula makeFormula(String formulaString) {
+        return MolecularFormulaManipulator.getMolecularFormula(
+                    formulaString, 
+                    NoNotificationChemObjectBuilder.getInstance());
     }
     
+    @Test
+    public void c4H8Example() {
+        IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C4H8");
+        TargetMolecularSignature sig = new TargetMolecularSignature(formula);
+        
+        SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        System.out.println(solutions.size());
+    }
+    
+    @Test
     public void hexaneExample() {
         TargetMolecularSignature sig = 
             TestTargetMolecularSignature.makeHexane();
-        ArrayList<String> e = new ArrayList<String>();
-        ArrayList<Integer> c = new ArrayList<Integer>();
-        e.add("C");
-        c.add(6);
-        SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
+        IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C6");
+        SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
         SmilesGenerator smilesGenerator = new SmilesGenerator();
         for (IAtomContainer solution : enumerator.generateSolutions()) {
             String smiles = smilesGenerator.createSMILES((IMolecule)solution);
@@ -45,16 +52,12 @@ public class TestSignatureEnumerator {
         }
     }
     
+    @Test
     public void adenineExample() {
         TargetMolecularSignature sig =
             TestTargetMolecularSignature.makeAdenineExample();
-        ArrayList<String> e = new ArrayList<String>();
-        ArrayList<Integer> c = new ArrayList<Integer>();
-        e.add("C");
-        e.add("N");
-        c.add(5);
-        c.add(5);
-        SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
+        IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C5N5");
+        SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
         SmilesGenerator smilesGenerator = new SmilesGenerator();
         for (IAtomContainer solution : enumerator.generateSolutions()) {
             String smiles = smilesGenerator.createSMILES((IMolecule)solution);
@@ -62,14 +65,14 @@ public class TestSignatureEnumerator {
         }
     }
     
+    @Test
     public void paperExample() {
         TargetMolecularSignature sig = 
             TestTargetMolecularSignature.makePaperExampleMolecularSignature();
-        ArrayList<String> e = new ArrayList<String>();
-        ArrayList<Integer> c = new ArrayList<Integer>();
-        e.add("H"); e.add("C");
-        c.add(22);  c.add(10);
-        SignatureEnumerator enumerator = new SignatureEnumerator(e, c, sig);
+        
+        IMolecularFormula formula = 
+            TestSignatureEnumerator.makeFormula("C10H22");
+        SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
         Graph gA = new Graph(enumerator.getInitialContainer());
         gA.assignAtomsToTarget(sig);
         gA.determineUnsaturated();
