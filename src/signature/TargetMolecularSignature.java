@@ -6,8 +6,6 @@ import java.util.Arrays;
 import org.openscience.cdk.interfaces.IIsotope;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
-import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 /**
  * A collection of {@link TargetAtomicSignature}s and counts of same. This is
@@ -33,6 +31,11 @@ public class TargetMolecularSignature {
     
     private int[][] lookupTable;
     
+    /**
+     * Make a target molecular formula from only a formula.
+     * 
+     * @param formula the elements and counts to use
+     */
     public TargetMolecularSignature(IMolecularFormula formula) {
         
         this.signatures = new ArrayList<TargetAtomicSignature>();
@@ -48,6 +51,14 @@ public class TargetMolecularSignature {
         this.height = 0;
     }
 
+    /**
+     * Make a target molecular signature from a set of strings and a list of
+     * counts of those signature strings.
+     * 
+     * @param signatureStrings the target atomic strings
+     * @param counts the counts of the target atomic strings
+     * @param height the height of the signature
+     */
     public TargetMolecularSignature(ArrayList<String> signatureStrings, 
                                     ArrayList<Integer> counts,
                                     int height) {
@@ -60,6 +71,12 @@ public class TargetMolecularSignature {
         this.height = height;
     }
     
+    /**
+     * A target molecular signature with no signatures - add them with the add
+     * method.
+     * 
+     * @param height the height of the signature
+     */
     public TargetMolecularSignature(int height) {
         this.signatures = new ArrayList<TargetAtomicSignature>();
         this.counts = new ArrayList<Integer>();
