@@ -176,7 +176,7 @@ public class SignatureEnumerator {
      * @param s the list of resulting graphs
      */
     public void saturateAtomSignature(int x, Graph g, List<Graph> s) {
-        System.out.println("saturating atom " + x);
+        System.out.println("saturating atom " + x + " in " + g);
         if (g.isSaturated(x)) {
             System.out.println(x + " is already saturated");
             s.add(g);
@@ -184,29 +184,29 @@ public class SignatureEnumerator {
         } else {
             System.out.println("trying all of " + g.unsaturatedAtoms());
             for (int y : g.unsaturatedAtoms()) {
-                System.out.println("trying " + y); 
                 Graph copy = new Graph(g);
-                copy.bond(x, y);
                 
+                boolean xy = copy.compatibleBond(x, y, hTau);
+                if (!xy) {
+                    System.out.println("!xy");
+//                    continue;
+                }
+                boolean yx = copy.compatibleBond(y, x, hTau);
+                if (!yx) {
+                    System.out.println("!yx");
+//                    continue;
+                }
+                
+                copy.bond(x, y);
                 boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
                 if (!noSubgraphs) {
                     System.out.println("saturated subgraphs");
                     continue;
                 }
-                boolean xy = copy.compatibleBond(x, y, hTau);
-                if (!xy) {
-                    System.out.println("!xy");
-                    continue;
-                }
-                boolean yx = copy.compatibleBond(y, x, hTau);
-                if (!yx) {
-                    System.out.println("!yx");
-                    continue;
-                }
                 boolean canon = copy.isCanonical();
                 if (!canon) {
                     System.out.println("!canon");
-                    continue;
+//                    continue;
                 }
                 
                 if (xy && yx && canon && noSubgraphs) {
