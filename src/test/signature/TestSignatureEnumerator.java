@@ -3,6 +3,8 @@ package test.signature;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -27,6 +29,23 @@ public class TestSignatureEnumerator {
         return MolecularFormulaManipulator.getMolecularFormula(
                     formulaString, 
                     NoNotificationChemObjectBuilder.getInstance());
+    }
+    
+    @Test
+    public void methaneExampleWithExplicitTargets() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(1);
+        sig.add("[H]([C])", 4);
+        sig.add("[C]([H][H][H][H])", 1);
+        SignatureEnumerator enumerator = new SignatureEnumerator("CH4", sig);
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        Assert.assertEquals(solutions.size(), 1);
+    }
+    
+    @Test
+    public void methaneExample() {
+        SignatureEnumerator enumerator = new SignatureEnumerator("CH4");
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        Assert.assertEquals(solutions.size(), 1);
     }
     
     @Test
