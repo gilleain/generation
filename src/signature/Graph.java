@@ -131,9 +131,7 @@ public class Graph {
         List<String> signatures = new ArrayList<String>();
         for (IAtom connected : atomContainer.getConnectedAtomsList(atom)) {
             int atomNumber = atomContainer.getAtomNumber(connected);
-            //XXX temporary!
-            IMolecule tmp = atomContainer.getBuilder().newMolecule(atomContainer);
-            Signature signature = new Signature(tmp);
+            Signature signature = new Signature(this.atomContainer);
             signatures.add(signature.forAtom(atomNumber, h));
         }
         return signatures;
