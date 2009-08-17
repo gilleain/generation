@@ -49,10 +49,6 @@ public class Orbit implements Iterable<Integer>, Cloneable {
         this.atomIndices.add(i);
     }
     
-    public boolean hasSignature(AtomicSignature signature) {
-        return this.signatureString.equals(signature.toString());
-    }
-    
     public boolean hasSignatureString(String otherSignatureString) {
         return this.signatureString.equals(otherSignatureString);
     }
