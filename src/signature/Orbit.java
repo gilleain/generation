@@ -66,7 +66,8 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     }
     
     public String toString() {
-        return Arrays.deepToString(atomIndices.toArray());
+        return Arrays.deepToString(atomIndices.toArray()) 
+                + " " + signatureString;
     }
 
     public String getSignatureString() {
