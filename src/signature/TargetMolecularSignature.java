@@ -126,14 +126,14 @@ public class TargetMolecularSignature {
                 table[j][i] = cBA;
             }
         }
-        System.out.println(Arrays.deepToString(table));
+        System.out.println(Arrays.deepToString(table) + " " + signatures);
         return table;
     }
     
     private int compatibleCount(IMolecule molecule, TargetAtomicSignature target) {
         Signature sigFromMolecule = new Signature(molecule);
         int height = target.getHeight() - 1;
-        if (height < 1) {
+        if (height < 0) {
             return 1;
         }
         String a = sigFromMolecule.forAtom(0, height);
