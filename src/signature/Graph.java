@@ -249,6 +249,11 @@ public class Graph {
      * @param y the second atom to be bonded
      */
     public void bond(int x, int y) {
+        System.out.println(
+                String.format("bonding %d and %d (%s-%s)",
+                x, y, 
+                atomContainer.getAtom(x).getSymbol(),
+                atomContainer.getAtom(y).getSymbol()));
         this.atomContainer.addBond(x, y, IBond.Order.SINGLE);
     }
 
@@ -315,9 +320,9 @@ public class Graph {
         int atomCount = subGraph.getAtomCount();
         
         // TODO : remove this debugging stuff
-        String atoms = "";
-        for (IAtom a : subGraph.atoms()) { atoms += a.getSymbol(); }
-        System.out.println(atoms + " " + saturationCount + " " + atomCount);
+//        String atoms = "";
+//        for (IAtom a : subGraph.atoms()) { atoms += a.getSymbol(); }
+//        System.out.println(atoms + " " + saturationCount + " " + atomCount);
         // TODO : remove this debugging stuff
         
         return saturationCount < atomCount 
@@ -328,7 +333,6 @@ public class Graph {
         return CanonicalChecker.isCanonical(atomContainer);
     }
     
-
     public boolean signatureMatches(TargetMolecularSignature tau) {
         // TODO Auto-generated method stub
         return true;
@@ -345,11 +349,15 @@ public class Graph {
         for (IBond bond : this.atomContainer.bonds()) {
             int l = this.atomContainer.getAtomNumber(bond.getAtom(0));
             int r = this.atomContainer.getAtomNumber(bond.getAtom(1));
-            sb.append(l).append("-").append(r).append(" ");
+            if (l < r) {
+                sb.append(l).append("-").append(r).append(" ");
+            } else {
+                sb.append(r).append("-").append(l).append(" ");
+            }
         }
         sb.append("] ");
         for (Orbit o : orbits) {
-            sb.append(o.toString());
+            sb.append(o.toString()).append(",");
         }
         return sb.toString();
     }
