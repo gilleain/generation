@@ -28,12 +28,30 @@ public class SignatureEnumerator {
     
     private ArrayList<Graph> solutions = new ArrayList<Graph>();
     
+    /**
+     * A generator for the whole of an isomer space, defined by the formula.
+     * 
+     * @param formulaString a molecular formula (like C4H10)
+     */
     public SignatureEnumerator(String formulaString) {
         IMolecularFormula formula = 
             MolecularFormulaManipulator.getMolecularFormula(
                     formulaString, this.builder);
-        this.hTau = new TargetMolecularSignature(formula);
         this.makeAtomContainerFromFormula(formula);
+        this.hTau = new TargetMolecularSignature(formula);
+    }
+    
+    /**
+     * A generator for a formula space, but with restrictions defined by a
+     * target molecular signature.
+     * 
+     * @param formulaString a molecular formula (like C4H10)
+     * @param targetSignature a target molecular signature
+     */
+    public SignatureEnumerator(String formulaString, 
+            TargetMolecularSignature targetSignature) {
+        this.makeAtomContainerFromFormulaString(formulaString);
+        this.hTau = targetSignature;
     }
     
     /**
@@ -53,7 +71,14 @@ public class SignatureEnumerator {
      */
     public SignatureEnumerator(
             IMolecularFormula formula, TargetMolecularSignature hTau) {
+        this.makeAtomContainerFromFormula(formula);
         this.hTau = hTau;
+    }
+    
+    private void makeAtomContainerFromFormulaString(String formulaString) {
+        IMolecularFormula formula = 
+            MolecularFormulaManipulator.getMolecularFormula(
+                    formulaString, this.builder);
         this.makeAtomContainerFromFormula(formula);
     }
     
@@ -121,10 +146,13 @@ public class SignatureEnumerator {
      *            the list of resulting graphs
      */
     public void saturateOrbitSignature(Orbit o, Graph g, List<Graph> s) {
+        System.out.println("saturating orbit " + o);
         if (o.isEmpty()) {
+            System.out.println("orbit empty");
             s.add(g);
         } else {
             int x = o.getFirstAtom();
+            System.out.println("first atom " + x);
             
             // TODO : should this happen before saturation, or after?!
             o.remove(x); 
@@ -151,9 +179,12 @@ public class SignatureEnumerator {
         System.out.println("saturating atom " + x);
         if (g.isSaturated(x)) {
             System.out.println(x + " is already saturated");
+            s.add(g);
             return;
         } else {
+            System.out.println("trying all of " + g.unsaturatedAtoms());
             for (int y : g.unsaturatedAtoms()) {
+                System.out.println("trying " + y); 
                 Graph copy = new Graph(g);
                 copy.bond(x, y);
                 
@@ -181,7 +212,7 @@ public class SignatureEnumerator {
                 if (xy && yx && canon && noSubgraphs) {
                     System.out.println("passed all tests");
                     if (copy.isSaturated(y)) {
-                        System.out.println("removing from saturated list");
+                        System.out.println("removing from unsaturated list");
                         copy.removeFromUnsaturatedList(y);
                     }
                     saturateAtomSignature(x, copy, s);
