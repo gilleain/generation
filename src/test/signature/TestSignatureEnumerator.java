@@ -31,10 +31,7 @@ public class TestSignatureEnumerator {
     
     @Test
     public void c4H8Example() {
-        IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C4H8");
-        TargetMolecularSignature sig = new TargetMolecularSignature(formula);
-        
-        SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
+        SignatureEnumerator enumerator = new SignatureEnumerator("C4H8");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
         System.out.println(solutions.size());
     }

@@ -8,6 +8,7 @@ import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IIsotope;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
+import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 /**
  * A structure generator based on the work of J.L.Faulon, that uses the idea of
@@ -20,21 +21,43 @@ public class SignatureEnumerator {
     
     private IAtomContainer atomContainer;
     
-    private IChemObjectBuilder builder;
+    private IChemObjectBuilder builder = 
+        NoNotificationChemObjectBuilder.getInstance();
     
     private TargetMolecularSignature hTau;
     
-    private ArrayList<Graph> solutions;
+    private ArrayList<Graph> solutions = new ArrayList<Graph>();
+    
+    public SignatureEnumerator(String formulaString) {
+        IMolecularFormula formula = 
+            MolecularFormulaManipulator.getMolecularFormula(
+                    formulaString, this.builder);
+        this.hTau = new TargetMolecularSignature(formula);
+        this.makeAtomContainerFromFormula(formula);
+    }
     
     /**
-     * Give the generator from only a formula and the target signature.
+     * Make the generator from only a formula. 
+     * 
+     * @param formula the molecular formula to use
+     */
+    public SignatureEnumerator(IMolecularFormula formula) {
+        this(formula, new TargetMolecularSignature(formula));
+    }
+    
+    /**
+     * Make the generator from only a formula and the target signature.
      *
      * @param formula the molecular formula
      * @param hTau the target molecular signature
      */
     public SignatureEnumerator(
             IMolecularFormula formula, TargetMolecularSignature hTau) {
-        this.builder = NoNotificationChemObjectBuilder.getInstance();
+        this.hTau = hTau;
+        this.makeAtomContainerFromFormula(formula);
+    }
+    
+    private void makeAtomContainerFromFormula(IMolecularFormula formula) {
         this.atomContainer = this.builder.newAtomContainer();
         for (IIsotope isotope : formula.isotopes()) {
             for (int i = 0; i < formula.getIsotopeCount(isotope); i++) {
@@ -42,9 +65,6 @@ public class SignatureEnumerator {
                 System.out.println("added " + isotope.getSymbol());
             }
         }
-        
-        this.hTau = hTau;
-        this.solutions = new ArrayList<Graph>();
     }
     
     public IAtomContainer getInitialContainer() {
@@ -130,6 +150,7 @@ public class SignatureEnumerator {
     public void saturateAtomSignature(int x, Graph g, List<Graph> s) {
         System.out.println("saturating atom " + x);
         if (g.isSaturated(x)) {
+            System.out.println(x + " is already saturated");
             return;
         } else {
             for (int y : g.unsaturatedAtoms()) {
@@ -158,7 +179,9 @@ public class SignatureEnumerator {
                 }
                 
                 if (xy && yx && canon && noSubgraphs) {
+                    System.out.println("passed all tests");
                     if (copy.isSaturated(y)) {
+                        System.out.println("removing from saturated list");
                         copy.removeFromUnsaturatedList(y);
                     }
                     saturateAtomSignature(x, copy, s);
