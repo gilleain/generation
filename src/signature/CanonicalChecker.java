@@ -1,5 +1,6 @@
 package signature;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -34,15 +35,16 @@ public class CanonicalChecker {
         String initialString = CanonicalChecker.asString(atomContainer);
         Signature signature = new Signature(atomContainer);
         for (Orbit orbit : signature.calculateOrbits()) {
-            if (CanonicalChecker.checkOrbit(
-                    atomContainer, orbit, initialString)) {
+            if (orbit.getHeight() < 1 ||
+                    CanonicalChecker.checkOrbit(
+                            atomContainer, orbit, initialString)) {
                 continue;
             } else {
-//                System.out.print(initialString);
+                System.out.print(initialString);
                 return false;
             }
         }
-//        System.out.print(initialString);
+        System.out.print(initialString);
         return true;
     }
     
@@ -69,6 +71,8 @@ public class CanonicalChecker {
         }
 //        System.out.println(atomIndices);
         Permutor permutor = new Permutor(atomIndices.size());
+        System.out.println("permuting " + atomIndices + " " 
+                + orbit.getSignatureString());
         while (permutor.hasNext()) {
             int[] permutation = permutor.getNextPermutation();
             for (int j = 0; j < permutation.length; j++) {
@@ -77,7 +81,8 @@ public class CanonicalChecker {
             }
             String permutedString = 
                 CanonicalChecker.asString(atomContainer, fullPermutation);
-            if (permutedString.compareTo(initialString) > 0) {
+            System.out.println(permutedString + " " + Arrays.toString(fullPermutation));
+            if (permutedString.compareTo(initialString) >= 0) {
                 continue;
             } else {
                 return false;

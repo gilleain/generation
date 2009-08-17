@@ -39,6 +39,7 @@ public class SignatureEnumerator {
         for (IIsotope isotope : formula.isotopes()) {
             for (int i = 0; i < formula.getIsotopeCount(isotope); i++) {
                 this.atomContainer.addAtom(this.builder.newAtom(isotope));
+                System.out.println("added " + isotope.getSymbol());
             }
         }
         

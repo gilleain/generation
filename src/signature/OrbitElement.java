@@ -8,10 +8,16 @@ package signature;
  * @author maclean
  */
 public class OrbitElement implements Comparable<OrbitElement> {
-    public int atomNumber; 
+    
+    public int atomNumber;
+    
     public int orbitIndex;
+    
     public int label;
+    
     public String signatureString;
+    
+    public int height;
     
     public OrbitElement(int atomNumber, String signatureString) {
         this.atomNumber = atomNumber;

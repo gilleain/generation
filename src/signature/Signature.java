@@ -261,6 +261,7 @@ public class Signature implements ISignature {
                 orbitElements[atomNumber].atomNumber = atomNumber;
                 orbitElements[atomNumber].signatureString = s;
             }
+            orbitElements[atomNumber].height = height;
             if (SMAX != null && s.compareTo(SMAX) < 0) {
                 continue;
             } else {
@@ -307,7 +308,7 @@ public class Signature implements ISignature {
         Orbit currentOrbit = null;
         for (OrbitElement element : orbitElements) {
             if (element.orbitIndex != index || currentOrbit == null) {
-                currentOrbit = new Orbit(element.signatureString);
+                currentOrbit = new Orbit(element.signatureString, element.height);
                 orbits.add(currentOrbit);
                 index = element.orbitIndex;
             }

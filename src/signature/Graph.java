@@ -38,7 +38,7 @@ public class Graph {
      * The 'orbits' are lists of atoms that are equivalent because they have
      * the same target signature and the same signature in the atom container.
      */
-    private ArrayList<Orbit> orbits;
+    private List<Orbit> orbits;
     
     private ArrayList<Integer> unsaturatedAtoms;
     
@@ -66,7 +66,10 @@ public class Graph {
         try {
             this.atomContainer = (IAtomContainer) g.atomContainer.clone();
             this.targets = (ArrayList<Integer>) g.targets.clone();
-            this.orbits = (ArrayList<Orbit>) g.orbits.clone();
+            this.orbits = new ArrayList<Orbit>();
+            for (Orbit o : g.orbits) {
+                this.orbits.add((Orbit)o.clone());
+            }
             this.unsaturatedAtoms = (ArrayList<Integer>) g.unsaturatedAtoms.clone(); 
         } catch (CloneNotSupportedException c) {
             
@@ -168,31 +171,8 @@ public class Graph {
      * equal. 
      */
     public void partition() {
-        for (int i = 0; i < atomContainer.getAtomCount(); i++) {
-            Orbit o = getOrbitForAtom(i);
-            o.addAtom(i);
-        }
-    }
-
-    /**
-     * Search the existing orbits for matches
-     * 
-     * @param atomNumber
-     * @return
-     */
-    public Orbit getOrbitForAtom(int atomNumber) {
-        AtomicSignature signature = new AtomicSignature(atomNumber, this);
-        for (Orbit orbit : orbits) {
-            if (orbit.hasSignature(signature)) {
-                int orbitRep = orbit.getFirstAtom();
-                if (targets.get(orbitRep) == targets.get(atomNumber)) {
-                    return orbit;
-                }
-            }
-        }
-        Orbit orbit = new Orbit(signature.toString());
-        this.orbits.add(orbit);
-        return orbit;
+        Signature signature = new Signature(this.atomContainer);
+        this.orbits = signature.calculateOrbits();
     }
 
     /**

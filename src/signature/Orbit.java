@@ -12,19 +12,33 @@ import java.util.List;
  * @author maclean
  *
  */
-public class Orbit implements Iterable<Integer> {
+public class Orbit implements Iterable<Integer>, Cloneable {
     
     private List<Integer> atomIndices;
     
     private String signatureString;
     
-    public Orbit(String signatureString) {
+    private int height;
+    
+    public Orbit(String signatureString, int height) {
         this.signatureString = signatureString;
         this.atomIndices = new ArrayList<Integer>();
     }
     
     public Iterator<Integer> iterator() {
         return this.atomIndices.iterator();
+    }
+    
+    public Object clone() {
+        Orbit o = new Orbit(this.signatureString, this.height);
+        for (Integer i : this.atomIndices) {
+            o.atomIndices.add(new Integer(i));
+        }
+        return o;
+    }
+    
+    public int getHeight() {
+        return this.height;
     }
     
     public List<Integer> getAtomIndices() {
@@ -57,6 +71,10 @@ public class Orbit implements Iterable<Integer> {
     
     public String toString() {
         return Arrays.deepToString(atomIndices.toArray());
+    }
+
+    public String getSignatureString() {
+        return this.signatureString;
     }
 
 }

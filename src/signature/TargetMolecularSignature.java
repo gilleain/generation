@@ -134,14 +134,7 @@ public class TargetMolecularSignature {
         Signature sigFromMolecule = new Signature(molecule);
         int height = target.getHeight() - 1;
         if (height < 1) {
-            String symbol = "[" + molecule.getAtom(0).getSymbol() + "]";
-            String sig = target.getSubSignature(1);
-//            System.out.println(symbol + "<->" + sig);
-            if (symbol.equals(sig)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return 1;
         }
         String a = sigFromMolecule.forAtom(0, height);
         int count = 0;
