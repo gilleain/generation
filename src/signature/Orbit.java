@@ -62,7 +62,7 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     }
     
     public void remove(int i) {
-        this.atomIndices.remove(i);
+        this.atomIndices.remove(this.atomIndices.indexOf(i));
     }
     
     public String toString() {
