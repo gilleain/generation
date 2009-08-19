@@ -50,7 +50,7 @@ public class TestSignatureEnumerator {
         sig.add("[C]([H][H][H][H])", 1);
         SignatureEnumerator enumerator = new SignatureEnumerator("CH4", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-        Assert.assertEquals(solutions.size(), 1);
+        Assert.assertEquals(1, solutions.size());
         System.out.println(TestSignatureEnumerator.toSmiles(solutions.get(0)));
     }
     
@@ -58,14 +58,14 @@ public class TestSignatureEnumerator {
     public void methaneExample() {
         SignatureEnumerator enumerator = new SignatureEnumerator("CH4");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-        Assert.assertEquals(solutions.size(), 1);
+        Assert.assertEquals(1, solutions.size());
     }
     
     @Test
     public void ethaneExample() {
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-        Assert.assertEquals(solutions.size(), 1);
+        Assert.assertEquals(1, solutions.size());
     }
     
     @Test
@@ -75,7 +75,7 @@ public class TestSignatureEnumerator {
         sig.add("[C]([C][H][H][H])", 2);
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-        Assert.assertEquals(solutions.size(), 1);
+        Assert.assertEquals(1, solutions.size());
         System.out.println(TestSignatureEnumerator.toSmiles(solutions.get(0)));
     }
     
