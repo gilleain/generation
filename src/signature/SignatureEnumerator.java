@@ -186,30 +186,7 @@ public class SignatureEnumerator {
             for (int y : g.unsaturatedAtoms()) {
                 Graph copy = new Graph(g);
                 
-                boolean xy = copy.compatibleBond(x, y, hTau);
-                if (!xy) {
-                    System.out.println("!xy");
-//                    continue;
-                }
-                boolean yx = copy.compatibleBond(y, x, hTau);
-                if (!yx) {
-                    System.out.println("!yx");
-//                    continue;
-                }
-                
-                copy.bond(x, y);
-                boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
-                if (!noSubgraphs) {
-                    System.out.println("saturated subgraphs");
-                    continue;
-                }
-                boolean canon = copy.isCanonical();
-                if (!canon) {
-                    System.out.println("!canon");
-//                    continue;
-                }
-                
-                if (xy && yx && canon && noSubgraphs) {
+                if (check(copy, x, y)) {
                     System.out.println("passed all tests");
                     if (copy.isSaturated(y)) {
                         System.out.println("removing from unsaturated list");
@@ -219,5 +196,31 @@ public class SignatureEnumerator {
                 }
             }
         }
+    }
+    
+    public boolean check(Graph copy, int x, int y) {
+        boolean xy = copy.compatibleBond(x, y, hTau);
+        if (!xy) {
+            System.out.println("!xy");
+//            continue;
+        }
+        boolean yx = copy.compatibleBond(y, x, hTau);
+        if (!yx) {
+            System.out.println("!yx");
+//            continue;
+        }
+        
+        copy.bond(x, y);
+        boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
+        if (!noSubgraphs) {
+            System.out.println("saturated subgraphs");
+            return false;
+        }
+        boolean canon = copy.isCanonical();
+        if (!canon) {
+            System.out.println("!canon");
+//            continue;
+        }
+        return true;
     }
 }
