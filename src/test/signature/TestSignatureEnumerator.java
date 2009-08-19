@@ -6,6 +6,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
@@ -22,14 +23,26 @@ import signature.TargetMolecularSignature;
 
 public class TestSignatureEnumerator {
     
-    private IChemObjectBuilder builder = 
+    public static IChemObjectBuilder builder = 
         NoNotificationChemObjectBuilder.getInstance();
+    
+    public static SmilesGenerator smilesGenerator = new SmilesGenerator();
     
     public static IMolecularFormula makeFormula(String formulaString) {
         return MolecularFormulaManipulator.getMolecularFormula(
                     formulaString, 
                     NoNotificationChemObjectBuilder.getInstance());
     }
+    
+    public static String toSmiles(IAtomContainer container) {
+        if (ConnectivityChecker.isConnected(container)) {
+            return TestSignatureEnumerator.smilesGenerator.createSMILES(
+                    TestSignatureEnumerator.builder.newMolecule(container));
+        } else {
+            return "disconnected";
+        }
+    }
+    
     
     @Test
     public void methaneExampleWithExplicitTargets() {
@@ -39,11 +52,19 @@ public class TestSignatureEnumerator {
         SignatureEnumerator enumerator = new SignatureEnumerator("CH4", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
         Assert.assertEquals(solutions.size(), 1);
+        System.out.println(TestSignatureEnumerator.toSmiles(solutions.get(0)));
     }
     
     @Test
     public void methaneExample() {
         SignatureEnumerator enumerator = new SignatureEnumerator("CH4");
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        Assert.assertEquals(solutions.size(), 1);
+    }
+    
+    @Test
+    public void ethaneExample() {
+        SignatureEnumerator enumerator = new SignatureEnumerator("C2H6");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
         Assert.assertEquals(solutions.size(), 1);
     }
@@ -61,7 +82,7 @@ public class TestSignatureEnumerator {
             TestTargetMolecularSignature.makeHexane();
         IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C6");
         SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
-        SmilesGenerator smilesGenerator = new SmilesGenerator();
+        
         for (IAtomContainer solution : enumerator.generateSolutions()) {
             String smiles = smilesGenerator.createSMILES((IMolecule)solution);
             System.out.println("solution " + smiles);
