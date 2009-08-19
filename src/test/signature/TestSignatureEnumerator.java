@@ -43,7 +43,6 @@ public class TestSignatureEnumerator {
         }
     }
     
-    
     @Test
     public void methaneExampleWithExplicitTargets() {
         TargetMolecularSignature sig = new TargetMolecularSignature(1);
@@ -67,6 +66,17 @@ public class TestSignatureEnumerator {
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
         Assert.assertEquals(solutions.size(), 1);
+    }
+    
+    @Test
+    public void ethaneExampleWithExplicitTargets() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(1);
+        sig.add("[H]([C])", 6);
+        sig.add("[C]([C][H][H][H])", 2);
+        SignatureEnumerator enumerator = new SignatureEnumerator("C2H6", sig);
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        Assert.assertEquals(solutions.size(), 1);
+        System.out.println(TestSignatureEnumerator.toSmiles(solutions.get(0)));
     }
     
     @Test
