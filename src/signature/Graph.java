@@ -94,7 +94,7 @@ public class Graph {
 //        int n12 = hTau.compatibleTargetBonds(targetX, h, hMinusOneTauY);
         int n12 = hTau.compatibleTargetBonds(targetX, targetY);
         if (n12 == 0) return false;
-        int m12 = countExistingBondsOfType(x, h, hMinusOneTauY);
+        int m12 = countExistingBondsOfType(y, h, hMinusOneTauY);
        
         return n12 - m12 >= 0;
     }
