@@ -123,8 +123,9 @@ public class SignatureEnumerator {
             this.solutions.add(g);
         } else {
             g.partition();
-            g.determineUnsaturated();
             Orbit o = g.getUnsaturatedOrbit();
+            if (o == null) return;
+            
             ArrayList<Graph> orbitSolutions = new ArrayList<Graph>();
             saturateOrbitSignature(o, g, orbitSolutions);
             for (Graph h : orbitSolutions) {
@@ -147,7 +148,7 @@ public class SignatureEnumerator {
      */
     public void saturateOrbitSignature(Orbit o, Graph g, List<Graph> s) {
         System.out.println("saturating orbit " + o);
-        if (o.isEmpty()) {
+        if (o == null || o.isEmpty()) {
             System.out.println("orbit empty");
             s.add(g);
         } else {

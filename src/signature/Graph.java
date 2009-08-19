@@ -52,6 +52,7 @@ public class Graph {
         this.targets = new ArrayList<Integer>();
         this.orbits = new ArrayList<Orbit>();
         this.unsaturatedAtoms = new ArrayList<Integer>();
+        this.determineUnsaturated();
     }
     
     /**
@@ -183,6 +184,9 @@ public class Graph {
         this.unsaturatedAtoms.remove(new Integer(i));
     }
     
+    /**
+     * Determine which atoms are unsaturated.
+     */
     public void determineUnsaturated() {
         for (IAtom atom : atomContainer.atoms()) {
             try {
@@ -282,7 +286,12 @@ public class Graph {
      * @return the orbit (list of atoms) to try and saturate
      */
     public Orbit getUnsaturatedOrbit() {
-        return this.orbits.get(0);
+        for (Orbit o : this.orbits) {
+            if (this.unsaturatedAtoms.contains(o.getFirstAtom())) {
+                return o;
+            }
+        }
+        return null;
     }
 
     /**
