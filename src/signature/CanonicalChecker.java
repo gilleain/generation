@@ -1,6 +1,7 @@
 package signature;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -35,12 +36,13 @@ public class CanonicalChecker {
         String initialString = CanonicalChecker.asString(atomContainer);
         Signature signature = new Signature(atomContainer);
         for (Orbit orbit : signature.calculateOrbits()) {
+//            System.out.println("orbit " + orbit + " " + orbit.getHeight());
             if (orbit.getHeight() < 1 ||
                     CanonicalChecker.checkOrbit(
                             atomContainer, orbit, initialString)) {
                 continue;
             } else {
-                System.out.print(initialString);
+//                System.out.print(initialString);
                 return false;
             }
         }
@@ -71,8 +73,7 @@ public class CanonicalChecker {
         }
 //        System.out.println(atomIndices);
         Permutor permutor = new Permutor(atomIndices.size());
-        System.out.println("permuting " + atomIndices + " " 
-                + orbit.getSignatureString());
+//        System.out.println("permuting " + atomIndices + " " + orbit.getSignatureString());
         while (permutor.hasNext()) {
             int[] permutation = permutor.getNextPermutation();
             for (int j = 0; j < permutation.length; j++) {
@@ -81,7 +82,7 @@ public class CanonicalChecker {
             }
             String permutedString = 
                 CanonicalChecker.asString(atomContainer, fullPermutation);
-            System.out.println(permutedString + " " + Arrays.toString(fullPermutation));
+//            System.out.println(permutedString + " " + Arrays.toString(fullPermutation));
             if (permutedString.compareTo(initialString) >= 0) {
                 continue;
             } else {
@@ -99,17 +100,17 @@ public class CanonicalChecker {
      * @return
      */
     private static String asString(IAtomContainer container) {
-        StringBuffer bondString = new StringBuffer();
+        ArrayList<String> bondString = new ArrayList<String>();
         for (IBond bond : container.bonds()) {
             int a1 = container.getAtomNumber(bond.getAtom(0));
             int a2 = container.getAtomNumber(bond.getAtom(1));
             if (a1 < a2) {
-                bondString.append(a1).append("-").append(a2);
+                bondString.add(a1 + "-" + a2);
             } else {
-                bondString.append(a2).append("-").append(a1);
+                bondString.add(a2 + "-" + a1);
             }
-            bondString.append(".");
         }
+        Collections.sort(bondString);
         return bondString.toString(); 
     }
     
@@ -121,17 +122,17 @@ public class CanonicalChecker {
      * @return a string 'certificate' that can be checked for minimality
      */
     private static String asString(IAtomContainer container, int[] permutation){
-        StringBuffer bondString = new StringBuffer();
+        ArrayList<String> bondString = new ArrayList<String>();
         for (IBond bond : container.bonds()) {
             int a1 = permutation[container.getAtomNumber(bond.getAtom(0))];
             int a2 = permutation[container.getAtomNumber(bond.getAtom(1))];
             if (a1 < a2) {
-                bondString.append(a1).append("-").append(a2);
+                bondString.add(a1 + "-" + a2);
             } else {
-                bondString.append(a2).append("-").append(a1);
+                bondString.add(a2 + "-" + a1);
             }
-            bondString.append(".");
         }
+        Collections.sort(bondString);
         return bondString.toString();
     }
 
