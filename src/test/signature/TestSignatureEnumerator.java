@@ -43,6 +43,12 @@ public class TestSignatureEnumerator {
         }
     }
     
+    public static void printSolutions(List<IAtomContainer> solutions) {
+        for (IAtomContainer solution : solutions) {
+            System.out.println(TestSignatureEnumerator.toSmiles(solution));
+        }
+    }
+    
     @Test
     public void methaneExampleWithExplicitTargets() {
         TargetMolecularSignature sig = new TargetMolecularSignature(1);
@@ -65,6 +71,7 @@ public class TestSignatureEnumerator {
     public void ethaneExample() {
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6");
         List<IAtomContainer> solutions = enumerator.generateSolutions();
+        TestSignatureEnumerator.printSolutions(solutions);
         Assert.assertEquals(1, solutions.size());
     }
     
@@ -76,10 +83,7 @@ public class TestSignatureEnumerator {
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
 //        Assert.assertEquals(1, solutions.size());
-        System.out.println(TestSignatureEnumerator.toSmiles(solutions.get(0)));
-        for (IAtomContainer c : solutions) { 
-            System.out.println(TestSignatureEnumerator.toSmiles(c));
-        }
+        TestSignatureEnumerator.printSolutions(solutions);
     }
     
     @Test
@@ -90,9 +94,7 @@ public class TestSignatureEnumerator {
         SignatureEnumerator enumerator = new SignatureEnumerator("C4H8", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
 //        Assert.assertEquals(1, solutions.size());
-        for (IAtomContainer c : solutions) { 
-            System.out.println(TestSignatureEnumerator.toSmiles(c));
-        }
+        TestSignatureEnumerator.printSolutions(solutions);
     }
     
     @Test
@@ -109,10 +111,8 @@ public class TestSignatureEnumerator {
         IMolecularFormula formula = TestSignatureEnumerator.makeFormula("C6");
         SignatureEnumerator enumerator = new SignatureEnumerator(formula, sig);
         
-        for (IAtomContainer solution : enumerator.generateSolutions()) {
-            String smiles = smilesGenerator.createSMILES((IMolecule)solution);
-            System.out.println("solution " + smiles);
-        }
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        TestSignatureEnumerator.printSolutions(solutions);
     }
     
     @Test
