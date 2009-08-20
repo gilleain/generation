@@ -139,6 +139,11 @@ public class Signature implements ISignature {
     private static final double VALENCE = 4;
     
     /**
+     * The maximum height of the most recently calculated atom signature
+     */
+    private int maxHeight;
+    
+    /**
      * Create a signature 'factory' for a molecule - to actually get 
      * signature strings, the canonize method needs to be called.
      * 
@@ -261,7 +266,8 @@ public class Signature implements ISignature {
                 orbitElements[atomNumber].atomNumber = atomNumber;
                 orbitElements[atomNumber].signatureString = s;
             }
-            orbitElements[atomNumber].height = height;
+//            System.out.println("setting height to " + maxHeight);
+            orbitElements[atomNumber].height = maxHeight;
             if (SMAX != null && s.compareTo(SMAX) < 0) {
                 continue;
             } else {
@@ -788,7 +794,7 @@ public class Signature implements ISignature {
         LL = L0 + 1;
         
         StringBuffer sb = new StringBuffer();
-        printString(sb, null, root, new ArrayList<Edge>(), LAB, OCC);
+        printString(sb, null, root, new ArrayList<Edge>(), LAB, OCC, 0);
         return sb.toString();
     }
     
@@ -834,10 +840,14 @@ public class Signature implements ISignature {
      * @param edges the edges seen so far
      * @param LAB the labels
      * @param OCC the occurrences
+     * @param height the current height of the string
      */
     private void printString(StringBuffer sb, Vertex parent,
             Vertex current, ArrayList<Edge> edges, int[] LAB,
-            int[] OCC) {
+            int[] OCC, int height) {
+        if (height > this.maxHeight) {
+            this.maxHeight = height;
+        }
         if (OCC[current.atomNumber] > 1) {
             // if it SHOULD have a number, but doesn't, add one
             if (!current.element.contains(",")) {
@@ -889,7 +899,7 @@ public class Signature implements ISignature {
                     addedBracket = true;
                 }
                 edges.add(e);
-                printString(sb, current, child, edges, LAB, OCC); 
+                printString(sb, current, child, edges, LAB, OCC, height + 1); 
             }
         }
         if (addedBracket) {

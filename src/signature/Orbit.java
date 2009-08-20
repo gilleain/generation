@@ -23,6 +23,7 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     public Orbit(String signatureString, int height) {
         this.signatureString = signatureString;
         this.atomIndices = new ArrayList<Integer>();
+        this.height = height;
     }
     
     public Iterator<Integer> iterator() {
