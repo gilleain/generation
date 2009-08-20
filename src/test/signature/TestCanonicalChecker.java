@@ -1,5 +1,6 @@
 package test.signature;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -8,6 +9,46 @@ import signature.AtomContainerAtomPermutor;
 import signature.CanonicalChecker;
 
 public class TestCanonicalChecker {
+    
+    public static IAtomContainer makeCanonicalEthane() {
+        IAtomContainer ethane = AbstractSignatureTest.builder.newAtomContainer();
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addBond(0, 1, IBond.Order.SINGLE);
+        ethane.addBond(0, 2, IBond.Order.SINGLE);
+        ethane.addBond(0, 3, IBond.Order.SINGLE);
+        ethane.addBond(0, 4, IBond.Order.SINGLE);
+        ethane.addBond(1, 5, IBond.Order.SINGLE);
+        ethane.addBond(1, 6, IBond.Order.SINGLE);
+        ethane.addBond(1, 7, IBond.Order.SINGLE);
+        return ethane;
+    }
+    
+    public static IAtomContainer makeNonCanonicalEthane() {
+        IAtomContainer ethane = AbstractSignatureTest.builder.newAtomContainer();
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addBond(0, 1, IBond.Order.SINGLE);
+        ethane.addBond(0, 2, IBond.Order.SINGLE);
+        ethane.addBond(0, 3, IBond.Order.SINGLE);
+        ethane.addBond(0, 7, IBond.Order.SINGLE);
+        ethane.addBond(1, 4, IBond.Order.SINGLE);
+        ethane.addBond(1, 5, IBond.Order.SINGLE);
+        ethane.addBond(1, 6, IBond.Order.SINGLE);
+        return ethane;
+    }
     
     public static void testIsCanonicalFindFirst(IAtomContainer container) {
         AtomContainerAtomPermutor permutor = 
@@ -57,6 +98,16 @@ public class TestCanonicalChecker {
         square.addBond(2, 3, IBond.Order.SINGLE);
         
         TestCanonicalChecker.testIsCanonical(square);
+    }
+    
+    @Test
+    public void testEthane() {
+        Assert.assertTrue(
+                CanonicalChecker.isCanonical(
+                        TestCanonicalChecker.makeCanonicalEthane()));
+        Assert.assertFalse(
+                CanonicalChecker.isCanonical(
+                        TestCanonicalChecker.makeNonCanonicalEthane()));
     }
     
     @Test
