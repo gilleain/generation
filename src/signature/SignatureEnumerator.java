@@ -1,8 +1,11 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IIsotope;
@@ -84,12 +87,24 @@ public class SignatureEnumerator {
     
     private void makeAtomContainerFromFormula(IMolecularFormula formula) {
         this.atomContainer = this.builder.newAtomContainer();
+        
+        ArrayList<IAtom> atoms = new ArrayList<IAtom>();
         for (IIsotope isotope : formula.isotopes()) {
             for (int i = 0; i < formula.getIsotopeCount(isotope); i++) {
-                this.atomContainer.addAtom(this.builder.newAtom(isotope));
+                atoms.add(this.builder.newAtom(isotope));
                 System.out.println("added " + isotope.getSymbol());
             }
         }
+        
+        // sort by symbol lexicographic order
+        Collections.sort(atoms, new Comparator<IAtom>() {
+
+            public int compare(IAtom o1, IAtom o2) {
+                return o1.getSymbol().compareTo(o2.getSymbol());
+            }
+            
+        });
+        this.atomContainer.setAtoms(atoms.toArray(new IAtom[]{}));
     }
     
     public IAtomContainer getInitialContainer() {
@@ -120,7 +135,7 @@ public class SignatureEnumerator {
      */
     public void enumerateMoleculeSignature(Graph g) {
         if (g.isConnected() && g.signatureMatches(this.hTau)) {
-            System.out.println("ADDING " + g);
+            System.out.println("ADDING " + g + " is canon "+ g.isCanonical());
             this.solutions.add(g);
         } else {
             g.partition();
