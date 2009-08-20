@@ -120,6 +120,7 @@ public class SignatureEnumerator {
      */
     public void enumerateMoleculeSignature(Graph g) {
         if (g.isConnected() && g.signatureMatches(this.hTau)) {
+            System.out.println("ADDING " + g);
             this.solutions.add(g);
         } else {
             g.partition();
@@ -204,11 +205,13 @@ public class SignatureEnumerator {
         if (!xy) {
             System.out.println("!xy");
 //            continue;
+            return false;
         }
         boolean yx = copy.compatibleBond(y, x, hTau);
         if (!yx) {
             System.out.println("!yx");
 //            continue;
+            return false;
         }
         
         copy.bond(x, y);
@@ -221,6 +224,7 @@ public class SignatureEnumerator {
         if (!canon) {
             System.out.println("!canon");
 //            continue;
+            return false;
         }
         return true;
     }
