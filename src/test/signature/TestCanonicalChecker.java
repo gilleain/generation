@@ -1,5 +1,7 @@
 package test.signature;
 
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -93,7 +95,8 @@ public class TestCanonicalChecker {
         while (permutor.hasNext()) {
             IAtomContainer permutedContainer = permutor.next();
             System.out.println("Result " +
-                    CanonicalChecker.isCanonicalComplete(permutedContainer));
+                    CanonicalChecker.isCanonicalComplete(permutedContainer)
+                    + " " + Arrays.toString(permutor.getCurrentPermutation()));
         }
     }
     
@@ -105,7 +108,43 @@ public class TestCanonicalChecker {
         ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
         ch2.addBond(0, 1, IBond.Order.SINGLE);
         ch2.addBond(0, 2, IBond.Order.SINGLE);
-        TestCanonicalChecker.testIsCanonicalComplete(ch2);
+        Assert.assertTrue(CanonicalChecker.isCanonicalComplete(ch2));
+    }
+    
+    @Test
+    public void testCHCHComplete() {
+        IAtomContainer chch = AbstractSignatureTest.builder.newAtomContainer();
+        chch.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        chch.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        chch.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        chch.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        chch.addBond(0, 2, IBond.Order.SINGLE);
+        chch.addBond(1, 3, IBond.Order.SINGLE);
+        Assert.assertTrue(CanonicalChecker.isCanonicalComplete(chch));
+    }
+    
+    @Test
+    public void testCH2CH2Complete() {
+        IAtomContainer ch2ch2 = AbstractSignatureTest.builder.newAtomContainer();
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2ch2.addBond(0, 2, IBond.Order.SINGLE);
+        ch2ch2.addBond(0, 3, IBond.Order.SINGLE);
+        ch2ch2.addBond(1, 4, IBond.Order.SINGLE);
+        ch2ch2.addBond(1, 5, IBond.Order.SINGLE);
+        Assert.assertTrue(CanonicalChecker.isCanonicalComplete(ch2ch2));
+    }
+    
+    @Test
+    public void testEthaneComplete() {
+        IAtomContainer ethCanon = TestCanonicalChecker.makeCanonicalEthane();
+        IAtomContainer ethNonCan = TestCanonicalChecker.makeNonCanonicalEthane();
+        Assert.assertTrue(CanonicalChecker.isCanonicalComplete(ethCanon));
+        Assert.assertFalse(CanonicalChecker.isCanonicalComplete(ethNonCan));
     }
     
     @Test

@@ -2,8 +2,10 @@ package signature;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 
@@ -30,20 +32,32 @@ public class CanonicalChecker {
         String initialString = CanonicalChecker.asString(atomContainer);
         System.out.println("initial : " + initialString);
         if (initialString.equals("")) return true;
-        Permutor permutor = new Permutor(atomContainer.getAtomCount());
-        while (permutor.hasNext()) {
-            int[] permutation = permutor.getNextPermutation();
-            String permutedString = 
-                CanonicalChecker.asString(atomContainer, permutation);
-            System.out.println(permutedString);
-            if (permutedString.compareTo(initialString) >= 0) {
+        for (Orbit orbit : CanonicalChecker.getSimpleOrbits(atomContainer)) {
+            System.out.println("Checking orbit " + orbit);
+            if (CanonicalChecker.checkOrbit(
+                    atomContainer, orbit, initialString)) {
                 continue;
             } else {
-                System.out.println("not canonical " + initialString);
                 return false;
             }
         }
         return true;
+    }
+    
+    public static List<Orbit> getSimpleOrbits(IAtomContainer container) {
+        HashMap<String, Orbit> orbits = new HashMap<String, Orbit>();
+        int i = 0;
+        for (IAtom atom : container.atoms()) {
+            String symbol = atom.getSymbol();
+            Orbit current =  orbits.get(symbol);
+            if (current == null) {
+                current = new Orbit(symbol, 0);
+                orbits.put(symbol, current);
+            }
+            current.addAtom(i);
+            i++;
+        }
+        return new ArrayList<Orbit>(orbits.values());
     }
     
     /**
@@ -102,8 +116,10 @@ public class CanonicalChecker {
             }
             String permutedString = 
                 CanonicalChecker.asString(atomContainer, fullPermutation);
-//            System.out.println(permutedString + " " + Arrays.toString(fullPermutation));
-            if (permutedString.compareTo(initialString) >= 0) {
+            int compareValue = initialString.compareTo(permutedString);
+            boolean initialIsLarger = compareValue <= 0;
+            System.out.println(permutedString + " " + java.util.Arrays.toString(fullPermutation) + " " + initialIsLarger + " " + compareValue);
+            if (initialIsLarger) {
                 continue;
             } else {
                 return false;
