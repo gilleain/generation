@@ -2,6 +2,8 @@ package signature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 import org.openscience.cdk.interfaces.IIsotope;
 import org.openscience.cdk.interfaces.IMolecularFormula;
@@ -41,11 +43,18 @@ public class TargetMolecularSignature {
         this.signatures = new ArrayList<TargetAtomicSignature>();
         this.counts = new ArrayList<Integer>();
         
+        ArrayList<String> symbols = new ArrayList<String>(); 
+        HashMap<String, Integer> countMap = new HashMap<String, Integer>();
         for (IIsotope isotope : formula.isotopes()) {
             String symbol = isotope.getSymbol();
+            symbols.add(symbol);
+            countMap.put(symbol, formula.getIsotopeCount(isotope));
+        }
+        Collections.sort(symbols);
+        for (String symbol : symbols) {
             String signatureString = "[" + symbol + "]";
             this.signatures.add(new TargetAtomicSignature(signatureString));
-            this.counts.add(formula.getIsotopeCount(isotope));
+            this.counts.add(countMap.get(symbol));
         }
         this.lookupTable = createLookupTable();
         this.height = 0;
