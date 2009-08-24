@@ -26,6 +26,26 @@ import org.openscience.cdk.interfaces.IBond;
  */
 public class CanonicalChecker {
     
+    public static boolean isCanonicalComplete(IAtomContainer atomContainer) {
+        String initialString = CanonicalChecker.asString(atomContainer);
+        System.out.println("initial : " + initialString);
+        if (initialString.equals("")) return true;
+        Permutor permutor = new Permutor(atomContainer.getAtomCount());
+        while (permutor.hasNext()) {
+            int[] permutation = permutor.getNextPermutation();
+            String permutedString = 
+                CanonicalChecker.asString(atomContainer, permutation);
+            System.out.println(permutedString);
+            if (permutedString.compareTo(initialString) >= 0) {
+                continue;
+            } else {
+                System.out.println("not canonical " + initialString);
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /**
      * Check an atom container to see if it is canonical.
      * 

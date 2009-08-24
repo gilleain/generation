@@ -339,7 +339,7 @@ public class Graph {
     }
 
     public boolean isCanonical() {
-        return CanonicalChecker.isCanonical(atomContainer);
+        return CanonicalChecker.isCanonicalComplete(atomContainer);
     }
     
     public boolean signatureMatches(TargetMolecularSignature tau) {

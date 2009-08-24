@@ -85,6 +85,29 @@ public class TestCanonicalChecker {
         }
     }
     
+    public static void testIsCanonicalComplete(IAtomContainer container) {
+        AtomContainerAtomPermutor permutor = 
+            new AtomContainerAtomPermutor(container);
+        System.out.println("Original " + 
+                CanonicalChecker.isCanonicalComplete(container));
+        while (permutor.hasNext()) {
+            IAtomContainer permutedContainer = permutor.next();
+            System.out.println("Result " +
+                    CanonicalChecker.isCanonicalComplete(permutedContainer));
+        }
+    }
+    
+    @Test
+    public void testCH2Complete() {
+        IAtomContainer ch2 = AbstractSignatureTest.builder.newAtomContainer();
+        ch2.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ch2.addBond(0, 1, IBond.Order.SINGLE);
+        ch2.addBond(0, 2, IBond.Order.SINGLE);
+        TestCanonicalChecker.testIsCanonicalComplete(ch2);
+    }
+    
     @Test
     public void testSquare() {
         IAtomContainer square = AbstractSignatureTest.builder.newAtomContainer();
