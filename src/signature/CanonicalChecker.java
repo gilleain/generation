@@ -30,10 +30,10 @@ public class CanonicalChecker {
     
     public static boolean isCanonicalComplete(IAtomContainer atomContainer) {
         String initialString = CanonicalChecker.asString(atomContainer);
-        System.out.println("initial : " + initialString);
+//        System.out.println("initial : " + initialString);
         if (initialString.equals("")) return true;
         for (Orbit orbit : CanonicalChecker.getSimpleOrbits(atomContainer)) {
-            System.out.println("Checking orbit " + orbit);
+//            System.out.println("Checking orbit " + orbit);
             if (CanonicalChecker.checkOrbit(
                     atomContainer, orbit, initialString)) {
                 continue;
@@ -48,6 +48,9 @@ public class CanonicalChecker {
         HashMap<String, Orbit> orbits = new HashMap<String, Orbit>();
         int i = 0;
         for (IAtom atom : container.atoms()) {
+            if (container.getConnectedAtomsCount(atom) == 0) {
+                continue;
+            }
             String symbol = atom.getSymbol();
             Orbit current =  orbits.get(symbol);
             if (current == null) {
@@ -118,7 +121,7 @@ public class CanonicalChecker {
                 CanonicalChecker.asString(atomContainer, fullPermutation);
             int compareValue = initialString.compareTo(permutedString);
             boolean initialIsLarger = compareValue <= 0;
-            System.out.println(permutedString + " " + java.util.Arrays.toString(fullPermutation) + " " + initialIsLarger + " " + compareValue);
+//            System.out.println(permutedString + " " + java.util.Arrays.toString(fullPermutation) + " " + initialIsLarger + " " + compareValue);
             if (initialIsLarger) {
                 continue;
             } else {
