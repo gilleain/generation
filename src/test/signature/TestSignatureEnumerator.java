@@ -87,10 +87,35 @@ public class TestSignatureEnumerator {
     }
     
     @Test
+    public void propaneExampleWithHeight1Targets() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(1);
+        sig.add("[C]([C][H][H][H])", 2);
+        sig.add("[C]([C][C][H][H])", 1);
+        sig.add("[H]([C])", 8);
+        SignatureEnumerator enumerator = new SignatureEnumerator("C3H8", sig);
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+//        Assert.assertEquals(1, solutions.size());
+        TestSignatureEnumerator.printSolutions(solutions);
+    }
+    
+    @Test
+    public void propaneExampleWithHeight2Targets() {
+        TargetMolecularSignature sig = new TargetMolecularSignature(2);
+        sig.add("[C]([C]([H][H])[H][H][H])", 2);
+        sig.add("[C]([C]([H][H][H])[C]([H][H][H])[H][H])", 1);
+        sig.add("[H]([C]([C][H][H]))", 6);
+        sig.add("[H]([C]([C][C][H]))", 2);
+        SignatureEnumerator enumerator = new SignatureEnumerator("C3H8", sig);
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+//        Assert.assertEquals(1, solutions.size());
+        TestSignatureEnumerator.printSolutions(solutions);
+    }
+    
+    @Test
     public void c4H8CyclobutaneExample() {
         TargetMolecularSignature sig = new TargetMolecularSignature(1);
-        sig.add("[H]([C])", 8);
         sig.add("[C]([C][C][H][H])", 4);
+        sig.add("[H]([C])", 8);
         SignatureEnumerator enumerator = new SignatureEnumerator("C4H8", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
 //        Assert.assertEquals(1, solutions.size());
