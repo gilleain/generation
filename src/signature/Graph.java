@@ -1,6 +1,7 @@
 package signature;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.openscience.cdk.CDKConstants;
@@ -172,6 +173,9 @@ public class Graph {
     public void partition() {
         Signature signature = new Signature(this.atomContainer);
         this.orbits = signature.calculateOrbits();
+        
+        // XXX : fix this
+        Collections.reverse(orbits);
     }
 
     /**
