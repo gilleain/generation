@@ -7,7 +7,7 @@ import java.util.List;
 
 
 /**
- * A list of atom indices, and the signature string
+ * A list of atom indices, and the label of the orbit.
  * 
  * @author maclean
  *
@@ -16,12 +16,12 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     
     private List<Integer> atomIndices;
     
-    private String signatureString;
+    private String label;
     
     private int height;
     
-    public Orbit(String signatureString, int height) {
-        this.signatureString = signatureString;
+    public Orbit(String label, int height) {
+        this.label = label;
         this.atomIndices = new ArrayList<Integer>();
         this.height = height;
     }
@@ -31,7 +31,7 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     }
     
     public Object clone() {
-        Orbit o = new Orbit(this.signatureString, this.height);
+        Orbit o = new Orbit(this.label, this.height);
         for (Integer i : this.atomIndices) {
             o.atomIndices.add(new Integer(i));
         }
@@ -50,8 +50,8 @@ public class Orbit implements Iterable<Integer>, Cloneable {
         this.atomIndices.add(i);
     }
     
-    public boolean hasSignatureString(String otherSignatureString) {
-        return this.signatureString.equals(otherSignatureString);
+    public boolean hasLabel(String otherLabel) {
+        return this.label.equals(otherLabel);
     }
     
     public boolean isEmpty() {
@@ -68,11 +68,11 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     
     public String toString() {
         return Arrays.deepToString(atomIndices.toArray()) 
-                + " " + signatureString;
+                + " " + label;
     }
 
-    public String getSignatureString() {
-        return this.signatureString;
+    public String getLabel() {
+        return this.label;
     }
 
 }
