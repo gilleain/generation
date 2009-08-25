@@ -82,8 +82,16 @@ public class TestSignatureEnumerator {
         sig.add("[H]([C])", 6);
         SignatureEnumerator enumerator = new SignatureEnumerator("C2H6", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-//        Assert.assertEquals(1, solutions.size());
         TestSignatureEnumerator.printSolutions(solutions);
+        Assert.assertEquals(1, solutions.size());
+    }
+    
+    @Test
+    public void propaneExample() {
+        SignatureEnumerator enumerator = new SignatureEnumerator("C3H8");
+        List<IAtomContainer> solutions = enumerator.generateSolutions();
+        TestSignatureEnumerator.printSolutions(solutions);
+        Assert.assertEquals(1, solutions.size());
     }
     
     @Test
@@ -94,7 +102,7 @@ public class TestSignatureEnumerator {
         sig.add("[H]([C])", 8);
         SignatureEnumerator enumerator = new SignatureEnumerator("C3H8", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-//        Assert.assertEquals(1, solutions.size());
+        Assert.assertEquals(1, solutions.size());
         TestSignatureEnumerator.printSolutions(solutions);
     }
     
@@ -107,8 +115,8 @@ public class TestSignatureEnumerator {
         sig.add("[H]([C]([C][C][H]))", 2);
         SignatureEnumerator enumerator = new SignatureEnumerator("C3H8", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-//        Assert.assertEquals(1, solutions.size());
         TestSignatureEnumerator.printSolutions(solutions);
+        Assert.assertEquals(1, solutions.size());
     }
     
     @Test
@@ -118,8 +126,8 @@ public class TestSignatureEnumerator {
         sig.add("[H]([C])", 8);
         SignatureEnumerator enumerator = new SignatureEnumerator("C4H8", sig);
         List<IAtomContainer> solutions = enumerator.generateSolutions();
-//        Assert.assertEquals(1, solutions.size());
         TestSignatureEnumerator.printSolutions(solutions);
+        Assert.assertEquals(1, solutions.size());
     }
     
     @Test
