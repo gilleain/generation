@@ -140,6 +140,24 @@ public class TestCanonicalChecker {
     }
     
     @Test
+    public void testMultipleBonded() {
+        IAtomContainer ccc = AbstractSignatureTest.builder.newAtomContainer();
+        ccc.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ccc.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ccc.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ccc.addBond(0, 1, IBond.Order.SINGLE);
+        ccc.addBond(0, 2, IBond.Order.DOUBLE);
+        Assert.assertTrue(CanonicalChecker.isCanonicalComplete(ccc));
+        IAtomContainer cccN = AbstractSignatureTest.builder.newAtomContainer();
+        cccN.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        cccN.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        cccN.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        cccN.addBond(0, 1, IBond.Order.DOUBLE);
+        cccN.addBond(0, 2, IBond.Order.SINGLE);
+        Assert.assertFalse(CanonicalChecker.isCanonicalComplete(cccN));
+    }
+    
+    @Test
     public void testEthaneComplete() {
         IAtomContainer ethCanon = TestCanonicalChecker.makeCanonicalEthane();
         IAtomContainer ethNonCan = TestCanonicalChecker.makeNonCanonicalEthane();
