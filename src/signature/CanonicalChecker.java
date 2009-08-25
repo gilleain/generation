@@ -110,7 +110,7 @@ public class CanonicalChecker {
         }
 //        System.out.println(atomIndices);
         Permutor permutor = new Permutor(atomIndices.size());
-//        System.out.println("permuting " + atomIndices + " " + orbit.getSignatureString());
+//        System.out.println("permuting " + atomIndices + " " + orbit.getLabel());
         while (permutor.hasNext()) {
             int[] permutation = permutor.getNextPermutation();
             for (int j = 0; j < permutation.length; j++) {
@@ -139,18 +139,10 @@ public class CanonicalChecker {
      * @return
      */
     private static String asString(IAtomContainer container) {
-        ArrayList<String> bondString = new ArrayList<String>();
-        for (IBond bond : container.bonds()) {
-            int a1 = container.getAtomNumber(bond.getAtom(0));
-            int a2 = container.getAtomNumber(bond.getAtom(1));
-            if (a1 < a2) {
-                bondString.add(a1 + "-" + a2);
-            } else {
-                bondString.add(a2 + "-" + a1);
-            }
-        }
-        Collections.sort(bondString);
-        return bondString.toString(); 
+        int n = container.getAtomCount();
+        int[] identity = new int[n];
+        for (int i = 0; i < n; i++) { identity[i] = i; }
+        return CanonicalChecker.asString(container, identity);
     }
     
     /**
@@ -161,18 +153,19 @@ public class CanonicalChecker {
      * @return a string 'certificate' that can be checked for minimality
      */
     private static String asString(IAtomContainer container, int[] permutation){
-        ArrayList<String> bondString = new ArrayList<String>();
+        ArrayList<String> bondStrings = new ArrayList<String>();
         for (IBond bond : container.bonds()) {
             int a1 = permutation[container.getAtomNumber(bond.getAtom(0))];
             int a2 = permutation[container.getAtomNumber(bond.getAtom(1))];
+            String order = "(" + (bond.getOrder().ordinal() + 1) + ")";
             if (a1 < a2) {
-                bondString.add(a1 + "-" + a2);
+                bondStrings.add(a1 + "-" + a2 + order);
             } else {
-                bondString.add(a2 + "-" + a1);
+                bondStrings.add(a2 + "-" + a1 + order);
             }
         }
-        Collections.sort(bondString);
-        return bondString.toString();
+        Collections.sort(bondStrings);
+        return bondStrings.toString();
     }
 
 }
