@@ -40,8 +40,8 @@ public class TestDeterministicEnumerator {
             new DeterministicEnumerator(formulaString);
         List<IAtomContainer> results = enumerator.generate();
         int actual = results.size();
+        TestDeterministicEnumerator.printResults(results);
         Assert.assertEquals(expected, actual);
-        
     }
     
     @Test
