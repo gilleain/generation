@@ -134,7 +134,10 @@ public class Signature implements ISignature {
     
     private int MAX_COLOR;
 
-    private int NBCUR;
+    /**
+     * When canonically labelling, this the current value of the label
+     */
+    private int CURRENT_LABEL;
     
     private static final double VALENCE = 4;
     
@@ -758,7 +761,7 @@ public class Signature implements ISignature {
         for (int i = 0; i < SIZE; i++) {
             currentLabels[i] = -1;
         }
-        NBCUR = 0;
+        CURRENT_LABEL = 0;
         String s = layerPrintString(dag, LAB, L0);
 //        System.out.println("FRESH " + s);
         this.SCURRENT = s;
@@ -880,7 +883,7 @@ public class Signature implements ISignature {
         }
         
         if (currentLabels[current.atomNumber] < 0) {
-            currentLabels[current.atomNumber] = NBCUR++;
+            currentLabels[current.atomNumber] = CURRENT_LABEL++;
         }
         
         if (current.children.size() == 0) {
