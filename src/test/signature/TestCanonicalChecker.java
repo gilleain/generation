@@ -12,6 +12,26 @@ import signature.CanonicalChecker;
 
 public class TestCanonicalChecker {
     
+    public static IAtomContainer makeFaulonCanonicalEthane() {
+        IAtomContainer ethane = AbstractSignatureTest.builder.newAtomContainer();
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        ethane.addBond(0, 1, IBond.Order.SINGLE);
+        ethane.addBond(1, 2, IBond.Order.SINGLE);
+        ethane.addBond(1, 6, IBond.Order.SINGLE);
+        ethane.addBond(1, 7, IBond.Order.SINGLE);
+        ethane.addBond(2, 3, IBond.Order.SINGLE);
+        ethane.addBond(2, 4, IBond.Order.SINGLE);
+        ethane.addBond(2, 5, IBond.Order.SINGLE);
+        return ethane;
+    }
+    
     public static IAtomContainer makeCanonicalEthane() {
         IAtomContainer ethane = AbstractSignatureTest.builder.newAtomContainer();
         ethane.addAtom(AbstractSignatureTest.builder.newAtom("C"));

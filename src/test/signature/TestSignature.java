@@ -84,6 +84,16 @@ public class TestSignature {
     }
     
     @Test
+    public void testUnbonded() {
+        IAtomContainer unbonded = 
+            AbstractSignatureTest.builder.newAtomContainer();
+        unbonded.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        unbonded.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        Signature signature = new Signature(unbonded);
+        System.out.println(signature.toCanonicalSignatureString());
+    }
+    
+    @Test
     public void testCyclohexaneWithHydrogens() {
         IMolecule cyclohexane = MoleculeFactory.makeCyclohexane();
         for (int i = 0; i < 6; i++) {
