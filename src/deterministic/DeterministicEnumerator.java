@@ -172,6 +172,7 @@ public class DeterministicEnumerator {
                     if (copy.isSaturated(y)) {
                         System.out.println("removing from unsaturated list");
                         copy.removeFromUnsaturatedList(y);
+                        copy.removeFromOrbit(y);
                     }
                     saturateAtom(x, copy, s);
                 }
