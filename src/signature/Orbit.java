@@ -67,12 +67,16 @@ public class Orbit implements Iterable<Integer>, Cloneable {
     }
     
     public String toString() {
-        return Arrays.deepToString(atomIndices.toArray()) 
-                + " " + label;
+        return label + " " +
+                Arrays.deepToString(atomIndices.toArray()); 
     }
 
     public String getLabel() {
         return this.label;
+    }
+
+    public boolean contains(int i) {
+        return this.atomIndices.contains(i);
     }
 
 }
