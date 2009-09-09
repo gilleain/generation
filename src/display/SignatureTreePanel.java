@@ -182,8 +182,8 @@ public class SignatureTreePanel extends JPanel {
     
     public static void main(String[] args) {
         JFrame f = new JFrame();
-        String a ="[C]([C]([C][C][C])[C]([C][C]))"; 
-        String b = "[C]([C]([C])[C]([C])[C]([C])[C])";
+        String a = "[C]([C]([C,2][C]([C,1]([C,3])[C,4]([C,5])))[C]([C]([C,4][C,3])[C]([C,1][C,5]))[C,2]([C]([C,5][C,3])))"; 
+        String b = "[C]([C]([C]([C,1]([C,2])[C,3])[C]([C,4][C,5]))[C]([C,4]([C,2])[C,3]([C,5]))[C]([C]([C,1][C,2])[C,5]))";
         
         int width = 1200;
         int height = 350;
