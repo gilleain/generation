@@ -112,18 +112,23 @@ public class DeterministicEnumerator {
     
     private void enumerate(Graph g) {
         if (g.isConnected()) {
+            System.out.println("ADDING " + g + " is canon "+ g.isCanonical());
             this.handler.handle(g.getAtomContainer());
         } else {
             g.partition();
             Orbit o = g.getUnsaturatedOrbit();
             if (o == null) return;
             
-            ArrayList<Graph> orbitSolutions = new ArrayList<Graph>();
-            saturateOrbit(o, g, orbitSolutions);
-            for (Graph h : orbitSolutions) {
+            for (Graph h : saturateOrbit(o, g)) {
                 enumerate(h);
             }
         }
+    }
+    
+    private List<Graph> saturateOrbit(Orbit o, Graph g) {
+        ArrayList<Graph> orbitSolutions = new ArrayList<Graph>();
+        saturateOrbit(o, g, orbitSolutions);
+        return orbitSolutions;
     }
     
     private void saturateOrbit(Orbit o, Graph g, ArrayList<Graph> s) {
@@ -138,13 +143,16 @@ public class DeterministicEnumerator {
             o.remove(x); 
             g.removeFromUnsaturatedList(x);
             
-            ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
-            saturateAtom(x, g, atomSolutions);
-            
-            for (Graph h : atomSolutions) {
+            for (Graph h : saturateAtom(x, g)) {
                 saturateOrbit(o, h, s);
             }
         }
+    }
+    
+    private List<Graph> saturateAtom(int x, Graph g) {
+        ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
+        saturateAtom(x, g, atomSolutions);
+        return atomSolutions;
     }
     
     private void saturateAtom(int x, Graph g, List<Graph> s) {
