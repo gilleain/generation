@@ -34,7 +34,7 @@ public class TargetMolecularSignature {
     private int[][] lookupTable;
     
     /**
-     * Make a target molecular formula from only a formula.
+     * Make a target molecular signature from only a formula.
      * 
      * @param formula the elements and counts to use
      */
