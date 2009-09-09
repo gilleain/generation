@@ -43,6 +43,8 @@ public class Graph {
     
     private ArrayList<Integer> unsaturatedAtoms;
     
+    private ArrayList<Boolean> orbitUnsaturatedFlags;
+    
     /**
      * Wrap an atom container in a graph, to manage the fragments
      * 
@@ -53,7 +55,9 @@ public class Graph {
         this.targets = new ArrayList<Integer>();
         this.orbits = new ArrayList<Orbit>();
         this.unsaturatedAtoms = new ArrayList<Integer>();
+        this.orbitUnsaturatedFlags = new ArrayList<Boolean>();
         this.determineUnsaturated();
+        this.determineOrbitUnsaturated();
     }
     
     /**
@@ -72,7 +76,9 @@ public class Graph {
             for (Orbit o : g.orbits) {
                 this.orbits.add((Orbit)o.clone());
             }
-            this.unsaturatedAtoms = (ArrayList<Integer>) g.unsaturatedAtoms.clone(); 
+            this.unsaturatedAtoms = (ArrayList<Integer>) g.unsaturatedAtoms.clone();
+            this.orbitUnsaturatedFlags = 
+                (ArrayList<Boolean>) g.orbitUnsaturatedFlags.clone();
         } catch (CloneNotSupportedException c) {
             
         }
@@ -188,6 +194,15 @@ public class Graph {
         this.unsaturatedAtoms.remove(new Integer(i));
     }
     
+    public void removeFromOrbit(int i) {
+        for (Orbit o : this.orbits) {
+            if (o.contains(i)) {
+                o.remove(i);
+                return;
+            }
+        }
+    }
+    
     /**
      * Determine which atoms are unsaturated.
      */
@@ -201,6 +216,21 @@ public class Graph {
                 }
             } catch (CDKException c) {
                 c.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * For each orbit, determine if it is an unsaturated one, or not.
+     */
+    public void determineOrbitUnsaturated() {
+        for (Orbit o : this.orbits) {
+            if (o.isEmpty()) continue;
+            int i = o.getFirstAtom();
+            if (isSaturated(i)) {
+                this.orbitUnsaturatedFlags.add(true);
+            } else {
+                this.orbitUnsaturatedFlags.add(false);
             }
         }
     }
@@ -246,10 +276,18 @@ public class Graph {
      * 
      * @return a list of atom indices
      */
-    public ArrayList<Integer> unsaturatedAtoms() {
-        return this.unsaturatedAtoms;
+    public List<Integer> unsaturatedAtoms() {
+//        return this.unsaturatedAtoms;
+        List<Integer> unsaturated = new ArrayList<Integer>();
+        int i = 0;
+        for (Orbit o : this.orbits) {
+            if (o.isEmpty()) continue;
+            unsaturated.add(o.getFirstAtom());
+            i++;
+        }
+        return unsaturated;
     }
-
+    
     /**
      * Add a bond between these two atoms.
      * 
