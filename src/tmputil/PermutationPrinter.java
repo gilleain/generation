@@ -99,6 +99,17 @@ public class PermutationPrinter {
         }
     }
     
+    public static IAtomContainer makeCNO() {
+        IAtomContainer container = AbstractSignatureTest.builder.newAtomContainer();
+        container.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("N"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("O"));
+        container.addBond(0, 1, IBond.Order.SINGLE);
+        container.addBond(0, 2, IBond.Order.SINGLE);
+
+        return container;
+    }
+    
     public static void main(String[] args) {
 //        String smiles = "c1cccc1";
         File directory = 
@@ -109,16 +120,17 @@ public class PermutationPrinter {
 //            PermutationPrinter.printPermutations(smiles, directory);
 //            IAtomContainer container = TestCanonicalChecker.makeCanonicalEthane();
 //            IAtomContainer container = TestCanonicalChecker.makeFaulonCanonicalEthane();
-            IAtomContainer container = AbstractSignatureTest.builder.newAtomContainer();
-            container.addAtom(AbstractSignatureTest.builder.newAtom("C"));
-            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-            container.addBond(0, 1, IBond.Order.SINGLE);
-            container.addBond(0, 2, IBond.Order.SINGLE);
-            container.addBond(0, 3, IBond.Order.SINGLE);
-            container.addBond(0, 4, IBond.Order.SINGLE);
+//            IAtomContainer container = AbstractSignatureTest.builder.newAtomContainer();
+            IAtomContainer container = PermutationPrinter.makeCNO();
+//            container.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+//            container.addBond(0, 1, IBond.Order.SINGLE);
+//            container.addBond(0, 2, IBond.Order.SINGLE);
+//            container.addBond(0, 3, IBond.Order.SINGLE);
+//            container.addBond(0, 4, IBond.Order.SINGLE);
             PermutationPrinter.printPermutations(container, directory);
 //            PermutationPrinter.checkPermutations(container);
 //            PermutationPrinter.checkPermutations(ch4);
