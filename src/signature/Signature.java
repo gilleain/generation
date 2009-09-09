@@ -794,7 +794,7 @@ public class Signature implements ISignature {
         for (int i = 0; i < SIZE; i++) {
             if (LAB[i] > -1 && OCC[i] < 2) L0--;
         }
-        LL = L0 + 1;
+        LARGEST_LABEL = L0 + 1;
         
         StringBuffer sb = new StringBuffer();
         printString(sb, null, root, new ArrayList<Edge>(), LAB, OCC, 0);
@@ -830,8 +830,8 @@ public class Signature implements ISignature {
         }
     }
 
-    // TODO either rename, or pass into the method, or get rid of, this.
-    int LL = -1;
+    // TODO either pass into the method, or get rid of, this.
+    int LARGEST_LABEL = -1;
     
     /**
      * Recursively convert the DAG into a string, putting the contents into
@@ -855,7 +855,7 @@ public class Signature implements ISignature {
             // if it SHOULD have a number, but doesn't, add one
             if (!current.element.contains(",")) {
                 if (LAB[current.atomNumber] < 0) {
-                    LAB[current.atomNumber] = (++LL);
+                    LAB[current.atomNumber] = (++LARGEST_LABEL);
                 }
                 current.element = "[";
                 current.element += getType(current);
