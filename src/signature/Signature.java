@@ -168,8 +168,7 @@ public class Signature implements ISignature {
      * @return the signature of this atom
      */
     public String forAtom(int atomNumber) {
-        signatureAtom(atomNumber, SIZE);
-        return getBestSignatureString();
+        return this.forAtom(atomNumber, this.SIZE);
     }
     
     /**
@@ -263,8 +262,7 @@ public class Signature implements ISignature {
             s = getBestSignatureString();   // XXX TODO
 //            System.out.println(String.format("%3d %s", atomNumber, s));
             if (orbitElements[atomNumber] == null) {
-                OrbitElement orbitElement = new OrbitElement(atomNumber, s);
-                orbitElements[atomNumber] = orbitElement;
+                orbitElements[atomNumber] = new OrbitElement(atomNumber, s);
             } else {
                 orbitElements[atomNumber].atomNumber = atomNumber;
                 orbitElements[atomNumber].signatureString = s;
@@ -311,11 +309,10 @@ public class Signature implements ISignature {
      * @return a list of Orbit instances, that partition the atoms
      */
     public List<Orbit> calculateOrbits() {
-        OrbitElement[] orbitElements = this.calculateOrbitElements();
-        List<Orbit> orbits = new ArrayList<Orbit>();
         int index = -1;
         Orbit currentOrbit = null;
-        for (OrbitElement element : orbitElements) {
+        List<Orbit> orbits = new ArrayList<Orbit>();
+        for (OrbitElement element : this.calculateOrbitElements()) {
             if (element.orbitIndex != index || currentOrbit == null) {
                 currentOrbit = new Orbit(element.signatureString, element.height);
                 orbits.add(currentOrbit);
@@ -366,20 +363,17 @@ public class Signature implements ISignature {
         if (h > this.SIZE + 1) h = SIZE + 1;
         DAG dag = new DAG(this.container, atomNumber, h);
         
-        int[] LABEL = new int[SIZE];
         OCCUR = new int[SIZE];
         COLOR = new int[SIZE];
-        double[] INVAR = new double[SIZE];
         maxLabels = new int[SIZE];
         currentLabels = new int[SIZE];
+        int[] LABEL = new int[SIZE];
         for (int i = 0; i < SIZE; i++) {
             OCCUR[i] = COLOR[i] = 0;
-            INVAR[i] = 0;
             LABEL[i] = maxLabels[i] = currentLabels[i] = -1;
         }
         
-        int[] intInv = initialInvariants(dag, OCCUR, COLOR);
-        for (int i = 0; i < intInv.length; i++) { INVAR[i] = intInv[i]; }
+        double[] INVAR = initialInvariants(dag, OCCUR, COLOR);
         
         computeLabelInvariant(dag, h, LABEL, OCCUR, INVAR, 0);
         return SMAX;
@@ -391,9 +385,8 @@ public class Signature implements ISignature {
      * @param dag the DAG
      * @param OCC the occurrences
      * @param COL the colors (TODO : difference between colors and labels?)
-     * @param INV the invariants
      */
-    private int[] initialInvariants(DAG dag, int[] OCC, int[] COL) {
+    private double[] initialInvariants(DAG dag, int[] OCC, int[] COL) {
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -422,7 +415,11 @@ public class Signature implements ISignature {
             }
             l++;
         }
-        return OCC;
+        double[] invariants = new double[this.SIZE];
+        for (int i = 0; i < this.SIZE; i++) {
+            invariants[i] = (double) OCC[i];
+        }
+        return invariants;
     }
 
 
