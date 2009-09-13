@@ -7,3 +7,5 @@ bin
 *.txt
 *.out
 *.py
+*.swp
+*.pyc
