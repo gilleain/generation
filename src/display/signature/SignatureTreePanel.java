@@ -1,4 +1,4 @@
-package display;
+package display.signature;
 
 import java.awt.Color;
 import java.awt.Dimension;

@@ -1,4 +1,4 @@
-package signature;
+package utilities;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
+
 
 /**
  * NOTE This is meant to replace the CDK's existing ACAP...

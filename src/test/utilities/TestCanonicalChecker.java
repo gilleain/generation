@@ -1,4 +1,4 @@
-package test.signature;
+package test.utilities;
 
 import java.util.Arrays;
 
@@ -7,8 +7,9 @@ import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 
-import signature.AtomContainerAtomPermutor;
-import signature.CanonicalChecker;
+import test.signature.AbstractSignatureTest;
+import utilities.AtomContainerAtomPermutor;
+import utilities.CanonicalChecker;
 
 public class TestCanonicalChecker {
     

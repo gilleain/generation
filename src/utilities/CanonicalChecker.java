@@ -1,4 +1,4 @@
-package signature;
+package utilities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,9 @@ import java.util.List;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
+
+import signature.Orbit;
+import signature.Signature;
 
 /**
  * <p>Use this tool to determine if an atom container is the <i>canonical</i>
@@ -30,7 +33,7 @@ public class CanonicalChecker {
     
     public static boolean isCanonicalComplete(IAtomContainer atomContainer) {
         String initialString = CanonicalChecker.asString(atomContainer);
-//        System.out.println("initial : " + initialString);
+        System.out.println("initial : " + initialString);
         if (initialString.equals("")) return true;
         for (Orbit orbit : CanonicalChecker.getSimpleOrbits(atomContainer)) {
 //            System.out.println("Checking orbit " + orbit);
@@ -108,7 +111,6 @@ public class CanonicalChecker {
         for (int i = 0; i < fullPermutation.length; i++) {
             fullPermutation[i] = i;
         }
-//        System.out.println(atomIndices);
         Permutor permutor = new Permutor(atomIndices.size());
 //        System.out.println("permuting " + atomIndices + " " + orbit.getLabel());
         while (permutor.hasNext()) {
@@ -157,14 +159,18 @@ public class CanonicalChecker {
         for (IBond bond : container.bonds()) {
             int a1 = permutation[container.getAtomNumber(bond.getAtom(0))];
             int a2 = permutation[container.getAtomNumber(bond.getAtom(1))];
-            String order = "(" + (bond.getOrder().ordinal() + 1) + ")";
+//            IBond permutedBond  = 
+//                container.getBond(container.getAtom(a1), container.getAtom(a2));
+//            int o = permutedBond.getOrder().ordinal() + 1;
+            int o = bond.getOrder().ordinal() + 1;
+            String order = "(" + o + ")";
             if (a1 < a2) {
                 bondStrings.add(a1 + "-" + a2 + order);
             } else {
                 bondStrings.add(a2 + "-" + a1 + order);
             }
         }
-        Collections.sort(bondStrings);
+//        Collections.sort(bondStrings);
         return bondStrings.toString();
     }
 

@@ -14,6 +14,8 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
+import utilities.CanonicalChecker;
+
 /**
  * The graph maintains its underlying atom container as well as a list of the
  * atoms that can be saturated and a mapping of atoms to target atomic 
@@ -181,7 +183,7 @@ public class Graph {
         this.orbits = signature.calculateOrbits();
         
         // XXX : fix this
-        Collections.reverse(orbits);
+//        Collections.reverse(orbits);
     }
 
     /**

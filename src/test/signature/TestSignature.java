@@ -12,9 +12,10 @@ import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.io.MDLWriter;
 import org.openscience.cdk.templates.MoleculeFactory;
 
-import signature.AtomContainerAtomPermutor;
+import signature.Orbit;
 import signature.OrbitElement;
 import signature.Signature;
+import utilities.AtomContainerAtomPermutor;
 
 public class TestSignature {
     
@@ -83,6 +84,13 @@ public class TestSignature {
         }
     }
     
+    public static void printOrbits(IAtomContainer container) {
+        Signature sig = new Signature(container);
+        for (Orbit o : sig.calculateOrbits()) {
+            System.out.println(o);
+        }
+    }
+    
     @Test
     public void testUnbonded() {
         IAtomContainer unbonded = 
@@ -106,6 +114,22 @@ public class TestSignature {
         
         String actual = signature.toCanonicalSignatureString();
         Assert.assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testMethaneOrbits() {
+        IMolecule methane = AbstractSignatureTest.builder.newMolecule();
+        methane.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        methane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        methane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        methane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        methane.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        methane.addBond(0, 1, IBond.Order.SINGLE);
+        methane.addBond(0, 2, IBond.Order.SINGLE);
+        methane.addBond(0, 3, IBond.Order.SINGLE);
+        methane.addBond(0, 4, IBond.Order.SINGLE);
+        
+        TestSignature.printOrbits(methane);
     }
     
     @Test

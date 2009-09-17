@@ -12,10 +12,10 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 
-import signature.AtomContainerAtomPermutor;
 import signature.Signature;
 import test.signature.AbstractSignatureTest;
-import test.signature.TestCanonicalChecker;
+import test.utilities.TestCanonicalChecker;
+import utilities.AtomContainerAtomPermutor;
 
 public class PermutationPrinter {
     
@@ -110,6 +110,21 @@ public class PermutationPrinter {
         return container;
     }
     
+    public static IAtomContainer makeMethane() {
+        IAtomContainer container = 
+            AbstractSignatureTest.builder.newAtomContainer();
+        container.addAtom(AbstractSignatureTest.builder.newAtom("C"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
+        container.addBond(0, 1, IBond.Order.SINGLE);
+        container.addBond(0, 2, IBond.Order.SINGLE);
+        container.addBond(0, 3, IBond.Order.SINGLE);
+        container.addBond(0, 4, IBond.Order.SINGLE);
+        return container;
+    }
+    
     public static void main(String[] args) {
 //        String smiles = "c1cccc1";
         File directory = 
@@ -120,17 +135,9 @@ public class PermutationPrinter {
 //            PermutationPrinter.printPermutations(smiles, directory);
 //            IAtomContainer container = TestCanonicalChecker.makeCanonicalEthane();
 //            IAtomContainer container = TestCanonicalChecker.makeFaulonCanonicalEthane();
-//            IAtomContainer container = AbstractSignatureTest.builder.newAtomContainer();
-            IAtomContainer container = PermutationPrinter.makeCNO();
-//            container.addAtom(AbstractSignatureTest.builder.newAtom("C"));
-//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-//            container.addAtom(AbstractSignatureTest.builder.newAtom("H"));
-//            container.addBond(0, 1, IBond.Order.SINGLE);
-//            container.addBond(0, 2, IBond.Order.SINGLE);
-//            container.addBond(0, 3, IBond.Order.SINGLE);
-//            container.addBond(0, 4, IBond.Order.SINGLE);
+
+//            IAtomContainer container = PermutationPrinter.makeCNO();
+            IAtomContainer container = PermutationPrinter.makeMethane();
             PermutationPrinter.printPermutations(container, directory);
 //            PermutationPrinter.checkPermutations(container);
 //            PermutationPrinter.checkPermutations(ch4);

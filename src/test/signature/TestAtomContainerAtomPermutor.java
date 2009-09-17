@@ -8,7 +8,7 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
-import signature.AtomContainerAtomPermutor;
+import utilities.AtomContainerAtomPermutor;
 
 public class TestAtomContainerAtomPermutor {
     

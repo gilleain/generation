@@ -17,7 +17,7 @@ import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 
 import display.DisplayPanel;
-import display.SignatureTreePanel;
+import display.signature.SignatureTreePanel;
 
 public class DisplaySmilesAndSignatures extends JFrame {
     
