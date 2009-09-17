@@ -181,7 +181,7 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
             OCCUR[i] = COLOR[i] = 0;
             LABEL[i] = maxLabels[i] = currentLabels[i] = -1;
         }
-        double[] invariants = this.initialInvariants(container);
+        double[] invariants = this.initialInvariants();
         computeLabelInvariant(h, LABEL, OCCUR, invariants, 0);
     }
     
@@ -232,9 +232,8 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
     /**
      * Determine the initial invariants using the parents of each vertex.
      * 
-     * @param dag the DAG
      */
-    private double[] initialInvariants(IAtomContainer container) {
+    private double[] initialInvariants() {
         
         /* (coment copied from c source)
          * vertices with degree 1 have OCC = 1 
@@ -242,7 +241,6 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
          * vertices occurring alone with more than one parent have OCC += 1 
          * all other vertices have OCC += (number of parents) each time they occur
          */
-        int l = 0;
         for (ArrayList<Vertex> layer : this) {
             int parent = 0;
             int k = 0;
@@ -261,7 +259,6 @@ public class DAG implements Iterable<ArrayList<Vertex>> {
                     else            COLOR[vertex.atomNumber] += j;
                 }
             }
-            l++;
         }
         double[] invariants = new double[this.SIZE];
         for (int i = 0; i < this.SIZE; i++) {
