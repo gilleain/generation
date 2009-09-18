@@ -13,7 +13,6 @@ import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
-import signature.Graph;
 import signature.Orbit;
 
 /**
@@ -90,7 +89,7 @@ public class DeterministicEnumerator {
      * Create the structures, passing each one to the result handler.
      */
     public void generateToHandler() {
-        Graph initialGraph = new Graph(this.makeAtomContainerFromFormula());
+        SimpleGraph initialGraph = new SimpleGraph(this.makeAtomContainerFromFormula());
         this.enumerate(initialGraph);
     }
     
@@ -106,11 +105,11 @@ public class DeterministicEnumerator {
                 results.add(result);
             }
         };
-        this.enumerate(new Graph(this.makeAtomContainerFromFormula()));
+        this.enumerate(new SimpleGraph(this.makeAtomContainerFromFormula()));
         return results;
     }
     
-    private void enumerate(Graph g) {
+    private void enumerate(SimpleGraph g) {
         if (g.isConnected()) {
             System.out.println("ADDING " + g + " is canon "+ g.isCanonical());
             this.handler.handle(g.getAtomContainer());
@@ -119,19 +118,20 @@ public class DeterministicEnumerator {
             Orbit o = g.getUnsaturatedOrbit();
             if (o == null) return;
             
-            for (Graph h : saturateOrbit(o, g)) {
+            for (SimpleGraph h : saturateOrbit(o, g)) {
                 enumerate(h);
             }
         }
     }
     
-    private List<Graph> saturateOrbit(Orbit o, Graph g) {
-        ArrayList<Graph> orbitSolutions = new ArrayList<Graph>();
+    private List<SimpleGraph> saturateOrbit(Orbit o, SimpleGraph g) {
+        ArrayList<SimpleGraph> orbitSolutions = new ArrayList<SimpleGraph>();
         saturateOrbit(o, g, orbitSolutions);
         return orbitSolutions;
     }
     
-    private void saturateOrbit(Orbit o, Graph g, ArrayList<Graph> s) {
+    private void saturateOrbit(Orbit o, SimpleGraph g, ArrayList<SimpleGraph> s) {
+        System.out.println("Saturating orbit : " + o);
         if (o == null || o.isEmpty()) {
             System.out.println("orbit empty");
             s.add(g);
@@ -143,28 +143,29 @@ public class DeterministicEnumerator {
             o.remove(x); 
             g.removeFromUnsaturatedList(x);
             
-            for (Graph h : saturateAtom(x, g)) {
+            for (SimpleGraph h : saturateAtom(x, g)) {
                 saturateOrbit(o, h, s);
             }
         }
     }
     
-    private List<Graph> saturateAtom(int x, Graph g) {
-        ArrayList<Graph> atomSolutions = new ArrayList<Graph>();
+    private List<SimpleGraph> saturateAtom(int x, SimpleGraph g) {
+        ArrayList<SimpleGraph> atomSolutions = new ArrayList<SimpleGraph>();
         saturateAtom(x, g, atomSolutions);
         return atomSolutions;
     }
     
-    private void saturateAtom(int x, Graph g, List<Graph> s) {
+    private void saturateAtom(int x, SimpleGraph g, List<SimpleGraph> s) {
         System.out.println("saturating atom " + x + " in " + g);
         if (g.isSaturated(x)) {
             System.out.println(x + " is already saturated");
             s.add(g);
             return;
         } else {
-            System.out.println("trying all of " + g.unsaturatedAtoms());
-            for (int y : g.unsaturatedAtoms()) {
-                Graph copy = new Graph(g);
+            List<Integer> unsaturatedAtoms = g.unsaturatedAtoms();
+            System.out.println("trying all of " + unsaturatedAtoms);
+            for (int y : unsaturatedAtoms) {
+                SimpleGraph copy = new SimpleGraph(g);
                 copy.bond(x, y);
                 
                 if (check(copy, x, y)) {
@@ -174,13 +175,14 @@ public class DeterministicEnumerator {
                         copy.removeFromUnsaturatedList(y);
                         copy.removeFromOrbit(y);
                     }
+                    copy.partition();
                     saturateAtom(x, copy, s);
                 }
             }
         }
     }
     
-    private boolean check(Graph copy, int x, int y) {
+    private boolean check(SimpleGraph copy, int x, int y) {
         boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
         if (!noSubgraphs) {
             System.out.println("saturated subgraphs");
