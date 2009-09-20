@@ -53,5 +53,10 @@ public class TestDeterministicEnumerator {
     public void testEthane() {
         TestDeterministicEnumerator.testFormula("C2H6", 1);
     }
+    
+    @Test
+    public void testPropane() {
+        TestDeterministicEnumerator.testFormula("C3H8", 1);
+    }
 
 }
