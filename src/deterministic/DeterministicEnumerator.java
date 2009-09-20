@@ -111,10 +111,8 @@ public class DeterministicEnumerator {
     
     private void enumerate(SimpleGraph g) {
         if (g.isConnected()) {
-            System.out.println("ADDING " + g + " is canon "+ g.isCanonical());
             this.handler.handle(g.getAtomContainer());
         } else {
-            g.partition();
             Orbit o = g.getUnsaturatedOrbit();
             if (o == null) return;
             
@@ -137,11 +135,8 @@ public class DeterministicEnumerator {
             s.add(g);
         } else {
             int x = o.getFirstAtom();
+            o.remove(x);
             System.out.println("first atom " + x);
-            
-            // TODO : should this happen before saturation, or after?!
-            o.remove(x); 
-            g.removeFromUnsaturatedList(x);
             
             for (SimpleGraph h : saturateAtom(x, g)) {
                 saturateOrbit(o, h, s);
@@ -165,36 +160,15 @@ public class DeterministicEnumerator {
             List<Integer> unsaturatedAtoms = g.unsaturatedAtoms();
             System.out.println("trying all of " + unsaturatedAtoms);
             for (int y : unsaturatedAtoms) {
+                if (x == y) continue;
                 SimpleGraph copy = new SimpleGraph(g);
                 copy.bond(x, y);
                 
-                if (check(copy, x, y)) {
+                if (copy.check(x, y)) {
                     System.out.println("passed all tests");
-                    if (copy.isSaturated(y)) {
-                        System.out.println("removing from unsaturated list");
-                        copy.removeFromUnsaturatedList(y);
-                        copy.removeFromOrbit(y);
-                    }
-                    copy.partition();
                     saturateAtom(x, copy, s);
                 }
             }
         }
     }
-    
-    private boolean check(SimpleGraph copy, int x, int y) {
-        boolean noSubgraphs = copy.noSaturatedSubgraphs(x);
-        if (!noSubgraphs) {
-            System.out.println("saturated subgraphs");
-            return false;
-        }
-        boolean canon = copy.isCanonical();
-        if (!canon) {
-            System.out.println("!canon");
-//            continue;
-            return false;
-        }
-        return true;
-    }
-    
 }

@@ -9,6 +9,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.PathTools;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.tools.SaturationChecker;
@@ -36,6 +37,20 @@ public class Util {
         return instance;
     }
     
+    /**
+     * Check for saturated subgraphs, using only the connected component that
+     * contains the atom x. The reasoning is: if the atom x has just been
+     * bonded to another atom, it is the only one that can have contributed
+     * to a saturated subgraph.
+     * 
+     * The alternative is that the most recent bond made a complete (connected)
+     * and saturated graph - that is, a solution. In that case, the method also
+     * returns true, as this is not really a saturated 'sub' graph.
+     * 
+     * @param x an atom index
+     * @param container IAtomContainer
+     * @return true if this atom is not part of a saturated subgraph
+     */
     public static boolean noSaturatedSubgraphs(
             int atomNumber, IAtomContainer container) {
         IMolecule subGraph = 
@@ -65,13 +80,15 @@ public class Util {
     public static boolean isSaturated(IAtom atom, IAtomContainer container) 
         throws CDKException {
         // TODO (todo properly, that is)
-        if (atom.getSymbol().equals("H") 
-                && container.getConnectedBondsCount(atom) == 1) {
+        int totalOrder = 0;
+        for (IBond bond : container.getConnectedBondsList(atom)) {
+            totalOrder += bond.getOrder().ordinal() + 1;
+        }
+        if (atom.getSymbol().equals("H") && totalOrder >= 1) {
             return true;
         }
         
-        if (atom.getSymbol().equals("C") 
-                && container.getConnectedBondsCount(atom) == 4) {
+        if (atom.getSymbol().equals("C") && totalOrder >= 4) {
             return true;
         }
         
