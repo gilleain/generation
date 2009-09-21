@@ -48,7 +48,7 @@ public class SimpleGraph {
 
         }
     }
-
+    
     public IAtomContainer getAtomContainer() {
         return this.atomContainer;
     }
