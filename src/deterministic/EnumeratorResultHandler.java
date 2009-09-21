@@ -20,7 +20,7 @@ import org.openscience.cdk.interfaces.IAtomContainer;
  * this handler will just print the smiles string straight to standard out, but
  * more complex implementations could store the structure to a database,
  * draw a diagram, and so on. Note that the 
- * {@link DefaultEnumeratorResultHandler} has the same behviour as the simple
+ * {@link DefaultEnumeratorResultHandler} has the same behaviour as the simple
  * example defined above.
  * 
  * @author maclean
