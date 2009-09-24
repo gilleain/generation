@@ -172,7 +172,7 @@ public class SimpleGraph {
             sb.append(atom.getSymbol()).append(i);
             i++;
         }
-        sb.append(" [ ");
+        sb.append(" { ");
         for (IBond bond : this.atomContainer.bonds()) {
             int l = this.atomContainer.getAtomNumber(bond.getAtom(0));
             int r = this.atomContainer.getAtomNumber(bond.getAtom(1));
@@ -182,7 +182,7 @@ public class SimpleGraph {
                 sb.append(r).append("-").append(l).append(" ");
             }
         }
-        sb.append("] ");
+        sb.append("} ");
 //        for (Orbit o : orbits) {
 //            sb.append(o.toString()).append(",");
 //        }

@@ -19,13 +19,13 @@ public class SignatureTreePanel extends JPanel {
     
     public Node root;
     
-    public int depth;
+    public int maxDepth;
     
     public String s;
     
     public class TreeLayout {
         
-        public int leafCount = 0;
+        public int totalLeafCount = 0;
         
         public int xSep;
         
@@ -34,15 +34,15 @@ public class SignatureTreePanel extends JPanel {
         public void layoutTree(Node root) {
             int leafCount = root.countLeaves();
             this.xSep = width / (leafCount + 1);
-            this.ySep = height / (depth + 1);
+            this.ySep = height / (maxDepth + 1);
             layout(root);
         }
         
         public int layout(Node node) {
             node.y  = node.depth * ySep;
             if (node.isLeaf()) {
-                leafCount += 1;
-                node.x = leafCount * xSep;
+                totalLeafCount += 1;
+                node.x = totalLeafCount * xSep;
                 return node.x;
             } else {
                 int min = 0;
@@ -121,7 +121,7 @@ public class SignatureTreePanel extends JPanel {
             if (c == '(') {
                 parent = current;
                 d++;
-                if (d > depth) depth = d;
+                if (d > maxDepth) maxDepth = d;
             } else if (c == ')') {
                 parent = parent.parent;
                 d--;

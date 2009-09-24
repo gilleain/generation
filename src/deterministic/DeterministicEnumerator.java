@@ -41,6 +41,11 @@ public class DeterministicEnumerator {
     private EnumeratorResultHandler handler;
     
     /**
+     * Listener for debugging/visualisation purposes.
+     */
+    private BondCreationListener bondCreationListener;
+    
+    /**
      * Start from just the formula string.
      * 
      * @param formulaString a formula string like "C4H8"
@@ -51,6 +56,10 @@ public class DeterministicEnumerator {
                     formulaString, this.builder);
         
         this.handler = new DefaultEnumeratorResultHandler();
+    }
+    
+    public void setBondCreationListener(BondCreationListener listener) {
+        this.bondCreationListener = listener;
     }
     
     /**
@@ -89,7 +98,8 @@ public class DeterministicEnumerator {
      * Create the structures, passing each one to the result handler.
      */
     public void generateToHandler() {
-        SimpleGraph initialGraph = new SimpleGraph(this.makeAtomContainerFromFormula());
+        SimpleGraph initialGraph = new SimpleGraph(
+                this.makeAtomContainerFromFormula());
         this.enumerate(initialGraph);
     }
     
@@ -166,6 +176,12 @@ public class DeterministicEnumerator {
                 
                 if (copy.check(x, y)) {
                     System.out.println("passed all tests");
+                    if (this.bondCreationListener != null) {
+                        BondCreationEvent b = new BondCreationEvent();
+                        b.parent = g;
+                        b.child = copy;
+                        this.bondCreationListener.bondAdded(b);
+                    }
                     saturateAtom(x, copy, s);
                 }
             }
