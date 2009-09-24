@@ -177,10 +177,11 @@ public class SimpleGraph {
             int l = this.atomContainer.getAtomNumber(bond.getAtom(0));
             int r = this.atomContainer.getAtomNumber(bond.getAtom(1));
             if (l < r) {
-                sb.append(l).append("-").append(r).append(" ");
+                sb.append(l).append("-").append(r);
             } else {
-                sb.append(r).append("-").append(l).append(" ");
+                sb.append(r).append("-").append(l);
             }
+            sb.append("(").append(bond.getOrder().ordinal()).append(")").append(" ");
         }
         sb.append("} ");
 //        for (Orbit o : orbits) {
