@@ -30,9 +30,9 @@ public class EnumeratorDebugger {
         
         outlineTreePanel.addMouseListener(outlineTreePanel);
         
+        enumerator.generate();
         frame.setSize(800, 800);
         frame.setVisible(true);
-        enumerator.generate();
     }
     
     public static void main(String[] args) {

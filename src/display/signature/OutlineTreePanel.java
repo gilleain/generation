@@ -51,6 +51,7 @@ public class OutlineTreePanel extends JPanel
         SimpleGraph g = this.getGraphAt(e.getX(), e.getY());
         if (g != null) {
             graphSelectionListener.graphSelected(new GraphSelectionEvent(g));
+            this.repaint();
         }
     }
 

@@ -120,6 +120,8 @@ public class OutlineTree {
     
     private boolean isDirty = false;
     
+    private GraphicalNode selected;
+    
     public OutlineTree() {
         nodeList = new ArrayList<GraphicalNode>();
     }
@@ -190,14 +192,21 @@ public class OutlineTree {
                     child.x + xOffset, child.y + yOffset);
             draw(child, g);
         }
-        g.drawOval((current.x - nodeWidth/2) + xOffset, 
-                   (current.y - nodeWidth/2) + yOffset,
-                   nodeWidth, nodeHeight);
+        if (current == selected) {
+            g.fillOval((current.x - nodeWidth/2) + xOffset, 
+                    (current.y - nodeWidth/2) + yOffset,
+                    nodeWidth, nodeHeight);
+        } else {
+            g.drawOval((current.x - nodeWidth/2) + xOffset, 
+                       (current.y - nodeWidth/2) + yOffset,
+                       nodeWidth, nodeHeight);
+        }
     }
 
     public SimpleGraph getGraphAt(int x, int y) {
         for (GraphicalNode node : this.nodeList) {
             if (within(node, x, y)) {
+                selected = node;
                 return node.graph;
             }
         }
