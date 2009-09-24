@@ -53,6 +53,7 @@ public class OutlineTreePanel extends JPanel
             graphSelectionListener.graphSelected(new GraphSelectionEvent(g));
             this.repaint();
         }
+        System.out.println(this.tree);
     }
 
     public void mouseEntered(MouseEvent e) {

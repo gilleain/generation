@@ -36,7 +36,7 @@ public class EnumeratorDebugger {
     }
     
     public static void main(String[] args) {
-        String formula = "C2H8";
+        String formula = "C2H6";
         
         new EnumeratorDebugger(formula);
     }

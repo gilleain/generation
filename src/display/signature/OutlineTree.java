@@ -214,9 +214,28 @@ public class OutlineTree {
     }
     
     private boolean within(GraphicalNode node, int x, int y) {
-        int deltaX = nodeWidth;
-        int deltaY = nodeHeight;
-        return Math.abs(node.x - x) < deltaX || Math.abs(node.y - y) < deltaY;
+        int r = Math.max(nodeWidth, nodeHeight) * 3;
+        double d = Math.sqrt(
+                Math.pow((node.x - x), 2) + Math.pow((node.y - y), 2));
+//        System.out.println("d=" + d + " r=" + r + "x=" + x + "y=" + y + node);
+        return d < r;
+    }
+    
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        this.toString(this.root, buffer);
+        return buffer.toString();
+    }
+    
+    public void toString(GraphicalNode node, StringBuffer buffer) {
+        for (GraphicalNode child : node.children) {
+            this.toString(child, buffer);
+        }
+        if (node == selected) {
+            buffer.append("*" + node.graph + " (" + node.x + ", " + node.y + ")\n");
+        } else {
+            buffer.append(node.graph + " (" + node.x + ", " + node.y + ")\n");
+        }
     }
     
 }
