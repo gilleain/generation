@@ -36,6 +36,11 @@ public class DeterministicEnumerator {
     private IMolecularFormula formula;
     
     /**
+     * The initial container, possibly created from the formula
+     */
+    private IAtomContainer initialContainer;
+    
+    /**
      * A class that handles the results that are created
      */
     private EnumeratorResultHandler handler;
@@ -56,6 +61,10 @@ public class DeterministicEnumerator {
                     formulaString, this.builder);
         
         this.handler = new DefaultEnumeratorResultHandler();
+    }
+    
+    public DeterministicEnumerator(IAtomContainer initialContainer) {
+        this.initialContainer = initialContainer;
     }
     
     public void setBondCreationListener(BondCreationListener listener) {
@@ -98,8 +107,14 @@ public class DeterministicEnumerator {
      * Create the structures, passing each one to the result handler.
      */
     public void generateToHandler() {
-        SimpleGraph initialGraph = new SimpleGraph(
-                this.makeAtomContainerFromFormula());
+        SimpleGraph initialGraph;
+        if (this.formula != null) {
+            initialGraph = new SimpleGraph(this.makeAtomContainerFromFormula());
+        } else if (this.initialContainer != null) {
+            initialGraph = new SimpleGraph(this.initialContainer);
+        } else {
+            return;
+        }
         this.enumerate(initialGraph);
     }
     
@@ -115,7 +130,7 @@ public class DeterministicEnumerator {
                 results.add(result);
             }
         };
-        this.enumerate(new SimpleGraph(this.makeAtomContainerFromFormula()));
+        this.generateToHandler();
         return results;
     }
     
