@@ -2,6 +2,7 @@ package deterministic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.openscience.cdk.exception.CDKException;
@@ -11,6 +12,7 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 
 import signature.Orbit;
+import signature.OrbitElement;
 import signature.Signature;
 import signature.Util;
 import utilities.CanonicalChecker;
@@ -103,7 +105,8 @@ public class SimpleGraph {
     public Orbit getUnsaturatedOrbit() {
         Signature signature = new Signature(this.atomContainer);
         List<Orbit> orbits = signature.calculateOrbits();
-        Collections.reverse(orbits);
+//        Collections.reverse(orbits);
+        sort(orbits);
         for (Orbit o : orbits) {
             if (isSaturated(o)) {
                 continue;
@@ -112,6 +115,20 @@ public class SimpleGraph {
             }
         }
         return null;
+    }
+    
+    private void sort(List<Orbit> orbits) {
+        for (Orbit o : orbits) {
+            o.sort();
+        }
+        Collections.sort(orbits, new Comparator<Orbit>() {
+
+            public int compare(Orbit o1, Orbit o2) {
+                return new Integer(o1.getFirstAtom()).compareTo(
+                        new Integer(o2.getFirstAtom()));
+            }
+            
+        });
     }
 
     /**
@@ -124,8 +141,10 @@ public class SimpleGraph {
         List<Orbit> orbits = signature.calculateOrbits();
 
         // XXX : fix this
-        Collections.reverse(orbits);
-
+//        Collections.reverse(orbits);
+        sort(orbits);
+        
+        System.out.println("Orbits : " + orbits);
         List<Integer> unsaturated = new ArrayList<Integer>();
         for (Orbit o : orbits) {
             if (o.isEmpty() || isSaturated(o)) continue;
@@ -133,6 +152,8 @@ public class SimpleGraph {
         }
         return unsaturated;
     }
+    
+
     
     private boolean isSaturated(Orbit o) {
         return this.isSaturated(o.getFirstAtom());
@@ -181,7 +202,8 @@ public class SimpleGraph {
             } else {
                 sb.append(r).append("-").append(l);
             }
-            sb.append("(").append(bond.getOrder().ordinal()).append(")").append(" ");
+            int o = bond.getOrder().ordinal() + 1;
+            sb.append("(").append(o).append(") ");
         }
         sb.append("} ");
 //        for (Orbit o : orbits) {
