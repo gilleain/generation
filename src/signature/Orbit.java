@@ -2,6 +2,7 @@ package signature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,6 +37,10 @@ public class Orbit implements Iterable<Integer>, Cloneable {
             o.atomIndices.add(new Integer(i));
         }
         return o;
+    }
+    
+    public void sort() {
+        Collections.sort(this.atomIndices);
     }
     
     public int getHeight() {

@@ -108,7 +108,11 @@ public class Signature implements ISignature {
      * @return an OrbitElement instance for each atom
      */
     public OrbitElement[] calculateOrbitElements() {
-        return calculateOrbitElements(SIZE);
+        return calculateOrbitElements(SIZE, true);
+    }
+    
+    public OrbitElement[] calculateOrbitElementsUnsorted() {
+        return calculateOrbitElements(SIZE, false);
     }
     
     /**
@@ -119,7 +123,7 @@ public class Signature implements ISignature {
      * @param height the height to calculate each signature to
      * @return an OrbitElement instance for each atom
      */
-    public OrbitElement[] calculateOrbitElements(int height) {
+    public OrbitElement[] calculateOrbitElements(int height, boolean sorted) {
         OrbitElement[] orbitElements = new OrbitElement[SIZE];
         
         // make a signature for each atom
@@ -149,7 +153,9 @@ public class Signature implements ISignature {
                 orbitElements[atomNumber].signatureString = s;
             }
         }
-        rankOrbits(orbitElements);
+        if (sorted) {
+            rankOrbits(orbitElements);
+        }
        
         return orbitElements;
     }
