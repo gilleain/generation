@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesGenerator;
@@ -42,6 +43,18 @@ public class TestDeterministicEnumerator {
         int actual = results.size();
         TestDeterministicEnumerator.printResults(results);
         Assert.assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testPartialEthane() {
+        IAtomContainer ac = builder.newAtomContainer();
+        for (int i = 0; i < 3; i++) { ac.addAtom(builder.newAtom("C")); }
+        for (int i = 0; i < 8; i++) { ac.addAtom(builder.newAtom("H")); }
+        ac.addBond(0, 3, IBond.Order.SINGLE);
+        ac.addBond(0, 4, IBond.Order.SINGLE);
+        DeterministicEnumerator enumerator = 
+            new DeterministicEnumerator(ac);
+        enumerator.generate();
     }
     
     @Test

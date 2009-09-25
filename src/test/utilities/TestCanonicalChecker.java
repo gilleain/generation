@@ -6,6 +6,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 
 import test.signature.AbstractSignatureTest;
 import utilities.AtomContainerAtomPermutor;
@@ -221,5 +223,18 @@ public class TestCanonicalChecker {
     public void testCube() {
         IAtomContainer cube = AbstractSignatureTest.makeCubane();
         TestCanonicalChecker.testIsCanonicalRandomly(cube);
+    }
+    
+    @Test
+    public void testPartialEthane() {
+        IChemObjectBuilder builder = 
+            NoNotificationChemObjectBuilder.getInstance();
+        IAtomContainer ac = AbstractSignatureTest.builder.newAtomContainer();
+        for (int i = 0; i < 3; i++) { ac.addAtom(builder.newAtom("C")); }
+        for (int i = 0; i < 8; i++) { ac.addAtom(builder.newAtom("H")); }
+        ac.addBond(0, 3, IBond.Order.SINGLE);
+        ac.addBond(0, 4, IBond.Order.SINGLE);
+        ac.addBond(0, 5, IBond.Order.SINGLE);
+        Assert.assertTrue(CanonicalChecker.isCanonical(ac));
     }
 }
