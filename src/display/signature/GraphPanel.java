@@ -35,6 +35,7 @@ public class GraphPanel extends JPanel implements GraphSelectionListener {
         int axis = this.getHeight() / 2;
 //        System.out.println("painting" + width + " " + center + " " + axis);
         GraphRenderer.paintDiagram(graph, g, center, width, axis);
+        g.drawString(graph.toString(), 10, axis + 20);
     }
 
 }
