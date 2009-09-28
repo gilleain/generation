@@ -12,7 +12,7 @@ import deterministic.SimpleGraph;
 
 public class GraphRenderer {
 
-    private static int nodeRadius = 7;
+    private static int nodeRadius = 10;
 
     public static void paintDiagram(SimpleGraph graph, Graphics g, int center, int width, int axis) {
         IAtomContainer container = graph.getAtomContainer();
@@ -25,13 +25,15 @@ public class GraphRenderer {
         g.drawRect(leftEdge, axis - (height / 2), width, height);
 
         int d = nodeRadius * 2;
+        int n = 0;
         for (IAtom atom : container.atoms()) {
             nodePositions.put(container.getAtomNumber(atom), i);
             int x = i - nodeRadius;
             int y = axis - nodeRadius;
             g.drawOval(x, y, d, d);
-            g.drawString(atom.getSymbol(), x, axis + nodeRadius);
+            g.drawString(atom.getSymbol() + "" + n, x, axis + nodeRadius);
             i += separation;
+            n++;
         }
 
         for (IBond bond : container.bonds()) {
