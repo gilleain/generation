@@ -135,7 +135,7 @@ public class DeterministicEnumerator {
     }
     
     private void enumerate(SimpleGraph g) {
-        if (g.isConnected()) {
+        if (g.isConnected() && g.isFullySaturated()) {
             this.handler.handle(g.getAtomContainer());
         } else {
             Orbit o = g.getUnsaturatedOrbit();

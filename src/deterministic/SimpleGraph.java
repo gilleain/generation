@@ -74,12 +74,13 @@ public class SimpleGraph {
     }
 
     public boolean check(int x, int y) {
-        boolean noSubgraphs = Util.noSaturatedSubgraphs(x, atomContainer);
-        if (!noSubgraphs) {
+        boolean sSubgraphs = Util.saturatedSubgraph(x, atomContainer);
+        if (sSubgraphs) {
             System.out.println("saturated subgraphs");
             return false;
         }
-        boolean canon = CanonicalChecker.isCanonicalComplete(atomContainer);
+//        boolean canon = CanonicalChecker.isCanonicalComplete(atomContainer);
+        boolean canon = CanonicalChecker.isCanonical(atomContainer);
         if (!canon) {
             System.out.println("!canon");
             //            continue;
@@ -210,6 +211,17 @@ public class SimpleGraph {
 //            sb.append(o.toString()).append(",");
 //        }
         return sb.toString();
+    }
+
+    public boolean isFullySaturated() {
+        for (int i = 0; i < this.atomContainer.getAtomCount(); i++) {
+            if (isSaturated(i)) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
 
