@@ -51,7 +51,7 @@ public class Util {
      * @param container IAtomContainer
      * @return true if this atom is not part of a saturated subgraph
      */
-    public static boolean noSaturatedSubgraphs(
+    public static boolean saturatedSubgraph(
             int atomNumber, IAtomContainer container) {
         IMolecule subGraph = 
             NoNotificationChemObjectBuilder.getInstance().newMolecule();
@@ -73,8 +73,8 @@ public class Util {
         }
         int atomCount = subGraph.getAtomCount();
 
-        return saturationCount < atomCount || 
-               atomCount == container.getAtomCount();
+        return saturationCount == atomCount && 
+                atomCount < container.getAtomCount();
     }
     
     public static boolean isSaturated(IAtom atom, IAtomContainer container) 
