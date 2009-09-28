@@ -34,8 +34,11 @@ public class GraphPanel extends JPanel implements GraphSelectionListener {
         int center = width / 2;
         int axis = this.getHeight() / 2;
 //        System.out.println("painting" + width + " " + center + " " + axis);
+        int offsetA = 30;
+        int offsetB = 60;
         GraphRenderer.paintDiagram(graph, g, center, width, axis);
-        g.drawString(graph.toString(), 10, axis + 20);
+        g.drawString(graph.toString(), 10, axis + offsetA);
+        g.drawString(graph.unsaturatedAtoms().toString(), 10, axis + offsetB);
     }
 
 }
