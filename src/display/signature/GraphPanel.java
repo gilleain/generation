@@ -32,7 +32,7 @@ public class GraphPanel extends JPanel implements GraphSelectionListener {
         if (this.graph == null) return;
         int width = this.getWidth(); 
         int center = width / 2;
-        int axis = this.getHeight() / 2;
+        int axis = this.getHeight() * 2 / 3;
 //        System.out.println("painting" + width + " " + center + " " + axis);
         int offsetA = 30;
         int offsetB = 60;

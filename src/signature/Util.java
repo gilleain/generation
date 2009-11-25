@@ -2,17 +2,24 @@ package signature;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.PathTools;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.interfaces.IIsotope;
+import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.tools.SaturationChecker;
+import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 public class Util {
     
@@ -93,6 +100,40 @@ public class Util {
         }
         
         return false;
+    }
+    
+    public static boolean isConnected(IAtomContainer atomContainer) {
+        int numberOfAtoms = atomContainer.getAtomCount();
+        int numberOfBonds = atomContainer.getBondCount();
+    
+        // n atoms connected into a simple chain have (n - 1) bonds
+        return numberOfBonds >= (numberOfAtoms - 1) 
+        && ConnectivityChecker.isConnected(atomContainer);
+    }
+    
+    public static IAtomContainer makeAtomContainerFromFormulaString(String f) {
+        IChemObjectBuilder builder = 
+            NoNotificationChemObjectBuilder.getInstance();
+        IAtomContainer atomContainer = builder.newAtomContainer();
+        IMolecularFormula formula = 
+            MolecularFormulaManipulator.getMolecularFormula(f, builder);
+        ArrayList<IAtom> atoms = new ArrayList<IAtom>();
+        for (IIsotope isotope : formula.isotopes()) {
+            for (int i = 0; i < formula.getIsotopeCount(isotope); i++) {
+                atoms.add(builder.newAtom(isotope));
+            }
+        }
+        
+        // sort by symbol lexicographic order
+        Collections.sort(atoms, new Comparator<IAtom>() {
+
+            public int compare(IAtom o1, IAtom o2) {
+                return o1.getSymbol().compareTo(o2.getSymbol());
+            }
+            
+        });
+        atomContainer.setAtoms(atoms.toArray(new IAtom[]{}));
+        return atomContainer;
     }
     
     public static SaturationChecker getChecker() {

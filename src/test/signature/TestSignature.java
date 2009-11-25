@@ -212,6 +212,13 @@ public class TestSignature {
     }
     
     @Test
+    public void testCyclobutane() {
+        IMolecule mol = AbstractSignatureTest.makeCyclobutane();
+        String expected = "[C]([C]([C,1])[C]([C,1]))";
+        TestSignature.testAllSame(mol, expected);
+    }
+    
+    @Test
     public void testPropellane() {
         String expectedA = "[C]([C]([C,1])[C]([C,1])[C]([C,1])[C,1])";
         String expectedB = "[C]([C]([C,1][C,2][C,3])[C,2]([C,1][C,3]))";

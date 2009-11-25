@@ -103,6 +103,19 @@ public class AbstractSignatureTest {
         mol.addBond(6, 7, IBond.Order.SINGLE);
         return mol;
     }
+    
+    public static IMolecule makeCyclobutane() {
+        IMolecule mol = builder.newMolecule();
+        mol.addAtom(new Atom("C")); // 0
+        mol.addAtom(new Atom("C")); // 1
+        mol.addAtom(new Atom("C")); // 2
+        mol.addAtom(new Atom("C")); // 3
+        mol.addBond(0, 1, IBond.Order.SINGLE);
+        mol.addBond(0, 3, IBond.Order.SINGLE);
+        mol.addBond(1, 2, IBond.Order.SINGLE);
+        mol.addBond(2, 3, IBond.Order.SINGLE);
+        return mol;
+    }
 
     public static IMolecule makeNapthalene() {
         IMolecule mol = builder.newMolecule();

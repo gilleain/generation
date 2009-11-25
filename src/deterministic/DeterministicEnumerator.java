@@ -3,6 +3,7 @@ package deterministic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import org.openscience.cdk.interfaces.IAtom;
@@ -14,6 +15,7 @@ import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 import signature.Orbit;
+import signature.Signature;
 
 /**
  * A structure enumerator that starts from just the elemental formula, and 
@@ -124,14 +126,22 @@ public class DeterministicEnumerator {
      * @return a list of atom containers
      */
     public List<IAtomContainer> generate() {
-        final List<IAtomContainer> results = new ArrayList<IAtomContainer>();
+//        final List<IAtomContainer> results = new ArrayList<IAtomContainer>();
+        final HashMap<String, IAtomContainer> results = 
+            new HashMap<String, IAtomContainer>();
         this.handler = new EnumeratorResultHandler() {
             public void handle(IAtomContainer result) {
-                results.add(result);
+                String signatureString = 
+                    new Signature(result).toCanonicalSignatureString();
+                if (results.containsKey(signatureString)) {
+                    return;
+                } else {
+                    results.put(signatureString, result);
+                }
             }
         };
         this.generateToHandler();
-        return results;
+        return new ArrayList<IAtomContainer>(results.values());
     }
     
     private void enumerate(SimpleGraph g) {

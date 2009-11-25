@@ -17,13 +17,13 @@ public class HydrogenCountFilter implements Iterator<IAtomContainer> {
     
     private int[] hydrogenCounts;
     
-    private IIteratingChemObjectReader stream;
+//    private IIteratingChemObjectReader stream;
     
     private IAtomContainer cachedAtomContainer;
     
     public HydrogenCountFilter(int[] hydrogenCounts, IIteratingChemObjectReader stream) {
         this.hydrogenCounts = hydrogenCounts;
-        this.stream = stream;
+//        this.stream = stream;
         this.cachedAtomContainer = null;
     }
    
@@ -88,22 +88,22 @@ public class HydrogenCountFilter implements Iterator<IAtomContainer> {
      * @param args
      */
     public static void main(String[] args) {
-        int[] hcounts = new int[] {0, 0, 1, 1, 1, 2, 2, 3, 3, 3};
-        String inputFile = "C10H16.sdf";
-        String outputFile = "C10H16_filtered.sdf";
+//        int[] hcounts = new int[] {0, 0, 1, 1, 1, 2, 2, 3, 3, 3};
+//        String inputFile = "C10H16.sdf";
+//        String outputFile = "C10H16_filtered.sdf";
 //        int[] hcounts = new int[] {3, 3, 3, 0, 1};
 //        String inputFile = "C4H10O1.sdf";
 //        String outputFile = "C4H10O1_filtered.sdf";
 
         
         try {
-            java.io.FileReader fileReader = new java.io.FileReader(inputFile);
-            org.openscience.cdk.interfaces.IChemObjectBuilder nnBuilder = 
+//            java.io.FileReader fileReader = new java.io.FileReader(inputFile);
+//            org.openscience.cdk.interfaces.IChemObjectBuilder nnBuilder = 
             org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder.getInstance();
-            org.openscience.cdk.io.iterator.IteratingMDLReader mdlReader = new
-            org.openscience.cdk.io.iterator.IteratingMDLReader(fileReader, nnBuilder);
+//            org.openscience.cdk.io.iterator.IteratingMDLReader mdlReader = new
+//            org.openscience.cdk.io.iterator.IteratingMDLReader(fileReader, nnBuilder);
             
-            java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile); 
+//            java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile); 
 //            org.openscience.cdk.io.SDFWriter writer = 
 //                new org.openscience.cdk.io.SDFWriter(fileWriter); 
 //            

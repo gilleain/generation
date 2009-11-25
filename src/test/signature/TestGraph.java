@@ -1,7 +1,6 @@
 package test.signature;
 
 import java.io.StringWriter;
-import java.util.List;
 
 import junit.framework.Assert;
 
@@ -180,8 +179,8 @@ public class TestGraph {
             TestTargetMolecularSignature.makeHexane();
         disconnected.assignAtomsToTarget(hTau);
         int l = disconnected.getAtomContainer().getAtomCount();
-        List<Integer> targets = disconnected.getAtomTargetMap(); 
-        int h = hTau.getHeight();
+//        List<Integer> targets = disconnected.getAtomTargetMap(); 
+//        int h = hTau.getHeight();
         for (int i = 0; i < l - 1; i++) {
             for (int j = i + 1; j < l; j++) {
                 boolean compatibleXY = disconnected.compatibleBond(i, j, hTau);

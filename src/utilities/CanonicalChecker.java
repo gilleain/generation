@@ -1,7 +1,6 @@
 package utilities;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,9 +30,20 @@ import signature.Signature;
  */
 public class CanonicalChecker {
     
+    public static boolean isCanonicalTotal(IAtomContainer atomContainer) {
+        String initialString = CanonicalChecker.asString(atomContainer);
+        if (initialString.equals("")) return true;
+        Orbit orbit = new Orbit("", 0);
+        for (int i = 0; i < atomContainer.getAtomCount(); i++) {
+            orbit.addAtom(i);
+        }
+        System.out.println("checking " + initialString);
+        return CanonicalChecker.checkOrbit(atomContainer, orbit, initialString);
+    }
+    
     public static boolean isCanonicalComplete(IAtomContainer atomContainer) {
         String initialString = CanonicalChecker.asString(atomContainer);
-        System.out.println("initial : " + initialString);
+//        System.out.println("initial : " + initialString);
         if (initialString.equals("")) return true;
         for (Orbit orbit : CanonicalChecker.getSimpleOrbits(atomContainer)) {
 //            System.out.println("Checking orbit " + orbit);
@@ -52,6 +62,7 @@ public class CanonicalChecker {
         int i = 0;
         for (IAtom atom : container.atoms()) {
             if (container.getConnectedAtomsCount(atom) == 0) {
+                i++;
                 continue;
             }
             String symbol = atom.getSymbol();
@@ -82,11 +93,11 @@ public class CanonicalChecker {
                             atomContainer, orbit, initialString)) {
                 continue;
             } else {
-//                System.out.print(initialString);
+                System.out.println("Failed " + initialString);
                 return false;
             }
         }
-        System.out.print(initialString);
+        System.out.println("Succeded " + initialString);
         return true;
     }
     
@@ -127,6 +138,7 @@ public class CanonicalChecker {
             if (initialIsLarger) {
                 continue;
             } else {
+//                System.out.println("Failed " + permutedString + " " + java.util.Arrays.toString(fullPermutation) + " " + initialIsLarger);
                 return false;
             }
         }

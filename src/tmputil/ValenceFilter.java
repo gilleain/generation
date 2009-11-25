@@ -17,13 +17,13 @@ public class ValenceFilter implements Iterator<IAtomContainer> {
     
     private int[] valences;
     
-    private IIteratingChemObjectReader stream;
+//    private IIteratingChemObjectReader stream;
     
     private IAtomContainer cachedAtomContainer;
     
     public ValenceFilter(int[] valences, IIteratingChemObjectReader stream) {
         this.valences = valences;
-        this.stream = stream;
+//        this.stream = stream;
         this.cachedAtomContainer = null;
     }
    
@@ -85,32 +85,32 @@ public class ValenceFilter implements Iterator<IAtomContainer> {
      * @param args
      */
     public static void main(String[] args) {
-//        int[] valences = new int[] {0, 0, 1, 1, 1, 2, 2, 3, 3, 3};
-//        String inputFile = "C10H16.sdf";
-//        String outputFile = "C10H16_filtered.sdf";
-        int[] valences = new int[] {1, 1, 1, 1, 4};
-        String inputFile = "C4H10O1.sdf";
-        String outputFile = "C4H10O1_filtered.sdf";
-
-        
-        try {
-            java.io.FileReader fileReader = new java.io.FileReader(inputFile);
-            org.openscience.cdk.interfaces.IChemObjectBuilder nnBuilder = 
-            org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder.getInstance();
-            org.openscience.cdk.io.iterator.IteratingMDLReader mdlReader = new
-            org.openscience.cdk.io.iterator.IteratingMDLReader(fileReader, nnBuilder);
-            
-//            org.openscience.cdk.io.SDFWriter writer = 
-//                new org.openscience.cdk.io.SDFWriter(
-//                        new java.io.FileWriter(outputFile)); 
+////        int[] valences = new int[] {0, 0, 1, 1, 1, 2, 2, 3, 3, 3};
+////        String inputFile = "C10H16.sdf";
+////        String outputFile = "C10H16_filtered.sdf";
+//        int[] valences = new int[] {1, 1, 1, 1, 4};
+//        String inputFile = "C4H10O1.sdf";
+//        String outputFile = "C4H10O1_filtered.sdf";
+//
+//        
+//        try {
+//            java.io.FileReader fileReader = new java.io.FileReader(inputFile);
+//            org.openscience.cdk.interfaces.IChemObjectBuilder nnBuilder = 
+//            org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder.getInstance();
+//            org.openscience.cdk.io.iterator.IteratingMDLReader mdlReader = new
+//            org.openscience.cdk.io.iterator.IteratingMDLReader(fileReader, nnBuilder);
 //            
-//            ValenceFilter filter = new ValenceFilter(valences, mdlReader);
-//            while (filter.hasNext()) {
-//                writer.write(filter.next());
-//            }
+////            org.openscience.cdk.io.SDFWriter writer = 
+////                new org.openscience.cdk.io.SDFWriter(
+////                        new java.io.FileWriter(outputFile)); 
+////            
+////            ValenceFilter filter = new ValenceFilter(valences, mdlReader);
+////            while (filter.hasNext()) {
+////                writer.write(filter.next());
+////            }
+////            
+//        } catch (Exception e) {
 //            
-        } catch (Exception e) {
-            
-        }
+//        }
     }
 }

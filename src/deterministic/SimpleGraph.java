@@ -12,7 +12,6 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 
 import signature.Orbit;
-import signature.OrbitElement;
 import signature.Signature;
 import signature.Util;
 import utilities.CanonicalChecker;
@@ -79,8 +78,8 @@ public class SimpleGraph {
             System.out.println("saturated subgraphs");
             return false;
         }
-//        boolean canon = CanonicalChecker.isCanonicalComplete(atomContainer);
-        boolean canon = CanonicalChecker.isCanonical(atomContainer);
+        boolean canon = CanonicalChecker.isCanonicalComplete(atomContainer);
+//        boolean canon = CanonicalChecker.isCanonicalTotal(atomContainer);
         if (!canon) {
             System.out.println("!canon");
             //            continue;

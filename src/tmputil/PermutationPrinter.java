@@ -14,7 +14,6 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 import signature.Signature;
 import test.signature.AbstractSignatureTest;
-import test.utilities.TestCanonicalChecker;
 import utilities.AtomContainerAtomPermutor;
 
 public class PermutationPrinter {
